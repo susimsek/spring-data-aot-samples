@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.repository.custom;
+package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.SoftDeletableEntity;
 import org.springframework.data.jpa.repository.Modifying;

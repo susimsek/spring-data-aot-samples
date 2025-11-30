@@ -1,12 +1,10 @@
 package io.github.susimsek.springdataaotsamples.service.mapper;
 
-import io.github.susimsek.springdataaotsamples.config.audit.RevisionInfo;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
@@ -15,7 +13,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.springframework.data.history.Revision;
 
 import java.util.Set;
 
@@ -57,21 +54,5 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
         target.setDeleted(false);
         target.setDeletedBy(null);
         target.setDeletedDate(null);
-    }
-
-    default NoteRevisionDTO toRevisionDto(Revision<Long, Note> revision) {
-        if (revision == null) {
-            return null;
-        }
-        var meta = revision.getMetadata();
-        var type = meta.getRevisionType();
-        var auditor = meta.getDelegate() instanceof RevisionInfo info ? info.getUsername() : null;
-        return new NoteRevisionDTO(
-                meta.getRevisionNumber().orElse(null),
-                type.name(),
-                meta.getRevisionInstant().orElse(null),
-                auditor,
-                toDto(revision.getEntity())
-        );
     }
 }

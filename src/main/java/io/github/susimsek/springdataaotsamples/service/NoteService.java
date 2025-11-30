@@ -15,11 +15,11 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
+import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
+import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +45,7 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
     private final NoteMapper noteMapper;
+    private final NoteRevisionMapper noteRevisionMapper;
 
     @Transactional
     public NoteDTO create(NoteCreateRequest request) {
@@ -82,7 +83,7 @@ public class NoteService {
         }
         return revisions.stream()
                 .sorted(Comparator.comparing(rev -> rev.getMetadata().getRevisionNumber().orElse(0L), Comparator.reverseOrder()))
-                .map(noteMapper::toRevisionDto)
+                .map(noteRevisionMapper::toRevisionDto)
                 .toList();
     }
 
@@ -90,7 +91,7 @@ public class NoteService {
     public NoteRevisionDTO findRevision(Long id, Long revisionNumber) {
         var revision = noteRepository.findRevision(id, revisionNumber)
                 .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        return noteMapper.toRevisionDto(revision);
+        return noteRevisionMapper.toRevisionDto(revision);
     }
 
     @Transactional
@@ -121,21 +122,17 @@ public class NoteService {
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findAll(Pageable pageable, String query) {
-        var spec = Specification.where(isNotDeleted());
-        if (StringUtils.hasText(query)) {
-            spec = spec.and(buildSearchSpec(query));
-        }
-        var pageableWithPinned = prioritizePinned(pageable);
+        var spec = Specification.where(NoteSpecifications.isNotDeleted())
+                .and(NoteSpecifications.search(query));
+        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
         return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findDeleted(Pageable pageable, String query) {
-        var spec = Specification.where(isDeleted());
-        if (StringUtils.hasText(query)) {
-            spec = spec.and(buildSearchSpec(query));
-        }
-        var pageableWithPinned = prioritizePinned(pageable);
+        var spec = Specification.where(NoteSpecifications.isDeleted())
+                .and(NoteSpecifications.search(query));
+        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
         return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
     }
 
@@ -195,32 +192,9 @@ public class NoteService {
 
     private Note findActiveNote(Long id) {
         return noteRepository.findOne(
-                Specification.where(isNotDeleted()).and((root, cq, cb) -> cb.equal(root.get("id"), id)))
+                Specification.where(NoteSpecifications.isNotDeleted())
+                    .and((root, cq, cb) -> cb.equal(root.get("id"), id)))
             .orElseThrow(() -> new NoteNotFoundException(id));
-    }
-
-    private Specification<Note> isNotDeleted() {
-        return (root, cq, cb) -> cb.isFalse(root.get("deleted"));
-    }
-
-    private Specification<Note> isDeleted() {
-        return (root, cq, cb) -> cb.isTrue(root.get("deleted"));
-    }
-
-    private Specification<Note> buildSearchSpec(String query) {
-        return (root, cq, cb) -> {
-            var like = "%" + query.toLowerCase() + "%";
-            var title = cb.like(cb.lower(root.get("title")), like);
-            var content = cb.like(cb.lower(root.get("content")), like);
-            return cb.or(title, content);
-        };
-    }
-
-    private Pageable prioritizePinned(Pageable pageable) {
-        Sort baseSort = pageable.getSort().isUnsorted()
-                ? Sort.by(Sort.Order.desc("pinned"), Sort.Order.desc("createdDate"))
-                : Sort.by(Sort.Order.desc("pinned")).and(pageable.getSort());
-        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), baseSort);
     }
 
     private Set<Tag> resolveTags(Set<String> tagNames) {

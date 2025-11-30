@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:note;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+  liquibase:
+    contexts: dev
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 0
+          cache-public: false
+  devtools:
+    livereload:
+      enabled: true
+
+logging:
+  level:
+    root: debug
+    org.hibernate.SQL: debug
+    io.github.susimsek.springdataaotsamples: debug
