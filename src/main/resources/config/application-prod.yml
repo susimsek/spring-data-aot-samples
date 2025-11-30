@@ -1,4 +1,9 @@
 spring:
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5432/note
     username: ${SPRING_DATASOURCE_USERNAME}
