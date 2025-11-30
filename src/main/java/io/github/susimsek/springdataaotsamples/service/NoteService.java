@@ -8,6 +8,7 @@ import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
@@ -44,6 +45,7 @@ public class NoteService {
 
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
+    private final NoteQueryService noteQueryService;
     private final NoteMapper noteMapper;
     private final NoteRevisionMapper noteRevisionMapper;
 
@@ -122,18 +124,12 @@ public class NoteService {
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findAll(Pageable pageable, String query) {
-        var spec = Specification.where(NoteSpecifications.isNotDeleted())
-                .and(NoteSpecifications.search(query));
-        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
-        return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
+        return noteQueryService.find(new NoteCriteria(query, false), pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findDeleted(Pageable pageable, String query) {
-        var spec = Specification.where(NoteSpecifications.isDeleted())
-                .and(NoteSpecifications.search(query));
-        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
-        return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
+        return noteQueryService.find(new NoteCriteria(query, true), pageable);
     }
 
     @Transactional(readOnly = true)
