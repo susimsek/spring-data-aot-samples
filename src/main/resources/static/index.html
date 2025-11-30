@@ -610,16 +610,16 @@
                                     ${renderTags(note)}
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <button class="btn btn-success btn-sm" onclick="restoreNote(${note.id})" title="Restore">
+                                    <button class="btn btn-success btn-sm" data-action="restore" data-id="${note.id}" title="Restore">
                                         <i class="fa-solid fa-rotate-left"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="copyNote(${note.id})" title="Copy content">
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-outline-info btn-sm" onclick="openRevisionModal(${note.id})" title="Revision history">
+                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger btn-sm" onclick="openDeleteForever(${note.id})" title="Delete permanently">
+                                    <button class="btn btn-outline-danger btn-sm" data-action="delete-forever" data-id="${note.id}" title="Delete permanently">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -666,22 +666,22 @@
                                     ${renderTags(note)}
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <button class="btn btn-outline-warning btn-sm" onclick="togglePin(${note.id})" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                                    <button class="btn btn-outline-warning btn-sm" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
                                         <i class="fa-solid fa-thumbtack ${note.pinned ? '' : 'opacity-50'}"></i>
                                     </button>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="openEdit(${note.id})" title="Edit in modal">
+                                    <button class="btn btn-outline-primary btn-sm" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="startInlineEdit(${note.id})" title="Inline edit">
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="copyNote(${note.id})" title="Copy content">
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-outline-info btn-sm" onclick="openRevisionModal(${note.id})" title="Revision history">
+                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger btn-sm" onclick="openDelete(${note.id})" title="Delete">
+                                    <button class="btn btn-outline-danger btn-sm" data-action="delete" data-id="${note.id}" title="Delete">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -718,10 +718,10 @@
                                     <label class="form-check-label text-body" for="inlinePinned-${note.id}">Pin this note</label>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" onclick="cancelInlineEdit(${note.id})">
+                                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-cancel" data-id="${note.id}">
                                         <i class="fa-solid fa-xmark"></i> Cancel
                                     </button>
-                                    <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" onclick="saveInlineEdit(${note.id})">
+                                    <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-save" data-id="${note.id}">
                                         <i class="fa-solid fa-save"></i> Save
                                     </button>
                                 </div>
@@ -831,7 +831,9 @@
                 <div class="d-flex flex-column align-items-end gap-2">
                     <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"
                             data-revision-restore="${noteId}-${rev.revision}"
-                            onclick="restoreRevision(${noteId}, ${rev.revision})">
+                            data-action="revision-restore"
+                            data-note-id="${noteId}"
+                            data-rev-id="${rev.revision}">
                         <i class="fa-solid fa-rotate-left"></i> Restore
                     </button>
                 </div>
@@ -1913,18 +1915,59 @@
         });
     }
 
-    // expose for inline handlers
-    window.openEdit = openEdit;
-    window.openDelete = openDelete;
-    window.openDeleteForever = openDeleteForever;
-    window.changePage = changePage;
-    window.deleteForever = deleteForever;
-    window.copyNote = copyNote;
-    window.togglePin = togglePin;
-    window.performBulkAction = performBulkAction;
-    window.clearSelection = clearSelection;
-    window.openRevisionModal = openRevisionModal;
-    window.restoreRevision = restoreRevision;
+    if (noteGrid) {
+        noteGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const id = parseInt(btn.getAttribute('data-id'), 10);
+            switch (action) {
+                case 'restore':
+                    restoreNote(id);
+                    break;
+                case 'copy':
+                    copyNote(id);
+                    break;
+                case 'delete-forever':
+                    openDeleteForever(id);
+                    break;
+                case 'toggle-pin':
+                    togglePin(id);
+                    break;
+                case 'edit-modal':
+                    openEdit(id);
+                    break;
+                case 'inline-edit':
+                    startInlineEdit(id);
+                    break;
+                case 'delete':
+                    openDelete(id);
+                    break;
+                case 'revisions':
+                    openRevisionModal(id);
+                    break;
+                case 'inline-cancel':
+                    cancelInlineEdit(id);
+                    break;
+                case 'inline-save':
+                    saveInlineEdit(id);
+                    break;
+                default:
+                    break;
+            }
+        });
+    }
+
+    if (revisionList) {
+        revisionList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action=\"revision-restore\"]');
+            if (!btn) return;
+            const noteId = parseInt(btn.getAttribute('data-note-id'), 10);
+            const revId = parseInt(btn.getAttribute('data-rev-id'), 10);
+            if (!noteId || !revId) return;
+            restoreRevision(noteId, revId);
+        });
+    }
 
     updateEmptyTrashButton();
     loadNotes();
