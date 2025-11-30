@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="1" author="codex">
+        <createSequence sequenceName="note_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createSequence sequenceName="tag_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="tag">
+            <column name="id" type="bigint" defaultValueSequenceNext="tag_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp" defaultValueComputed="${now}"/>
+        </createTable>
+
+        <createTable tableName="note">
+            <column name="id" type="bigint" defaultValueSequenceNext="note_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pinned" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="color" type="varchar(20)"/>
+            <column name="created_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_date" type="timestamp" defaultValueComputed="${now}"/>
+            <column name="deleted" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_by" type="varchar(100)"/>
+            <column name="deleted_date" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="note_tag">
+            <column name="note_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="note_tag" columnNames="note_id, tag_id" constraintName="pk_note_tag"/>
+        <addForeignKeyConstraint baseTableName="note_tag" baseColumnNames="note_id"
+                                 referencedTableName="note" referencedColumnNames="id"
+                                 constraintName="fk_note_tag_note"/>
+        <addForeignKeyConstraint baseTableName="note_tag" baseColumnNames="tag_id"
+                                 referencedTableName="tag" referencedColumnNames="id"
+                                 constraintName="fk_note_tag_tag"/>
+    </changeSet>
+
+    <changeSet id="2" author="codex">
+        <loadData tableName="note"
+                  file="db/data/note.csv"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="title" type="string"/>
+            <column header="content" type="string"/>
+            <column header="pinned" type="boolean"/>
+            <column header="color" type="string"/>
+            <column header="created_by" type="string"/>
+            <column header="last_modified_by" type="string"/>
+            <column header="deleted" type="boolean"/>
+            <column header="deleted_by" type="string"/>
+            <column header="deleted_date" type="timestamp"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="3" author="codex">
+        <loadData tableName="tag"
+                  file="db/data/tag.csv"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="name" type="string"/>
+        </loadData>
+    </changeSet>
+
+    <changeSet id="4" author="codex">
+        <loadData tableName="note_tag"
+                  file="db/data/note_tag.csv"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="note_id" type="bigint"/>
+            <column header="tag_id" type="bigint"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>

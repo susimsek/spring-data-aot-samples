@@ -1,0 +1,259 @@
+package io.github.susimsek.springdataaotsamples.service;
+
+import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.domain.enumeration.BulkAction;
+import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
+import io.github.susimsek.springdataaotsamples.repository.TagRepository;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
+import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class NoteService {
+
+    private final NoteRepository noteRepository;
+    private final TagRepository tagRepository;
+    private final NoteMapper noteMapper;
+
+    @Transactional
+    public NoteDTO create(NoteCreateRequest request) {
+        var note = noteMapper.toEntity(request);
+        note.setTags(resolveTags(request.tags()));
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
+    }
+
+    @Transactional
+    public NoteDTO update(Long id, NoteUpdateRequest request) {
+        var note = findActiveNote(id);
+        noteMapper.updateEntity(request, note);
+        note.setTags(resolveTags(request.tags()));
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
+    }
+
+    @Transactional
+    public NoteDTO patch(Long id, NotePatchRequest request) {
+        var note = findActiveNote(id);
+        noteMapper.patchEntity(request, note);
+        if (request.tags() != null) {
+            note.setTags(resolveTags(request.tags()));
+        }
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteRevisionDTO> findRevisions(Long id) {
+        var revisions = noteRepository.findRevisions(id).getContent();
+        if (revisions.isEmpty() && !noteRepository.existsById(id)) {
+            throw new NoteNotFoundException(id);
+        }
+        return revisions.stream()
+                .sorted(Comparator.comparing(rev -> rev.getMetadata().getRevisionNumber().orElse(0L), Comparator.reverseOrder()))
+                .map(noteMapper::toRevisionDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public NoteRevisionDTO findRevision(Long id, Long revisionNumber) {
+        var revision = noteRepository.findRevision(id, revisionNumber)
+                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+        return noteMapper.toRevisionDto(revision);
+    }
+
+    @Transactional
+    public NoteDTO restoreRevision(Long id, Long revisionNumber) {
+        var revision = noteRepository.findRevision(id, revisionNumber)
+                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+        var snapshot = revision.getEntity();
+        var note = noteRepository.findById(id)
+                .orElseThrow(() -> new NoteNotFoundException(id));
+
+        Set<Tag> resolvedTags = new LinkedHashSet<>();
+        var snapshotTags = snapshot.getTags();
+        if (!CollectionUtils.isEmpty(snapshotTags)) {
+            var ids = snapshotTags.stream()
+                    .map(Tag::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (!ids.isEmpty()) {
+                resolvedTags.addAll(tagRepository.findAllById(ids));
+            }
+        }
+
+        noteMapper.applyRevision(snapshot, note, resolvedTags);
+
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findAll(Pageable pageable, String query) {
+        var spec = Specification.where(isNotDeleted());
+        if (StringUtils.hasText(query)) {
+            spec = spec.and(buildSearchSpec(query));
+        }
+        var pageableWithPinned = prioritizePinned(pageable);
+        return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findDeleted(Pageable pageable, String query) {
+        var spec = Specification.where(isDeleted());
+        if (StringUtils.hasText(query)) {
+            spec = spec.and(buildSearchSpec(query));
+        }
+        var pageableWithPinned = prioritizePinned(pageable);
+        return noteRepository.findAll(spec, pageableWithPinned).map(noteMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public NoteDTO findById(Long id) {
+        var note = findActiveNote(id);
+        return noteMapper.toDto(note);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        int updated = noteRepository.softDeleteById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+    }
+
+    @Transactional
+    public void restore(Long id) {
+        int updated = noteRepository.restoreById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+    }
+
+    @Transactional
+    public void emptyTrash() {
+        noteRepository.purgeDeleted();
+    }
+
+    @Transactional
+    public void deletePermanently(Long id) {
+        if (!noteRepository.existsById(id)) {
+            throw new NoteNotFoundException(id);
+        }
+        noteRepository.deleteById(id);
+    }
+
+    @Transactional
+    public BulkActionResult bulk(BulkActionRequest request) {
+        Set<Long> ids = new HashSet<>(request.ids());
+        if (ids.isEmpty()) {
+            return new BulkActionResult(0, List.of());
+        }
+        BulkAction action = BulkAction.valueOf(request.action());
+        int processed = switch (action) {
+            case DELETE_SOFT -> noteRepository.softDeleteByIds(List.copyOf(ids));
+            case RESTORE -> noteRepository.restoreByIds(List.copyOf(ids));
+            case DELETE_FOREVER -> {
+                noteRepository.deleteAllByIdInBatch(ids);
+                yield ids.size();
+            }
+        };
+
+        return new BulkActionResult(processed, List.of());
+    }
+
+    private Note findActiveNote(Long id) {
+        return noteRepository.findOne(
+                Specification.where(isNotDeleted()).and((root, cq, cb) -> cb.equal(root.get("id"), id)))
+            .orElseThrow(() -> new NoteNotFoundException(id));
+    }
+
+    private Specification<Note> isNotDeleted() {
+        return (root, cq, cb) -> cb.isFalse(root.get("deleted"));
+    }
+
+    private Specification<Note> isDeleted() {
+        return (root, cq, cb) -> cb.isTrue(root.get("deleted"));
+    }
+
+    private Specification<Note> buildSearchSpec(String query) {
+        return (root, cq, cb) -> {
+            var like = "%" + query.toLowerCase() + "%";
+            var title = cb.like(cb.lower(root.get("title")), like);
+            var content = cb.like(cb.lower(root.get("content")), like);
+            return cb.or(title, content);
+        };
+    }
+
+    private Pageable prioritizePinned(Pageable pageable) {
+        Sort baseSort = pageable.getSort().isUnsorted()
+                ? Sort.by(Sort.Order.desc("pinned"), Sort.Order.desc("createdDate"))
+                : Sort.by(Sort.Order.desc("pinned")).and(pageable.getSort());
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), baseSort);
+    }
+
+    private Set<Tag> resolveTags(Set<String> tagNames) {
+        if (tagNames.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        var normalized = tagNames.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .map(name -> name.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (normalized.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+
+        var existing = tagRepository.findByNameIn(normalized);
+        Map<String, Tag> byName = existing.stream()
+                .collect(Collectors.toMap(Tag::getName, Function.identity(), (a, b) -> a, LinkedHashMap::new));
+
+        var missing = normalized.stream()
+                .filter(name -> !byName.containsKey(name))
+                .map(name -> {
+                    var tag = new Tag();
+                    tag.setName(name);
+                    return tag;
+                })
+                .toList();
+
+        if (!missing.isEmpty()) {
+            var saved = tagRepository.saveAll(missing);
+            saved.forEach(tag -> byName.put(tag.getName(), tag));
+        }
+
+        return new LinkedHashSet<>(byName.values());
+    }
+}

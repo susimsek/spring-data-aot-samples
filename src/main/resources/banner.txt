@@ -1,0 +1,9 @@
+${AnsiColor.CYAN}███╗   ██╗ ██████╗ ████████╗███████╗███████╗     █████╗ ██████╗ ██████╗
+${AnsiColor.CYAN}████╗  ██║██╔═══██╗╚══██╔══╝██╔════╝██╔════╝    ██╔══██╗██╔══██╗██╔══██╗
+${AnsiColor.CYAN}██╔██╗ ██║██║   ██║   ██║   █████╗  ███████╗    ███████║██████╔╝██████╔╝
+${AnsiColor.CYAN}██║╚██╗██║██║   ██║   ██║   ██╔══╝  ╚════██║    ██╔══██║██╔═══╝ ██╔═══╝
+${AnsiColor.CYAN}██║ ╚████║╚██████╔╝   ██║   ███████╗███████║    ██║  ██║██║     ██║
+${AnsiColor.CYAN}╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝    ╚═╝  ╚═╝╚═╝     ╚═╝
+
+${AnsiColor.BRIGHT_BLUE}Startup profile(s) ${spring.profiles.active}
+Running Spring Boot ${spring-boot.version}${AnsiColor.DEFAULT}
