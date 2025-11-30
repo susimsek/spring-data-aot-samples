@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.service.validation;
 
+import io.github.susimsek.springdataaotsamples.service.validation.constraints.TagValue;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.util.StringUtils;

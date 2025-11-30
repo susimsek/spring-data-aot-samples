@@ -1,7 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.dto;
 
-import io.github.susimsek.springdataaotsamples.service.validation.HexColor;
-import io.github.susimsek.springdataaotsamples.service.validation.TagValue;
+import io.github.susimsek.springdataaotsamples.service.validation.constraints.HexColor;
+import io.github.susimsek.springdataaotsamples.service.validation.constraints.TagValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

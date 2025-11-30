@@ -1,5 +1,6 @@
-package io.github.susimsek.springdataaotsamples.service.validation;
+package io.github.susimsek.springdataaotsamples.service.validation.constraints;
 
+import io.github.susimsek.springdataaotsamples.service.validation.HexColorValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
