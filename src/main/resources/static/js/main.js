@@ -89,6 +89,7 @@ const { diffLines, diffLinesDetailed } = Diff;
     let revisionHasMore = false;
     let isLoadingRevisions = false;
     let revisionNoteId = null;
+    let revisionTotal = 0;
 
     const noteCache = new Map();
     const defaultSort = 'createdDate,desc';
@@ -412,7 +413,14 @@ const { diffLines, diffLinesDetailed } = Diff;
         syncCheckboxStates();
     }
 
-    function renderRevisionItem(rev, noteId, index) {
+    function revisionLocalNumber(globalIndex) {
+        if (typeof revisionTotal === 'number' && revisionTotal > 0) {
+            return revisionTotal - globalIndex;
+        }
+        return globalIndex + 1;
+    }
+
+    function renderRevisionItem(rev, noteId, index, localNumber) {
         const note = rev.note || {};
         const tags = note.tags && note.tags.length
             ? `<div class="d-flex flex-wrap gap-1 mt-1">${note.tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(tagLabel(t))}</span>`).join('')}</div>`
@@ -423,12 +431,13 @@ const { diffLines, diffLinesDetailed } = Diff;
         const colorDot = note.color ? `<span class="badge text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
         const revTypeClass = revisionTypeBadge(rev.revisionType);
         const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
+        const displayLocal = localNumber ?? revisionLocalNumber(index);
         return `
         <div class="list-group-item">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                        <span class="badge bg-light text-secondary border">#${escapeHtml(rev.revision ?? '—')}</span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">v${escapeHtml(displayLocal)}</span>
                         ${revTypeLabel}
                         <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i>${escapeHtml(formatDate(rev.revisionDate) || '—')}</span>
                         <span class="text-muted small"><i class="fa-solid fa-user me-1"></i>${escapeHtml(rev.auditor || 'unknown')}</span>
@@ -578,6 +587,8 @@ const { diffLines, diffLinesDetailed } = Diff;
         const current = revisionCache[index];
         if (!current) return;
         const prev = revisionCache[index + 1] || null;
+        const currentLocal = revisionLocalNumber(index);
+        const prevLocal = prev ? revisionLocalNumber(index + 1) : null;
         const initialOnly = !prev; // first revision, show only additions
         const currentNote = current.note || {};
         const prevNote = prev?.note || {};
@@ -592,7 +603,7 @@ const { diffLines, diffLinesDetailed } = Diff;
             <div class="card border-secondary-subtle">
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small">Diff vs ${prev ? ('#' + prev.revision) : 'current'}</span>
+                        <span class="text-muted small">Diff vs ${prev ? (`v${prevLocal}`) : 'current'}</span>
                         <button class="btn btn-sm btn-link text-decoration-none" data-action="hide-diff" data-rev-id="${current.revision}">Close</button>
                     </div>
                     <div class="mb-3">
@@ -630,7 +641,11 @@ const { diffLines, diffLinesDetailed } = Diff;
             revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
             return;
         }
-        const html = (items || []).map((rev, idx) => renderRevisionItem(rev, noteId, startIndex + idx)).join('');
+        const html = (items || []).map((rev, idx) => {
+            const globalIndex = startIndex + idx;
+            const localNumber = revisionLocalNumber(globalIndex);
+            return renderRevisionItem(rev, noteId, globalIndex, localNumber);
+        }).join('');
         revisionList.insertAdjacentHTML('beforeend', html);
         const loadMoreRow = revisionList.querySelector('[data-action="revision-load-more"]')?.parentElement;
         if (loadMoreRow) {
@@ -658,8 +673,16 @@ const { diffLines, diffLinesDetailed } = Diff;
             const pageData = await Api.fetchRevisions(noteId, currentAuditor(), revisionPage, revisionPageSize);
             const content = pageData?.content ?? pageData ?? [];
             const meta = pageData?.page ?? pageData;
+            const totalElements = meta?.totalElements;
             const startIndex = revisionCache.length;
             revisionCache = revisionCache.concat(content);
+            if (typeof totalElements === 'number') {
+                revisionTotal = totalElements;
+            } else if (!append) {
+                revisionTotal = content.length;
+            } else {
+                revisionTotal = Math.max(revisionTotal, revisionCache.length);
+            }
             const totalPages = meta?.totalPages;
             revisionHasMore = typeof totalPages === 'number'
                 ? revisionPage + 1 < totalPages
@@ -688,6 +711,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         revisionModal.show();
         revisionPage = 0;
         revisionHasMore = false;
+        revisionTotal = 0;
         revisionCache = [];
         if (revisionModalBody) {
             revisionModalBody.scrollTop = 0;
@@ -707,6 +731,7 @@ const { diffLines, diffLinesDetailed } = Diff;
             revisionCache = [];
             revisionPage = 0;
             revisionHasMore = false;
+            revisionTotal = 0;
             isLoadingRevisions = false;
             if (revisionList) {
                 revisionList.innerHTML = '';
