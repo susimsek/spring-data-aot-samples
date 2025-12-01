@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.envers.Audited;
 
 import java.util.LinkedHashSet;
@@ -47,6 +48,7 @@ public class Note extends SoftDeletableEntity {
     private String color;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
+    @BatchSize(size = 25)
     @JoinTable(name = "note_tag",
             joinColumns = @JoinColumn(name = "note_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))

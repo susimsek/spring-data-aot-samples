@@ -24,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Comparator;
@@ -34,7 +33,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -104,19 +102,7 @@ public class NoteService {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
 
-        Set<Tag> resolvedTags = new LinkedHashSet<>();
-        var snapshotTags = snapshot.getTags();
-        if (!CollectionUtils.isEmpty(snapshotTags)) {
-            var ids = snapshotTags.stream()
-                    .map(Tag::getId)
-                    .filter(Objects::nonNull)
-                    .toList();
-            if (!ids.isEmpty()) {
-                resolvedTags.addAll(tagRepository.findAllById(ids));
-            }
-        }
-
-        noteMapper.applyRevision(snapshot, note, resolvedTags);
+        noteMapper.applyRevision(snapshot, note);
 
         var saved = noteRepository.save(note);
         return noteMapper.toDto(saved);

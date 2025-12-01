@@ -6,14 +6,14 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = TagMapper.class)
@@ -40,19 +40,14 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     NoteDTO toDto(Note note);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "tags", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "deletedBy", ignore = true)
-    @Mapping(target = "deletedDate", ignore = true)
-    void applyRevision(Note source, @MappingTarget Note target,
-                       @Context Set<Tag> resolvedTags);
+    @Mapping(target = "tags", source = "tags", qualifiedByName = "cloneTags")
+    @Mapping(target = "deleted", constant = "false")
+    @Mapping(target = "deletedBy", expression = "java(null)")
+    @Mapping(target = "deletedDate", expression = "java(null)")
+    void applyRevision(Note source, @MappingTarget Note target);
 
-    @AfterMapping
-    default void resolveRevisionTags(@MappingTarget Note target,
-                                     @Context Set<Tag> resolvedTags) {
-        target.setTags(resolvedTags != null ? resolvedTags : Set.of());
-        target.setDeleted(false);
-        target.setDeletedBy(null);
-        target.setDeletedDate(null);
+    @Named("cloneTags")
+    static Set<Tag> cloneTags(Set<Tag> tags) {
+        return tags != null ? new LinkedHashSet<>(tags) : java.util.Set.of();
     }
 }

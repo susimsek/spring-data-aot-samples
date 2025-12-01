@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.service.spec;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import lombok.experimental.UtilityClass;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,7 +20,7 @@ public class NoteSpecifications {
         return (root, cq, cb) -> cb.isTrue(root.get("deleted"));
     }
 
-    public Specification<Note> search(String query) {
+    public Specification<Note> search(@Nullable String query) {
         if (!StringUtils.hasText(query)) {
             return (root, cq, cb) -> cb.conjunction();
         }

@@ -12,7 +12,12 @@ import static io.github.susimsek.springdataaotsamples.config.Constants.DEFAULT_A
 
 public class HttpHeaderAuditorAware implements AuditorAware<String> {
 
-    public static Optional<String> resolveCurrentAuditor() {
+    @Override
+    public Optional<String> getCurrentAuditor() {
+        return resolveCurrentAuditor();
+    }
+
+    private Optional<String> resolveCurrentAuditor() {
         var attributes = RequestContextHolder.getRequestAttributes();
         if (attributes instanceof ServletRequestAttributes requestAttributes) {
             var header = requestAttributes.getRequest().getHeader(AUDITOR_HEADER);
@@ -21,10 +26,5 @@ public class HttpHeaderAuditorAware implements AuditorAware<String> {
             }
         }
         return Optional.of(DEFAULT_AUDITOR);
-    }
-
-    @Override
-    public Optional<String> getCurrentAuditor() {
-        return resolveCurrentAuditor();
     }
 }

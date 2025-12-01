@@ -1,0 +1,1421 @@
+import Helpers from '/js/helpers.js';
+import State from '/js/state.js';
+import Api from '/js/api.js';
+import Render from '/js/render.js';
+import Ui from '/js/ui.js';
+import Validation from '/js/validation.js';
+
+const { state, currentAuditor, saveAuditor } = State;
+const { escapeHtml, formatDate, showToast, debounce } = Helpers;
+const { renderTags, revisionTypeBadge } = Render;
+const { toggleSizeMessages, toggleInlineMessages } = Validation;
+
+    // Use state from module
+    const BULK_LIMIT = 100;
+    const TAG_LIMIT = 5;
+
+    const noteGrid = document.getElementById('noteGrid');
+    const totalLabel = document.getElementById('totalLabel');
+    const pageInfo = document.getElementById('pageInfo');
+    const pageSize = document.getElementById('pageSize');
+    const sortSelect = document.getElementById('sortSelect');
+    const pagination = document.getElementById('pagination');
+    const pager = document.getElementById('pager');
+    const auditorInput = document.getElementById('auditorInput');
+    const saveAuditorBtn = document.getElementById('saveAuditorBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const activeViewBtn = document.getElementById('activeViewTab');
+    const trashViewBtn = document.getElementById('trashViewTab');
+    const noteModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('noteModal'));
+    const deleteModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal'));
+    const emptyTrashModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('emptyTrashModal'));
+    const deleteForeverModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteForeverModal'));
+    const bulkModalEl = document.getElementById('bulkModal');
+    const bulkModal = bootstrap.Modal.getOrCreateInstance(bulkModalEl);
+    const noteForm = document.getElementById('noteForm');
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const pinnedInput = document.getElementById('pinned');
+    const colorInput = document.getElementById('color');
+    const tagsInput = document.getElementById('tagsInput');
+    const tagsContainer = document.getElementById('tagsContainer');
+    const tagsListEl = document.getElementById('tagsList');
+    const tagsLimitMsg = document.getElementById('tagsLimitMessage');
+    const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
+    const TAG_FORMAT_MESSAGE = 'Tags must be 1-30 characters using letters, digits, hyphen, or underscore.';
+    let currentTags = new Set();
+    let tagsDirty = false;
+    const inlineTagsState = new Map();
+    const inlineTagsDirty = new Map();
+    const submitLabel = document.getElementById('noteSubmitLabel');
+    const saveBtn = document.querySelector('#noteForm button[type="submit"]');
+    const saveSpinner = document.getElementById('noteSubmitSpinner');
+    const formAlert = document.getElementById('formAlert');
+    const toastContainer = document.getElementById('toastContainer');
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+    const emptyTrashSpinner = document.getElementById('emptyTrashSpinner');
+    const emptyTrashLabel = document.getElementById('emptyTrashLabel');
+    const confirmEmptyTrashBtn = document.getElementById('confirmEmptyTrashBtn');
+    const emptyTrashConfirmSpinner = document.getElementById('emptyTrashConfirmSpinner');
+    const emptyTrashConfirmLabel = document.getElementById('emptyTrashConfirmLabel');
+    const confirmDeleteForeverBtn = document.getElementById('confirmDeleteForeverBtn');
+    const deleteForeverSpinner = document.getElementById('deleteForeverSpinner');
+    const deleteForeverLabel = document.getElementById('deleteForeverLabel');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const bulkRestoreBtn = document.getElementById('bulkRestoreBtn');
+    const bulkDeleteForeverBtn = document.getElementById('bulkDeleteForeverBtn');
+    const bulkModalMessage = document.getElementById('bulkModalMessage');
+    const confirmBulkBtn = document.getElementById('confirmBulkBtn');
+    const bulkSpinner = document.getElementById('bulkSpinner');
+    const bulkConfirmLabel = document.getElementById('bulkConfirmLabel');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkRow = document.getElementById('bulkRow');
+    const controlsRow = document.getElementById('controlsRow');
+    const revisionModalEl = document.getElementById('revisionModal');
+    const revisionModal = revisionModalEl ? bootstrap.Modal.getOrCreateInstance(revisionModalEl) : null;
+    const revisionList = document.getElementById('revisionList');
+    const revisionSpinner = document.getElementById('revisionSpinner');
+    const revisionError = document.getElementById('revisionError');
+    const revisionModalTitle = document.getElementById('revisionModalTitle');
+
+    const noteCache = new Map();
+    const defaultSort = 'createdDate,desc';
+    state.sort = defaultSort;
+    state.selected = new Set();
+    let deleteForeverId = null;
+
+    if (addNoteBtn) {
+        addNoteBtn.disabled = state.view === 'trash';
+    }
+
+    function switchView(view) {
+        if (state.view === view) return;
+        state.view = view;
+        state.page = 0;
+        clearSelection();
+        if (activeViewBtn && trashViewBtn) {
+            activeViewBtn.classList.toggle('active', view === 'active');
+            activeViewBtn.setAttribute('aria-selected', view === 'active');
+            trashViewBtn.classList.toggle('active', view === 'trash');
+            trashViewBtn.setAttribute('aria-selected', view === 'trash');
+        }
+        if (addNoteBtn) {
+            addNoteBtn.disabled = view === 'trash';
+        }
+        pager.hidden = true;
+        pagination.innerHTML = '';
+        updateEmptyTrashButton();
+        loadNotes();
+    }
+
+
+    function setLoading() {
+        totalLabel.textContent = state.view === 'trash' ? 'Total (trash): …' : 'Total: …';
+        totalLabel.classList.add('invisible');
+        if (pageInfo) pageInfo.hidden = true;
+        updateEmptyTrashButton();
+        if (emptyTrashBtn) {
+            emptyTrashBtn.disabled = true;
+        }
+        totalLabel.hidden = true;
+        pager.hidden = true;
+        pagination.innerHTML = '';
+        noteGrid.innerHTML = '<div class="col-12 text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    }
+
+    function renderNotes(data) {
+        noteCache.clear();
+        const notes = data?.content || [];
+        const meta = data?.page ?? data;
+        state.total = meta?.totalElements ?? notes.length;
+        if (notes.length === 0) {
+            totalLabel.hidden = true;
+        } else {
+            totalLabel.hidden = false;
+            totalLabel.textContent = `Total: ${state.total}`;
+            totalLabel.classList.remove('invisible');
+        }
+        const totalPages = meta?.totalPages ?? 1;
+        const current = meta?.number ?? 0;
+        state.page = current;
+        state.totalPages = totalPages;
+        updateEmptyTrashButton();
+        if (pageInfo) {
+            pageInfo.textContent = `Page ${current + 1} of ${Math.max(totalPages, 1)}`;
+            pageInfo.hidden = false;
+        }
+
+        if (!notes.length) {
+            const emptyMsg = state.query
+                ? 'No notes match your search.'
+                : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
+            const emptyIcon = state.query
+                ? 'fa-magnifying-glass'
+                : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
+            totalLabel.hidden = true;
+            noteGrid.innerHTML = `
+                <div class="col-12 text-center text-muted py-4 d-flex flex-column align-items-center gap-2">
+                    <i class="fa-solid ${emptyIcon}" style="font-size: 2rem;"></i>
+                    <div>${emptyMsg}</div>
+                </div>`;
+            bulkRow?.classList.add('d-none');
+            controlsRow?.classList.add('d-none');
+            clearSelection();
+            pager.hidden = true;
+            pagination.innerHTML = '';
+            if (pageInfo) {
+                pageInfo.hidden = true;
+            }
+            return;
+        }
+
+        bulkRow?.classList.remove('d-none');
+        controlsRow?.classList.remove('d-none');
+        const fragments = [];
+        notes.forEach(note => {
+            noteCache.set(note.id, note);
+            const creator = note.createdBy ?? '';
+            const updater = note.lastModifiedBy ?? '';
+            const createdText = formatDate(note.createdDate);
+            const modifiedText = note.lastModifiedDate ? formatDate(note.lastModifiedDate) : createdText;
+            const deletedBy = note.deletedBy ?? '';
+            const deletedText = note.deletedDate ? formatDate(note.deletedDate) : '';
+
+            if (state.view === 'trash') {
+                fragments.push(`
+                <div class="col-md-6 col-xl-4">
+                    <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
+                        <div class="card-body d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="form-check me-2 mt-1">
+                                    <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
+                                        ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
+                                        ${note.color ? `<span class="badge rounded-pill text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                                    </div>
+                                    <div class="text-muted small">${escapeHtml(note.content)}</div>
+                                    ${renderTags(note)}
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                    <button class="btn btn-success btn-sm" data-action="restore" data-id="${note.id}" title="Restore">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
+                                        <i class="fa-solid fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" data-action="delete-forever" data-id="${note.id}" title="Delete permanently">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-1 text-muted small">
+                                <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
+                                ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="fa-regular fa-calendar me-1"></i>Created: ${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
+                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="fa-regular fa-calendar-check me-1"></i>Updated: ${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
+                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="fa-solid fa-ban me-1"></i>Deleted by: ${escapeHtml(deletedBy || '—')}</span>
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                ${deletedText ? `<span><i class="fa-regular fa-calendar me-1"></i>Deleted: ${escapeHtml(deletedText.split(' ')[0] ?? deletedText)}</span>` : ''}
+                                ${deletedText ? `<span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(deletedText.split(' ')[1] ?? '')}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            } else {
+                fragments.push(`
+                <div class="col-md-6 col-xl-4">
+                    <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
+                        <div class="card-body d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between align-items-start view-mode">
+                                <div class="form-check me-2 mt-1">
+                                    <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
+                                        ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
+                                        ${note.color ? `<span class="badge rounded-pill text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                                    </div>
+                                    <div class="text-muted small">${escapeHtml(note.content)}</div>
+                                    ${renderTags(note)}
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                    <button class="btn btn-outline-warning btn-sm" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                                        <i class="fa-solid fa-thumbtack ${note.pinned ? '' : 'opacity-50'}"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
+                                        <i class="fa-solid fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" data-action="delete" data-id="${note.id}" title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="edit-mode d-none">
+                                <div class="mb-2">
+                                    <input class="form-control form-control-sm" type="text" placeholder="Title"
+                                           minlength="3" maxlength="255" required value="${escapeHtml(note.title)}"
+                                           data-inline-title="${note.id}">
+                                    <div class="invalid-feedback d-none" data-inline-title-required="${note.id}">This field is required.</div>
+                                    <div class="invalid-feedback d-none" data-inline-title-size="${note.id}">Size must be between 3 and 255 characters.</div>
+                                </div>
+                                <div class="mb-2">
+                                    <textarea class="form-control form-control-sm" rows="3" placeholder="Content"
+                                              minlength="10" maxlength="1024" required
+                                              data-inline-content="${note.id}">${escapeHtml(note.content)}</textarea>
+                                    <div class="invalid-feedback d-none" data-inline-content-required="${note.id}">This field is required.</div>
+                                    <div class="invalid-feedback d-none" data-inline-content-size="${note.id}">Size must be between 10 and 1024 characters.</div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1" for="inlineColor-${note.id}">Color</label>
+                                    <input class="form-control form-control-color" type="color" id="inlineColor-${note.id}" data-inline-color="${note.id}" value="${escapeHtml(note.color || '#2563eb')}">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1" for="inlineTagsInput-${note.id}">Tags</label>
+                                    <div class="form-control p-2 pe-5" data-inline-tags-container="${note.id}">
+                                        <div class="d-flex flex-wrap gap-2 mb-2" data-inline-tags-list="${note.id}"></div>
+                                        <input class="form-control form-control-sm border-0 shadow-none p-0" type="text" id="inlineTagsInput-${note.id}" data-inline-tags-input="${note.id}" placeholder="Type and press Enter or comma">
+                                    </div>
+                                    <div class="invalid-feedback d-none" data-inline-tags-error="${note.id}"></div>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="inlinePinned-${note.id}" data-inline-pinned="${note.id}" ${note.pinned ? 'checked' : ''}>
+                                    <label class="form-check-label text-body" for="inlinePinned-${note.id}">Pin this note</label>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-cancel" data-id="${note.id}">
+                                        <i class="fa-solid fa-xmark"></i> Cancel
+                                    </button>
+                                    <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-save" data-id="${note.id}">
+                                        <i class="fa-solid fa-save"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-1 text-muted small">
+                                <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
+                                ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="fa-regular fa-calendar me-1"></i>Created: ${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
+                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
+                            </div>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="fa-regular fa-calendar-check me-1"></i>Updated: ${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
+                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+            }
+        });
+        noteGrid.innerHTML = fragments.join('');
+
+        pager.hidden = totalPages < 1 || notes.length === 0;
+        notes.forEach(note => resetInlineTags(note.id, note.tags || []));
+        const items = [];
+        items.push(`<li class="page-item ${current === 0 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${current - 1}" aria-label="Previous">&laquo;</a>
+        </li>`);
+        for (let i = 0; i < totalPages; i++) {
+            items.push(`<li class="page-item ${i === current ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+            </li>`);
+        }
+        items.push(`<li class="page-item ${current >= totalPages - 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${current + 1}" aria-label="Next">&raquo;</a>
+        </li>`);
+        pagination.innerHTML = items.join('');
+        bindSelectionCheckboxes();
+    }
+
+    function bindSelectionCheckboxes() {
+        document.querySelectorAll('.selection-checkbox').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const id = parseInt(e.target.getAttribute('data-note-id'), 10);
+                toggleSelection(id, e.target.checked);
+            });
+        });
+        syncSelectAllCheckbox();
+        updateBulkButtons();
+        syncCheckboxStates();
+    }
+
+    function renderRevisionItem(rev, noteId) {
+        const note = rev.note || {};
+        const tags = note.tags && note.tags.length
+            ? `<div class="d-flex flex-wrap gap-1 mt-1">${note.tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(t)}</span>`).join('')}</div>`
+            : '';
+        const pinnedBadge = note.pinned
+            ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
+            : '<span class="badge bg-light text-secondary border">Unpinned</span>';
+        const colorDot = note.color ? `<span class="badge text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
+        return `
+        <div class="list-group-item">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                        <span class="badge bg-light text-secondary border">#${escapeHtml(rev.revision ?? '—')}</span>
+                        ${revisionTypeBadge(rev.revisionType)}
+                        <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i>${escapeHtml(formatDate(rev.revisionDate) || '—')}</span>
+                        <span class="text-muted small"><i class="fa-solid fa-user me-1"></i>${escapeHtml(rev.auditor || 'unknown')}</span>
+                        ${colorDot}
+                        ${pinnedBadge}
+                    </div>
+                    <div class="fw-semibold">${escapeHtml(note.title || '(no title)')}</div>
+                    <div class="text-muted small">${escapeHtml(note.content || '')}</div>
+                    ${tags}
+                </div>
+                <div class="d-flex flex-column align-items-end gap-2">
+                    <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"
+                            data-revision-restore="${noteId}-${rev.revision}"
+                            data-action="revision-restore"
+                            data-note-id="${noteId}"
+                            data-rev-id="${rev.revision}">
+                        <i class="fa-solid fa-rotate-left"></i> Restore
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function showRevisionError(message) {
+        if (!revisionError) return;
+        revisionError.textContent = message;
+        revisionError.classList.remove('d-none');
+    }
+
+    function clearRevisionError() {
+        if (!revisionError) return;
+        revisionError.textContent = '';
+        revisionError.classList.add('d-none');
+    }
+
+    async function openRevisionModal(noteId) {
+        if (!revisionModal) return;
+        const cached = noteCache.get(noteId);
+        if (revisionModalTitle) {
+            const title = cached?.title ? `${cached.title} · #${noteId}` : `Revisions · #${noteId}`;
+            revisionModalTitle.textContent = title;
+        }
+        clearRevisionError();
+        if (revisionList) revisionList.innerHTML = '';
+        revisionSpinner?.classList.remove('d-none');
+        revisionModal.show();
+        try {
+        const res = await Api.fetchRevisions(noteId, currentAuditor());
+            const revisions = res || [];
+            if (revisionList) {
+                if (!revisions || revisions.length === 0) {
+                    revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
+                } else {
+                    revisionList.innerHTML = revisions.map(rev => renderRevisionItem(rev, noteId)).join('');
+                }
+            }
+        } catch (e) {
+            showRevisionError(e.message || 'Failed to load revisions');
+        } finally {
+            revisionSpinner?.classList.add('d-none');
+        }
+    }
+
+    function updateEmptyTrashButton() {
+        if (!emptyTrashBtn) return;
+        const isTrash = state.view === 'trash';
+        emptyTrashBtn.hidden = !isTrash;
+        emptyTrashBtn.classList.toggle('d-none', !isTrash);
+        if (isTrash) {
+            const hasItems = state.total > 0;
+            emptyTrashBtn.hidden = !hasItems;
+            emptyTrashBtn.classList.toggle('d-none', !hasItems);
+            emptyTrashBtn.disabled = !hasItems;
+            emptyTrashSpinner?.classList.add('d-none');
+            if (emptyTrashLabel) {
+                emptyTrashLabel.textContent = 'Empty Trash';
+            }
+        }
+    }
+
+    function clearSelection() {
+        state.selected = new Set();
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+        syncCheckboxStates();
+        updateBulkButtons();
+    }
+
+    function toggleSelection(id, checked) {
+        if (!id) return;
+        if (checked) {
+            if (state.selected.size >= BULK_LIMIT) {
+                showToast(`You can select up to ${BULK_LIMIT} notes for bulk actions.`, 'warning');
+                syncCheckboxStates();
+                return;
+            }
+            state.selected.add(id);
+        } else {
+            state.selected.delete(id);
+        }
+        syncSelectAllCheckbox();
+        updateBulkButtons();
+    }
+
+    function syncSelectAllCheckbox() {
+        if (!selectAllCheckbox) return;
+        const currentIds = Array.from(noteCache.keys());
+        const selectedOnPage = currentIds.filter(id => state.selected.has(id));
+        if (selectedOnPage.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (selectedOnPage.length === currentIds.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    function syncCheckboxStates() {
+        document.querySelectorAll('.selection-checkbox').forEach(cb => {
+            const id = parseInt(cb.getAttribute('data-note-id'), 10);
+            cb.checked = state.selected.has(id);
+        });
+    }
+
+    function updateBulkButtons() {
+        const count = state.selected.size;
+        const isTrash = state.view === 'trash';
+        if (selectedCount) {
+            selectedCount.textContent = `Selected: ${count}`;
+            selectedCount.classList.toggle('d-none', count === 0);
+        }
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.classList.toggle('d-none', isTrash);
+            bulkDeleteBtn.disabled = count === 0 || isTrash;
+        }
+        if (bulkRestoreBtn) {
+            bulkRestoreBtn.classList.toggle('d-none', !isTrash);
+            bulkRestoreBtn.disabled = count === 0;
+        }
+        if (bulkDeleteForeverBtn) {
+            bulkDeleteForeverBtn.classList.toggle('d-none', !isTrash);
+            bulkDeleteForeverBtn.disabled = count === 0;
+        }
+    }
+
+    function openBulkModal(action) {
+        if (!bulkModal || !bulkModalEl) return;
+        if (!state.selected.size) return;
+        if (state.selected.size > BULK_LIMIT) {
+            showToast(`You can select up to ${BULK_LIMIT} notes for bulk actions.`, 'warning');
+            return;
+        }
+        bulkModalEl.dataset.action = action;
+        const count = state.selected.size;
+        if (bulkModalMessage) {
+            const messages = {
+                DELETE_SOFT: `Delete ${count} selected note(s)?`,
+                RESTORE: `Restore ${count} selected note(s)?`,
+                DELETE_FOREVER: `Permanently delete ${count} selected note(s)?`
+            };
+            bulkModalMessage.textContent = messages[action] || 'Apply to selected items?';
+        }
+        if (bulkConfirmLabel) {
+            const labels = {
+                DELETE_SOFT: 'Delete',
+                RESTORE: 'Restore',
+                DELETE_FOREVER: 'Delete'
+            };
+            bulkConfirmLabel.textContent = labels[action] || 'Confirm';
+        }
+        bulkModal.show();
+    }
+
+    async function performBulkAction() {
+        if (!bulkModal || !bulkModalEl) return;
+        const action = bulkModalEl.dataset.action;
+        if (!action) return;
+        const ids = Array.from(state.selected);
+        if (!ids.length) return;
+        if (ids.length > BULK_LIMIT) {
+            showToast(`You can select up to ${BULK_LIMIT} notes for bulk actions.`, 'warning');
+            return;
+        }
+        confirmBulkBtn.disabled = true;
+        bulkSpinner?.classList.remove('d-none');
+        const original = bulkConfirmLabel?.textContent;
+        if (bulkConfirmLabel) {
+            bulkConfirmLabel.textContent = 'Processing...';
+        }
+        try {
+            const res = await Api.bulkAction({ action, ids }, currentAuditor());
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.detail || 'Bulk action failed');
+            }
+            const result = await res.json().catch(() => ({processedCount: ids.length, failedIds: []}));
+            if (result.failedIds && result.failedIds.length) {
+                throw new Error(`Some items failed: ${result.failedIds.length}`);
+            }
+            bulkModal.hide();
+            clearSelection();
+            await loadNotes();
+            const successMsg = action === 'RESTORE' ? 'Notes restored' : 'Notes deleted';
+            showToast(successMsg, 'success');
+        } catch (e) {
+            showToast(e.message || 'Bulk action failed', 'danger');
+        } finally {
+            confirmBulkBtn.disabled = false;
+            bulkSpinner?.classList.add('d-none');
+            if (bulkConfirmLabel) {
+                bulkConfirmLabel.textContent = original || 'Confirm';
+            }
+        }
+    }
+
+    async function loadNotes() {
+        setLoading();
+        try {
+            const data = await Api.fetchNotes({
+                view: state.view,
+                page: state.page,
+                size: state.size,
+                sort: state.sort || defaultSort,
+                query: state.query,
+                auditor: currentAuditor()
+            });
+            const meta = data?.page ?? data;
+            if (meta && typeof meta.totalPages === 'number') {
+                const targetPage = Math.max(Math.min(state.page, Math.max(meta.totalPages - 1, 0)), 0);
+                if (targetPage !== state.page) {
+                    state.page = targetPage;
+                    return loadNotes();
+                }
+            }
+            renderNotes(data);
+        } catch (e) {
+            noteGrid.innerHTML = `<div class="col-12 text-center text-danger py-3">${escapeHtml(e.message || 'Failed to load')}</div>`;
+            if (pageInfo) {
+                pageInfo.hidden = true;
+            }
+            totalLabel.classList.add('invisible');
+            pager.hidden = true;
+            updateEmptyTrashButton();
+        }
+    }
+
+    function clearValidation() {
+        noteForm.classList.remove('was-validated');
+        titleInput.classList.remove('is-valid', 'is-invalid');
+        contentInput.classList.remove('is-valid', 'is-invalid');
+        pinnedInput?.classList.remove('is-valid', 'is-invalid');
+        tagsDirty = false;
+        tagsContainer?.classList.remove('is-invalid', 'is-valid');
+        tagsInput?.classList.remove('is-valid', 'is-invalid');
+        tagsLimitMsg?.classList.add('d-none');
+        markTagsValid();
+    }
+
+    function isTagValid(tag) {
+        return TAG_PATTERN.test(tag.trim());
+    }
+
+    function markTagsValid() {
+        if (!tagsContainer) return;
+        const hasError = tagsContainer.classList.contains('is-invalid');
+        if (hasError) {
+            tagsContainer.classList.remove('is-valid');
+            return;
+        }
+        const interacted = noteForm.classList.contains('was-validated') || tagsDirty;
+        if (!interacted || currentTags.size === 0) {
+            tagsContainer.classList.remove('is-valid', 'is-invalid');
+            return;
+        }
+        const valid = currentTags.size <= TAG_LIMIT;
+        tagsContainer.classList.toggle('is-valid', valid);
+        if (!valid) {
+            tagsContainer.classList.remove('is-valid');
+        }
+    }
+
+    function showTagError(message) {
+        if (!tagsLimitMsg || !tagsContainer) return;
+        tagsLimitMsg.textContent = message;
+        tagsLimitMsg.classList.remove('d-none');
+        tagsLimitMsg.classList.add('d-block');
+        tagsContainer?.classList.add('is-invalid');
+        tagsContainer?.classList.remove('is-valid');
+    }
+
+    function clearTagError() {
+        if (tagsLimitMsg) {
+            tagsLimitMsg.classList.add('d-none');
+            tagsLimitMsg.classList.remove('d-block');
+        }
+        tagsContainer?.classList.remove('is-invalid');
+        markTagsValid();
+    }
+
+    function renderTagsChips() {
+        if (!tagsListEl) return;
+        tagsListEl.innerHTML = '';
+        currentTags.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'badge rounded-pill text-bg-light border text-secondary-emphasis d-inline-flex align-items-center gap-1 px-2 py-1 small';
+            pill.innerHTML = `${escapeHtml(tag)} <button type="button" class="btn btn-sm btn-link p-0 text-secondary remove-tag" aria-label="Remove tag" data-tag="${escapeHtml(tag)}"><i class="fa-solid fa-xmark"></i></button>`;
+            tagsListEl.appendChild(pill);
+        });
+        updateTagsLimitMessage();
+        markTagsValid();
+    }
+
+    function updateTagsLimitMessage(showWarning = false) {
+        if (!tagsLimitMsg) return;
+        clearTagError();
+    }
+
+    function addTagsFromInput() {
+        if (!tagsInput) return;
+        const raw = tagsInput.value || '';
+        if (!raw.trim()) return;
+        const parts = raw.split(',').map(part => part.trim()).filter(Boolean);
+        const invalid = parts.find(part => !isTagValid(part));
+        if (invalid) {
+            showTagError(TAG_FORMAT_MESSAGE);
+            return;
+        }
+        clearTagError();
+        let limitHit = false;
+        parts.forEach(cleaned => {
+            if (currentTags.size < TAG_LIMIT) {
+                currentTags.add(cleaned);
+                tagsDirty = true;
+            } else {
+                limitHit = true;
+            }
+        });
+        tagsInput.value = '';
+        renderTagsChips();
+        markTagsValid();
+        if (limitHit) {
+            showToast(`You can add up to ${TAG_LIMIT} tags.`, 'warning');
+            clearTagError();
+        }
+    }
+
+    function markInlineTagsValid(id) {
+        const container = document.querySelector(`[data-inline-tags-container="${id}"]`);
+        if (!container) return;
+        const dirty = inlineTagsDirty.get(id);
+        const tags = inlineTagsState.get(id) || new Set();
+        const interacted = dirty || container.classList.contains('was-validated');
+
+        if (container.classList.contains('is-invalid')) {
+            container.classList.remove('is-valid');
+            return;
+        }
+        if (!interacted || tags.size === 0) {
+            container.classList.remove('is-valid', 'is-invalid');
+            return;
+        }
+        const valid = tags.size <= TAG_LIMIT;
+        container.classList.toggle('is-valid', valid);
+        if (!valid) {
+            container.classList.remove('is-valid');
+        }
+    }
+
+    function showInlineTagError(id, message) {
+        const container = document.querySelector(`[data-inline-tags-container="${id}"]`);
+        const errorEl = document.querySelector(`[data-inline-tags-error="${id}"]`);
+        container?.classList.add('is-invalid');
+        container?.classList.remove('is-valid');
+        if (message) {
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('d-none');
+            }
+        }
+    }
+
+    function clearInlineTagError(id) {
+        const container = document.querySelector(`[data-inline-tags-container="${id}"]`);
+        const errorEl = document.querySelector(`[data-inline-tags-error="${id}"]`);
+        container?.classList.remove('is-invalid');
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.add('d-none');
+        }
+        markInlineTagsValid(id);
+    }
+
+    function resetInlineTagValidation(id) {
+        const container = document.querySelector(`[data-inline-tags-container="${id}"]`);
+        const input = document.querySelector(`[data-inline-tags-input="${id}"]`);
+        container?.classList.remove('is-valid', 'is-invalid');
+        input?.classList.remove('is-valid', 'is-invalid');
+        inlineTagsDirty.set(id, false);
+    }
+
+    function renderInlineTags(id) {
+        const listEl = document.querySelector(`[data-inline-tags-list="${id}"]`);
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        const tagSet = inlineTagsState.get(id) || new Set();
+        tagSet.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'badge rounded-pill text-bg-light border text-secondary-emphasis d-inline-flex align-items-center gap-1 px-2 py-1';
+            pill.innerHTML = `${escapeHtml(tag)} <button type="button" class="btn btn-sm btn-link p-0 text-secondary" data-inline-tag-remove="${id}" data-tag="${escapeHtml(tag)}"><i class="fa-solid fa-xmark"></i></button>`;
+            listEl.appendChild(pill);
+        });
+        markInlineTagsValid(id);
+    }
+
+    function addInlineTagsFromInput(id) {
+        const input = document.querySelector(`[data-inline-tags-input="${id}"]`);
+        if (!input) return;
+        const raw = input.value || '';
+        if (!raw.trim()) return;
+        const tagSet = inlineTagsState.get(id) || new Set();
+        const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
+        const invalid = parts.find(part => !isTagValid(part));
+        if (invalid) {
+            showInlineTagError(id, TAG_FORMAT_MESSAGE);
+            return;
+        }
+        clearInlineTagError(id);
+        let limitHit = false;
+        parts.forEach(cleaned => {
+            if (tagSet.size < TAG_LIMIT) {
+                tagSet.add(cleaned);
+                inlineTagsDirty.set(id, true);
+            } else {
+                limitHit = true;
+            }
+        });
+        inlineTagsState.set(id, tagSet);
+        input.value = '';
+        if (limitHit) {
+            showToast(`You can add up to ${TAG_LIMIT} tags.`, 'warning');
+            clearInlineTagError(id);
+        }
+        renderInlineTags(id);
+    }
+
+    function bindInlineTagInputs(id) {
+        const input = document.querySelector(`[data-inline-tags-input="${id}"]`);
+        const listEl = document.querySelector(`[data-inline-tags-list="${id}"]`);
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (['Enter', ','].includes(e.key)) {
+                    e.preventDefault();
+                    addInlineTagsFromInput(id);
+                }
+            });
+            input.addEventListener('input', () => {
+                inlineTagsDirty.set(id, true);
+                const value = input.value || '';
+                if (value && !/^[A-Za-z0-9_\\-]*$/.test(value.replaceAll(',', ''))) {
+                    showInlineTagError(id, TAG_FORMAT_MESSAGE);
+                } else {
+                    clearInlineTagError(id);
+                }
+            });
+            input.addEventListener('blur', () => addInlineTagsFromInput(id));
+        }
+        if (listEl) {
+            listEl.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-inline-tag-remove]');
+                if (!target) return;
+                const tag = target.getAttribute('data-tag');
+                const set = inlineTagsState.get(id);
+                if (set && tag) {
+                    set.delete(tag);
+                    renderInlineTags(id);
+                    inlineTagsDirty.set(id, true);
+                    clearInlineTagError(id);
+                }
+            });
+        }
+    }
+
+    function resetInlineTags(id, tags) {
+        inlineTagsState.set(id, new Set(tags || []));
+        resetInlineTagValidation(id);
+        renderInlineTags(id);
+        bindInlineTagInputs(id);
+    }
+
+    function openCreate() {
+        state.mode = 'create';
+        state.editId = null;
+        submitLabel.textContent = 'Save';
+        formAlert.classList.add('d-none');
+        noteForm.reset();
+        if (pinnedInput) pinnedInput.checked = false;
+        if (colorInput) colorInput.value = '#2563eb';
+        currentTags = new Set();
+        tagsDirty = false;
+        renderTagsChips();
+        clearValidation();
+        noteModal.show();
+    }
+
+    function openEdit(id) {
+        const note = noteCache.get(id);
+        if (!note) return;
+        state.mode = 'edit';
+        state.editId = id;
+        submitLabel.textContent = 'Update';
+        formAlert.classList.add('d-none');
+        clearValidation();
+        titleInput.value = note.title ?? '';
+        contentInput.value = note.content ?? '';
+        if (pinnedInput) pinnedInput.checked = !!note.pinned;
+        if (colorInput) colorInput.value = note.color || '#2563eb';
+        currentTags = new Set(note.tags || []);
+        tagsDirty = false;
+        renderTagsChips();
+        noteModal.show();
+    }
+
+    function startInlineEdit(id) {
+        const card = document.getElementById(`note-${id}`);
+        if (!card) return;
+        const cached = noteCache.get(id);
+        resetInlineTags(id, cached?.tags || []);
+        card.querySelector('.view-mode')?.classList.add('d-none');
+        card.querySelector('.edit-mode')?.classList.remove('d-none');
+        const titleEl = card.querySelector(`[data-inline-title="${id}"]`);
+        const contentEl = card.querySelector(`[data-inline-content="${id}"]`);
+        const titleReq = card.querySelector(`[data-inline-title-required="${id}"]`);
+        const titleSize = card.querySelector(`[data-inline-title-size="${id}"]`);
+        const contentReq = card.querySelector(`[data-inline-content-required="${id}"]`);
+        const contentSize = card.querySelector(`[data-inline-content-size="${id}"]`);
+        [titleEl, contentEl].forEach(el => {
+            if (!el) return;
+            el.addEventListener('input', () => {
+                if (el === titleEl) {
+                    toggleInlineMessages(el, titleReq, titleSize, true);
+                } else {
+                    toggleInlineMessages(el, contentReq, contentSize, true);
+                }
+            }, { once: false });
+        });
+        toggleInlineMessages(titleEl, titleReq, titleSize, false);
+        toggleInlineMessages(contentEl, contentReq, contentSize, false);
+    }
+
+    function cancelInlineEdit(id) {
+        const card = document.getElementById(`note-${id}`);
+        if (!card) return;
+        card.querySelector('.edit-mode')?.classList.add('d-none');
+        card.querySelector('.view-mode')?.classList.remove('d-none');
+        const original = noteCache.get(id);
+        resetInlineTags(id, original?.tags || []);
+    }
+
+    async function saveInlineEdit(id) {
+        const card = document.getElementById(`note-${id}`);
+        if (!card) return;
+        const titleEl = card.querySelector(`[data-inline-title="${id}"]`);
+        const contentEl = card.querySelector(`[data-inline-content="${id}"]`);
+        const titleReq = card.querySelector(`[data-inline-title-required="${id}"]`);
+        const titleSize = card.querySelector(`[data-inline-title-size="${id}"]`);
+        const contentReq = card.querySelector(`[data-inline-content-required="${id}"]`);
+        const contentSize = card.querySelector(`[data-inline-content-size="${id}"]`);
+        const pinnedEl = card.querySelector(`[data-inline-pinned="${id}"]`);
+        const colorEl = card.querySelector(`[data-inline-color="${id}"]`);
+        const title = titleEl?.value.trim() ?? '';
+        const content = contentEl?.value.trim() ?? '';
+        const pinned = !!pinnedEl?.checked;
+        const color = colorEl?.value?.trim() || null;
+        const tags = Array.from(inlineTagsState.get(id) || []);
+        const invalidTitle = !title || title.length < 3 || title.length > 255;
+        const invalidContent = !content || content.length < 10 || content.length > 1024;
+        if (invalidTitle || invalidContent) {
+            toggleInlineMessages(titleEl, titleReq, titleSize, true);
+            toggleInlineMessages(contentEl, contentReq, contentSize, true);
+            return;
+        }
+        toggleInlineMessages(titleEl, titleReq, titleSize, true);
+        toggleInlineMessages(contentEl, contentReq, contentSize, true);
+        try {
+            const res = await Api.patchNote(id, {title, content, pinned, color, tags}, currentAuditor());
+            if (!res.ok) {
+                showToast('Update failed', 'danger');
+                return;
+            }
+            cancelInlineEdit(id);
+            await loadNotes();
+            showToast('Note updated');
+        } catch (e) {
+            showToast(e.message, 'danger');
+        }
+    }
+
+    function openDelete(id) {
+        state.deleteId = id;
+        deleteModal.show();
+    }
+
+    async function restoreNote(id) {
+        if (!id) return;
+        try {
+            const res = await Api.restore(id, currentAuditor());
+            if (!res.ok) throw new Error('Restore failed');
+            await loadNotes();
+            showToast('Note restored');
+        } catch (e) {
+            showToast(e.message, 'danger');
+        }
+    }
+
+    async function restoreRevision(noteId, revisionId) {
+        if (!noteId || !revisionId) return;
+        const btn = document.querySelector(`[data-revision-restore="${noteId}-${revisionId}"]`);
+        const original = btn?.innerHTML;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Restoring...';
+        }
+        clearRevisionError();
+        try {
+            const res = await Api.restoreRevision(noteId, revisionId, currentAuditor());
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.detail || 'Restore failed');
+            }
+            revisionModal?.hide();
+            await loadNotes();
+            showToast(`Restored to revision #${revisionId}`, 'success');
+        } catch (e) {
+            showRevisionError(e.message || 'Restore failed');
+            showToast(e.message || 'Restore failed', 'danger');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = original ?? 'Restore';
+            }
+        }
+    }
+
+    function openDeleteForever(id) {
+        deleteForeverId = id;
+        deleteForeverModal?.show();
+    }
+
+    async function deleteForever() {
+        if (!deleteForeverId) return;
+        const originalText = deleteForeverLabel?.textContent;
+        confirmDeleteForeverBtn.disabled = true;
+        deleteForeverSpinner?.classList.remove('d-none');
+        if (deleteForeverLabel) {
+            deleteForeverLabel.textContent = 'Deleting...';
+        }
+        try {
+            const res = await Api.deletePermanent(deleteForeverId, currentAuditor());
+            if (!res.ok) throw new Error('Permanent delete failed');
+            deleteForeverModal.hide();
+            await loadNotes();
+            showToast('Note permanently deleted', 'danger');
+        } catch (e) {
+            showToast(e.message, 'danger');
+        } finally {
+            confirmDeleteForeverBtn.disabled = false;
+            deleteForeverSpinner?.classList.add('d-none');
+            if (deleteForeverLabel) {
+                deleteForeverLabel.textContent = originalText || 'Delete';
+            }
+            deleteForeverId = null;
+        }
+    }
+
+    async function togglePin(id) {
+        const note = noteCache.get(id);
+        if (!note) return;
+        try {
+            const res = await Api.patchNote(id, { pinned: !note.pinned }, currentAuditor());
+            if (!res.ok) throw new Error('Pin update failed');
+            await loadNotes();
+            showToast(note.pinned ? 'Note unpinned' : 'Note pinned', 'success');
+        } catch (e) {
+            showToast(e.message || 'Pin update failed', 'danger');
+        }
+    }
+
+    async function copyNote(id) {
+        const note = noteCache.get(id);
+        if (!note) return;
+        const textToCopy = `${note.title}\n\n${note.content}`;
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            showToast('Content copied to clipboard', 'success');
+        } catch (e) {
+            showToast('Copy failed', 'danger');
+        }
+    }
+
+    function openEmptyTrashModal() {
+        if (!emptyTrashModal) return;
+        emptyTrashModal.show();
+    }
+
+    async function emptyTrash() {
+        if (!emptyTrashBtn) return;
+        const originalText = emptyTrashConfirmLabel?.textContent;
+        confirmEmptyTrashBtn.disabled = true;
+        emptyTrashConfirmSpinner?.classList.remove('d-none');
+        if (emptyTrashConfirmLabel) {
+            emptyTrashConfirmLabel.textContent = 'Emptying...';
+        }
+        try {
+            const res = await Api.emptyTrash(currentAuditor());
+            if (!res.ok) throw new Error('Failed to empty trash');
+            emptyTrashModal.hide();
+            showToast('Trash emptied', 'success');
+            await loadNotes();
+        } catch (e) {
+            showToast(e.message, 'danger');
+        } finally {
+            confirmEmptyTrashBtn.disabled = false;
+            emptyTrashConfirmSpinner?.classList.add('d-none');
+            if (emptyTrashConfirmLabel) {
+                emptyTrashConfirmLabel.textContent = originalText || 'Empty Trash';
+            }
+            updateEmptyTrashButton();
+        }
+    }
+
+    async function saveNote(e) {
+        e.preventDefault();
+        formAlert.classList.add('d-none');
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        const color = colorInput?.value?.trim() || null;
+        const tags = Array.from(currentTags);
+        const payload = {title, content, pinned: !!pinnedInput?.checked, color, tags};
+
+        if (currentTags.size > TAG_LIMIT) {
+            showToast(`You can add up to ${TAG_LIMIT} tags.`, 'warning');
+            return;
+        }
+        toggleSizeMessages(titleInput);
+        toggleSizeMessages(contentInput);
+        titleInput.classList.toggle('is-invalid', !titleInput.checkValidity());
+        contentInput.classList.toggle('is-invalid', !contentInput.checkValidity());
+        titleInput.classList.remove('is-valid');
+        contentInput.classList.remove('is-valid');
+        pinnedInput?.classList.remove('is-valid', 'is-invalid');
+
+        if (!noteForm.checkValidity()) {
+            return;
+        }
+
+        const prevText = submitLabel.textContent;
+        const prevDisabled = saveBtn?.disabled;
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            submitLabel.textContent = state.mode === 'edit' ? 'Updating...' : 'Saving...';
+            saveSpinner?.classList.remove('d-none');
+        }
+
+        const isEdit = state.mode === 'edit' && state.editId;
+    if (!isEdit) {
+        state.page = 0; // new note: jump to first page
+    }
+    const url = isEdit ? `/api/notes/${state.editId}` : '/api/notes';
+    const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            const res = isEdit
+                ? await Api.updateNote(state.editId, payload, currentAuditor())
+                : await Api.createNote(payload, currentAuditor());
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                const message = err?.detail || 'Request failed';
+                const violations = err?.violations;
+                const details = violations ? '<ul class="mb-0">' + violations.map(v => `<li>${escapeHtml(v.message || '')}</li>`).join('') + '</ul>' : '';
+            formAlert.innerHTML = `${escapeHtml(message)}${details}`;
+            formAlert.classList.remove('d-none');
+            return;
+        }
+        noteModal.hide();
+        clearSelection();
+        await loadNotes();
+        showToast(isEdit ? 'Note updated' : 'Note created');
+    } catch (e) {
+        formAlert.textContent = e.message;
+        formAlert.classList.remove('d-none');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = prevDisabled;
+                submitLabel.textContent = prevText;
+                saveSpinner?.classList.add('d-none');
+            }
+        }
+    }
+
+    async function confirmDelete() {
+        if (!state.deleteId) return;
+        const deleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteSpinner = document.getElementById('deleteSpinner');
+        const deleteLabel = document.getElementById('deleteLabel');
+        const originalText = deleteLabel?.textContent;
+        try {
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteLabel.textContent = 'Deleting...';
+                deleteSpinner?.classList.remove('d-none');
+            }
+            const res = await Api.softDelete(state.deleteId, currentAuditor());
+            if (!res.ok) throw new Error('Delete failed');
+            const deletedId = state.deleteId;
+            deleteModal.hide();
+            await loadNotes();
+            showToast('Note deleted', 'danger', {
+                label: 'Undo',
+                handler: () => restoreNote(deletedId)
+            });
+        } catch (e) {
+            showToast(e.message, 'danger');
+        } finally {
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteLabel.textContent = originalText ?? 'Delete';
+                deleteSpinner?.classList.add('d-none');
+            }
+        }
+    }
+
+    function changePage(page) {
+        if (page < 0 || page > state.totalPages - 1) return;
+        state.page = page;
+        loadNotes();
+    }
+
+    pageSize.addEventListener('change', () => {
+        state.size = parseInt(pageSize.value, 10) || 10;
+        state.page = 0;
+        loadNotes();
+    });
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            state.sort = sortSelect.value || defaultSort;
+            state.page = 0;
+            loadNotes();
+        });
+    }
+
+    if (searchInput) {
+        const triggerSearch = debounce(() => {
+            state.query = searchInput.value.trim();
+            state.page = 0;
+            loadNotes();
+        }, 300);
+        searchInput.addEventListener('input', triggerSearch);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                triggerSearch();
+            }
+        });
+    }
+
+    if (searchClear) {
+        searchClear.addEventListener('click', () => {
+            searchInput.value = '';
+            state.query = '';
+            state.page = 0;
+            loadNotes();
+        });
+    }
+
+    if (activeViewBtn) {
+        activeViewBtn.addEventListener('click', () => {
+            state.page = 0;
+            switchView('active');
+        });
+    }
+
+    if (trashViewBtn) {
+        trashViewBtn.addEventListener('click', () => {
+            state.page = 0;
+            switchView('trash');
+        });
+    }
+
+    if (emptyTrashBtn) {
+        emptyTrashBtn.addEventListener('click', openEmptyTrashModal);
+    }
+    if (confirmEmptyTrashBtn) {
+        confirmEmptyTrashBtn.addEventListener('click', emptyTrash);
+    }
+    if (confirmDeleteForeverBtn) {
+        confirmDeleteForeverBtn.addEventListener('click', deleteForever);
+    }
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', () => {
+            const ids = Array.from(noteCache.keys());
+            if (selectAllCheckbox.checked) {
+                if (state.selected.size >= BULK_LIMIT) {
+                    showToast(`You can select up to ${BULK_LIMIT} notes for bulk actions.`, 'warning');
+                    selectAllCheckbox.checked = false;
+                } else {
+                    for (const id of ids) {
+                        if (state.selected.size >= BULK_LIMIT) {
+                            showToast(`You can select up to ${BULK_LIMIT} notes for bulk actions.`, 'warning');
+                            break;
+                        }
+                        state.selected.add(id);
+                    }
+                }
+            } else {
+                ids.forEach(id => state.selected.delete(id));
+            }
+            syncCheckboxStates();
+            syncSelectAllCheckbox();
+            updateBulkButtons();
+        });
+    }
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', () => openBulkModal('DELETE_SOFT'));
+    }
+    if (bulkRestoreBtn) {
+        bulkRestoreBtn.addEventListener('click', () => openBulkModal('RESTORE'));
+    }
+    if (bulkDeleteForeverBtn) {
+        bulkDeleteForeverBtn.addEventListener('click', () => openBulkModal('DELETE_FOREVER'));
+    }
+    if (confirmBulkBtn) {
+        confirmBulkBtn.addEventListener('click', performBulkAction);
+    }
+
+    addNoteBtn.addEventListener('click', openCreate);
+    noteForm.addEventListener('submit', saveNote);
+    if (tagsInput) {
+        tagsInput.addEventListener('keydown', (e) => {
+            if (['Enter', ','].includes(e.key)) {
+                e.preventDefault();
+                addTagsFromInput();
+            }
+        });
+        tagsInput.addEventListener('input', () => {
+            const raw = tagsInput.value || '';
+            if (raw.includes(',')) {
+                addTagsFromInput();
+                return;
+            }
+            const trimmed = raw.trim();
+            if (trimmed.length > 0 && !TAG_PATTERN.test(trimmed)) {
+                showTagError(TAG_FORMAT_MESSAGE);
+            } else {
+                clearTagError();
+            }
+            if (trimmed.length > 0) {
+                tagsDirty = true;
+                markTagsValid();
+            }
+        });
+        tagsInput.addEventListener('blur', addTagsFromInput);
+    }
+    if (tagsListEl) {
+        tagsListEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-tag');
+            if (!btn) return;
+            const tag = btn.getAttribute('data-tag');
+            currentTags.delete(tag);
+            renderTagsChips();
+            clearTagError();
+            tagsDirty = true;
+            markTagsValid();
+        });
+    }
+    [titleInput, contentInput].forEach(input => {
+        input.addEventListener('input', () => {
+            const valid = input.checkValidity();
+            input.classList.toggle('is-invalid', !valid);
+            input.classList.toggle('is-valid', valid);
+            toggleSizeMessages(input);
+        });
+    });
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+
+    if (pagination) {
+        pagination.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-page]');
+            if (!target) return;
+            e.preventDefault();
+            const page = parseInt(target.getAttribute('data-page'), 10);
+            if (Number.isNaN(page)) return;
+            changePage(page);
+        });
+    }
+
+    Ui.bindNoteGridActions(noteGrid, {
+        'restore': restoreNote,
+        'copy': copyNote,
+        'delete-forever': openDeleteForever,
+        'toggle-pin': togglePin,
+        'edit-modal': openEdit,
+        'inline-edit': startInlineEdit,
+        'delete': openDelete,
+        'revisions': openRevisionModal,
+        'inline-cancel': cancelInlineEdit,
+        'inline-save': saveInlineEdit
+    });
+
+    Ui.bindRevisionActions(revisionList, (noteId, revId) => restoreRevision(noteId, revId));
+
+    updateEmptyTrashButton();
+    loadNotes();
+
+    // Initialize auditor using shared State helper
+    (function initAuditor() {
+        if (auditorInput) {
+            auditorInput.value = currentAuditor();
+        }
+        if (saveAuditorBtn) {
+            saveAuditorBtn.addEventListener('click', () => {
+                const val = auditorInput?.value?.trim() || '';
+                saveAuditor(val);
+                if (!val && auditorInput) auditorInput.value = currentAuditor();
+                showToast(val ? 'Auditor saved' : 'Auditor reset to default', 'info');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('auditorModal'));
+                modal?.hide();
+            });
+        }
+    })();

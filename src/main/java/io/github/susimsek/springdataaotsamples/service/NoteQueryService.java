@@ -5,17 +5,13 @@ import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
+import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications.isDeleted;
-import static io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications.isNotDeleted;
-import static io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications.prioritizePinned;
-import static io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications.search;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +23,7 @@ public class NoteQueryService {
     @Transactional(readOnly = true)
     public Page<NoteDTO> find(NoteCriteria criteria, Pageable pageable) {
         var specification = createSpecification(criteria);
-        var pageableWithPinned = prioritizePinned(pageable);
+        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
         return noteRepository.findAll(specification, pageableWithPinned).map(noteMapper::toDto);
     }
 
@@ -36,9 +32,9 @@ public class NoteQueryService {
         String query = criteria.query();
 
         Specification<Note> spec = deleted
-                ? Specification.where(isDeleted())
-                : Specification.where(isNotDeleted());
+                ? Specification.where(NoteSpecifications.isDeleted())
+                : Specification.where(NoteSpecifications.isNotDeleted());
 
-        return spec.and(search(query));
+        return spec.and(NoteSpecifications.search(query));
     }
 }
