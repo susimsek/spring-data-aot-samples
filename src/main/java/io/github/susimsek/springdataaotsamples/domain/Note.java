@@ -48,7 +48,7 @@ public class Note extends SoftDeletableEntity {
     private String color;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
-    @BatchSize(size = 25)
+    @BatchSize(size = 10)
     @JoinTable(name = "note_tag",
             joinColumns = @JoinColumn(name = "note_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
