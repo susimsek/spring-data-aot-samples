@@ -13,6 +13,8 @@ import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @Entity
@@ -29,7 +31,7 @@ public class RevisionInfo {
 
     @RevisionTimestamp
     @Column(name = "revtstmp", nullable = false)
-    private Long timestamp;
+    private Instant timestamp;
 
     @Column(name = "username", length = 100)
     private String username;

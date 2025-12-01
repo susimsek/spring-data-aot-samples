@@ -18,7 +18,7 @@
             <column name="rev" type="bigint" defaultValueSequenceNext="rev_seq">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="revtstmp" type="bigint">
+            <column name="revtstmp" type="timestamp" defaultValueComputed="${now}">
                 <constraints nullable="false"/>
             </column>
             <column name="username" type="varchar(100)"/>
@@ -111,7 +111,6 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="revtstmp" type="bigint"/>
             <column header="username" type="string"/>
         </loadData>
 
