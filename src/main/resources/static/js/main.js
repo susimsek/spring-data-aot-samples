@@ -378,14 +378,14 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
             : '<span class="badge bg-light text-secondary border">Unpinned</span>';
         const colorDot = note.color ? `<span class="badge text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
-        const revTypeLabel = rev.revisionType ? `<span class="badge bg-light text-secondary border">${escapeHtml(rev.revisionType)}</span>` : '';
+        const revTypeClass = revisionTypeBadge(rev.revisionType);
+        const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
         return `
         <div class="list-group-item">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                         <span class="badge bg-light text-secondary border">#${escapeHtml(rev.revision ?? '—')}</span>
-                        ${revisionTypeBadge(rev.revisionType)}
                         ${revTypeLabel}
                         <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i>${escapeHtml(formatDate(rev.revisionDate) || '—')}</span>
                         <span class="text-muted small"><i class="fa-solid fa-user me-1"></i>${escapeHtml(rev.auditor || 'unknown')}</span>
