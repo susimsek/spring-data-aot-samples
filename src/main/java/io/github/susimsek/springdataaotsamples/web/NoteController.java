@@ -207,8 +207,9 @@ public class NoteController {
     )
     @ApiResponse(responseCode = "404", description = "Note not found")
     @GetMapping("/{id}/revisions")
-    public java.util.List<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        return noteService.findRevisions(id);
+    public Page<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id,
+                                               @ParameterObject Pageable pageable) {
+        return noteService.findRevisions(id, pageable);
     }
 
     @Operation(

@@ -79,8 +79,9 @@ const Api = (() => {
         });
     };
 
-    const fetchRevisions = async (id, auditor) => {
-        const res = await fetch(`/api/notes/${id}/revisions`, {
+    const fetchRevisions = async (id, auditor, page = 0, size = 5, sort) => {
+        const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
+        const res = await fetch(`/api/notes/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
             headers: jsonHeaders(auditor)
         });
         if (!res.ok) throw new Error('Failed to load revisions');

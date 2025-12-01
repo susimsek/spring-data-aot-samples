@@ -78,11 +78,17 @@ const { diffLines, diffLinesDetailed } = Diff;
     const controlsRow = document.getElementById('controlsRow');
     const revisionModalEl = document.getElementById('revisionModal');
     const revisionModal = revisionModalEl ? bootstrap.Modal.getOrCreateInstance(revisionModalEl) : null;
+    const revisionModalBody = document.getElementById('revisionModalBody');
     const revisionList = document.getElementById('revisionList');
     const revisionSpinner = document.getElementById('revisionSpinner');
     const revisionError = document.getElementById('revisionError');
     const revisionModalTitle = document.getElementById('revisionModalTitle');
     let revisionCache = [];
+    let revisionPageSize = 5;
+    let revisionPage = 0;
+    let revisionHasMore = false;
+    let isLoadingRevisions = false;
+    let revisionNoteId = null;
 
     const noteCache = new Map();
     const defaultSort = 'createdDate,desc';
@@ -615,8 +621,62 @@ const { diffLines, diffLinesDetailed } = Diff;
         container.classList.remove('d-none');
     }
 
+    function renderRevisionItems(items, noteId, startIndex, append = false) {
+        if (!revisionList) return;
+        if (!append) {
+            revisionList.innerHTML = '';
+        }
+        if ((!items || !items.length) && !append) {
+            revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
+            return;
+        }
+        const html = (items || []).map((rev, idx) => renderRevisionItem(rev, noteId, startIndex + idx)).join('');
+        revisionList.insertAdjacentHTML('beforeend', html);
+        const loadMoreRow = revisionList.querySelector('[data-action="revision-load-more"]')?.parentElement;
+        if (loadMoreRow) {
+            loadMoreRow.remove();
+        }
+        if (revisionHasMore) {
+            revisionList.insertAdjacentHTML('beforeend', `
+                <div class="list-group-item text-center">
+                    <button class="btn btn-outline-secondary btn-sm" data-action="revision-load-more" data-note-id="${noteId}">
+                        Load more
+                    </button>
+                </div>`);
+        }
+    }
+
+    async function loadRevisionPage(noteId, append = false) {
+        if (!revisionList || !revisionNoteId) return;
+        if (isLoadingRevisions || (!revisionHasMore && append)) return;
+        if (!append) {
+            revisionList.innerHTML = '';
+        }
+        isLoadingRevisions = true;
+        revisionSpinner?.classList.remove('d-none');
+        try {
+            const pageData = await Api.fetchRevisions(noteId, currentAuditor(), revisionPage, revisionPageSize);
+            const content = pageData?.content ?? pageData ?? [];
+            const meta = pageData?.page ?? pageData;
+            const startIndex = revisionCache.length;
+            revisionCache = revisionCache.concat(content);
+            const totalPages = meta?.totalPages;
+            revisionHasMore = typeof totalPages === 'number'
+                ? revisionPage + 1 < totalPages
+                : Boolean(content.length);
+            renderRevisionItems(content, noteId, startIndex, append);
+            revisionPage += 1;
+        } catch (e) {
+            showRevisionError(e.message || 'Failed to load revisions');
+        } finally {
+            revisionSpinner?.classList.add('d-none');
+            isLoadingRevisions = false;
+        }
+    }
+
     async function openRevisionModal(noteId) {
         if (!revisionModal) return;
+        revisionNoteId = noteId;
         const cached = noteCache.get(noteId);
         if (revisionModalTitle) {
             const title = cached?.title ? `${cached.title} · #${noteId}` : `Revisions · #${noteId}`;
@@ -626,22 +686,32 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (revisionList) revisionList.innerHTML = '';
         revisionSpinner?.classList.remove('d-none');
         revisionModal.show();
-        try {
-            const res = await Api.fetchRevisions(noteId, currentAuditor());
-            const revisions = (res || []).sort((a, b) => (b.revision ?? 0) - (a.revision ?? 0));
-            revisionCache = revisions;
-            if (revisionList) {
-                if (!revisions || revisions.length === 0) {
-                    revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
-                } else {
-                    revisionList.innerHTML = revisions.map((rev, idx) => renderRevisionItem(rev, noteId, idx)).join('');
-                }
-            }
-        } catch (e) {
-            showRevisionError(e.message || 'Failed to load revisions');
-        } finally {
-            revisionSpinner?.classList.add('d-none');
+        revisionPage = 0;
+        revisionHasMore = false;
+        revisionCache = [];
+        if (revisionModalBody) {
+            revisionModalBody.scrollTop = 0;
         }
+        await loadRevisionPage(noteId, false);
+    }
+
+    const revisionScrollContainer = revisionModalBody || revisionList;
+    if (revisionScrollContainer) {
+        revisionScrollContainer.style.maxHeight = '40rem'; // allow ~5 cards fully visible
+        revisionScrollContainer.style.minHeight = '30rem';
+        revisionScrollContainer.style.overflowY = 'auto';
+    }
+    if (revisionModalEl) {
+        revisionModalEl.addEventListener('hidden.bs.modal', () => {
+            revisionNoteId = null;
+            revisionCache = [];
+            revisionPage = 0;
+            revisionHasMore = false;
+            isLoadingRevisions = false;
+            if (revisionList) {
+                revisionList.innerHTML = '';
+            }
+        });
     }
 
     function updateEmptyTrashButton() {
@@ -1609,6 +1679,12 @@ const { diffLines, diffLinesDetailed } = Diff;
                 const revId = hideBtn.getAttribute('data-rev-id');
                 const block = revisionList.querySelector(`[data-diff-block="${revId}"]`);
                 if (block) block.classList.add('d-none');
+                return;
+            }
+            const loadMore = e.target.closest('[data-action="revision-load-more"]');
+            if (loadMore) {
+                const noteId = parseInt(loadMore.getAttribute('data-note-id'), 10);
+                loadRevisionPage(noteId, true);
                 return;
             }
         });

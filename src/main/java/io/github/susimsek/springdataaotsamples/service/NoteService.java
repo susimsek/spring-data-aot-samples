@@ -20,7 +20,10 @@ import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.history.RevisionSort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,15 +79,16 @@ public class NoteService {
     }
 
     @Transactional(readOnly = true)
-    public List<NoteRevisionDTO> findRevisions(Long id) {
-        var revisions = noteRepository.findRevisions(id).getContent();
-        if (revisions.isEmpty() && !noteRepository.existsById(id)) {
+    public Page<NoteRevisionDTO> findRevisions(Long id, Pageable pageable) {
+        if (!noteRepository.existsById(id)) {
             throw new NoteNotFoundException(id);
         }
-        return revisions.stream()
-                .sorted(Comparator.comparing(rev -> rev.getMetadata().getRevisionNumber().orElse(0L), Comparator.reverseOrder()))
-                .map(noteRevisionMapper::toRevisionDto)
-                .toList();
+        var pageRequest = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                RevisionSort.desc());
+        var revisions = noteRepository.findRevisions(id, pageRequest);
+        return revisions.map(noteRevisionMapper::toRevisionDto);
     }
 
     @Transactional(readOnly = true)
