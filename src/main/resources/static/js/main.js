@@ -101,39 +101,6 @@ const { diffLines, diffLinesDetailed } = Diff;
         addNoteBtn.disabled = state.view === 'trash';
     }
 
-    function diffWords(oldText, newText) {
-        const a = (oldText || '').split(/\s+/);
-        const b = (newText || '').split(/\s+/);
-        const m = a.length;
-        const n = b.length;
-        const lcs = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-        for (let i = m - 1; i >= 0; i--) {
-            for (let j = n - 1; j >= 0; j--) {
-                if (a[i] === b[j]) {
-                    lcs[i][j] = 1 + lcs[i + 1][j + 1];
-                } else {
-                    lcs[i][j] = Math.max(lcs[i + 1][j], lcs[i][j + 1]);
-                }
-            }
-        }
-        const ops = [];
-        let i = 0, j = 0;
-        while (i < m && j < n) {
-            if (a[i] === b[j]) {
-                ops.push({ type: 'eq', value: a[i] });
-                i++; j++;
-            } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
-                ops.push({ type: 'del', value: a[i] });
-                i++;
-            } else {
-                ops.push({ type: 'add', value: b[j] });
-                j++;
-            }
-        }
-        while (i < m) ops.push({ type: 'del', value: a[i++] });
-        while (j < n) ops.push({ type: 'add', value: b[j++] });
-        return ops;
-    }
 
     function switchView(view) {
         if (state.view === view) return;
