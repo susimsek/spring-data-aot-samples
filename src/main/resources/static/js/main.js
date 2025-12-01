@@ -4,11 +4,13 @@ import Api from '/js/api.js';
 import Render from '/js/render.js';
 import Ui from '/js/ui.js';
 import Validation from '/js/validation.js';
+import Diff from '/js/diff.js';
 
 const { state, currentAuditor, saveAuditor } = State;
 const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 const { renderTags, revisionTypeBadge } = Render;
 const { toggleSizeMessages, toggleInlineMessages } = Validation;
+const { diffLines, diffLinesDetailed } = Diff;
 
     // Use state from module
     const BULK_LIMIT = 100;
@@ -80,6 +82,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const revisionSpinner = document.getElementById('revisionSpinner');
     const revisionError = document.getElementById('revisionError');
     const revisionModalTitle = document.getElementById('revisionModalTitle');
+    let revisionCache = [];
 
     const noteCache = new Map();
     const defaultSort = 'createdDate,desc';
@@ -369,10 +372,10 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         syncCheckboxStates();
     }
 
-    function renderRevisionItem(rev, noteId) {
+    function renderRevisionItem(rev, noteId, index) {
         const note = rev.note || {};
         const tags = note.tags && note.tags.length
-            ? `<div class="d-flex flex-wrap gap-1 mt-1">${note.tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(t)}</span>`).join('')}</div>`
+            ? `<div class="d-flex flex-wrap gap-1 mt-1">${note.tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(tagLabel(t))}</span>`).join('')}</div>`
             : '';
         const pinnedBadge = note.pinned
             ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
@@ -397,6 +400,11 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                     ${tags}
                 </div>
                 <div class="d-flex flex-column align-items-end gap-2">
+                    <button class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-action="revision-diff"
+                            data-rev-index="${index}">
+                        <i class="fa-solid fa-code-compare"></i> Diff
+                    </button>
                     <button class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"
                             data-revision-restore="${noteId}-${rev.revision}"
                             data-action="revision-restore"
@@ -406,6 +414,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                     </button>
                 </div>
             </div>
+            <div class="mt-2 d-none" data-diff-block="${rev.revision}"></div>
         </div>`;
     }
 
@@ -421,6 +430,141 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         revisionError.classList.add('d-none');
     }
 
+    function renderColorDiff(oldColor, newColor, additionsOnly = false) {
+        if (oldColor === newColor) {
+            return '<span class="text-muted small">No color changes.</span>';
+        }
+        const oldDot = oldColor ? `<span class="badge text-bg-light border" style="border-color:${escapeHtml(oldColor)};color:${escapeHtml(oldColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(oldColor)}"></i></span>` : '<span class="text-muted small">none</span>';
+        const newDot = newColor ? `<span class="badge text-bg-light border" style="border-color:${escapeHtml(newColor)};color:${escapeHtml(newColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(newColor)}"></i></span>` : '<span class="text-muted small">none</span>';
+        if (additionsOnly) {
+            return `<div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${newDot}</span>
+                    </div>`;
+        }
+        return `<div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">− ${oldDot}</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${newDot}</span>
+                </div>`;
+    }
+
+    function renderPinnedDiff(oldPinned, newPinned, additionsOnly = false) {
+        if (!!oldPinned === !!newPinned) {
+            return '<span class="text-muted small">No pin changes.</span>';
+        }
+        const badge = (val) => val
+            ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
+            : '<span class="badge bg-light text-secondary border">Unpinned</span>';
+        if (additionsOnly) {
+            return `<div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${badge(!!newPinned)}</span>
+                    </div>`;
+        }
+        return `<div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle d-inline-flex align-items-center gap-1">− ${badge(!!oldPinned)}</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${badge(!!newPinned)}</span>
+                </div>`;
+    }
+
+    function renderTagsDiff(oldTags, newTags) {
+        const normalize = (list) => (list || [])
+            .map(tagLabel)
+            .filter(t => t && t.trim().length > 0);
+        const oldSet = new Set(normalize(oldTags));
+        const newSet = new Set(normalize(newTags));
+        const added = [...newSet].filter(t => !oldSet.has(t));
+        const removed = [...oldSet].filter(t => !newSet.has(t));
+
+        const renderBadges = (list, cls, prefix) => list.map(t =>
+            `<span class="badge ${cls} d-inline-flex align-items-center gap-1">${prefix ? prefix + ' ' : ''}${escapeHtml(t)}</span>`
+        ).join('');
+
+        const badges = [
+            renderBadges(removed, 'bg-danger-subtle text-danger border border-danger-subtle', '−'),
+            renderBadges(added, 'bg-success-subtle text-success border border-success-subtle', '+')
+        ].filter(Boolean).join(' ');
+
+        if (!added.length && !removed.length) {
+            return '<span class="text-muted small">No tag changes.</span>';
+        }
+        return badges;
+    }
+
+    function tagLabel(tag) {
+        if (tag == null) return '';
+        if (typeof tag === 'string') return tag;
+        if (typeof tag === 'object') {
+            return tag.name ?? tag.label ?? '';
+        }
+        return String(tag);
+    }
+
+    function renderInlineDiff(oldText, newText, additionsOnly = false) {
+        const ops = diffLinesDetailed(oldText, newText);
+        const changes = ops.filter(op => op.type !== 'eq');
+        const filtered = additionsOnly ? changes.filter(op => op.type === 'add') : changes;
+        if (!filtered.length) {
+            return '<span class="text-muted small">No changes.</span>';
+        }
+        return filtered.map(op => {
+            const val = escapeHtml(op.newValue || op.oldValue || '');
+            if (op.type === 'add') {
+                return `<div class="text-success bg-success-subtle border border-success-subtle rounded px-2 py-1 d-inline-flex align-items-center gap-1">+ ${val}</div>`;
+            }
+            if (op.type === 'del') {
+                return `<div class="text-danger bg-danger-subtle border border-danger-subtle rounded px-2 py-1 d-inline-flex align-items-center gap-1">− ${val}</div>`;
+            }
+            return '';
+        }).join('');
+    }
+
+    function showRevisionDiff(index) {
+        if (!revisionCache || revisionCache.length === 0) return;
+        const current = revisionCache[index];
+        if (!current) return;
+        const prev = revisionCache[index + 1] || null;
+        const initialOnly = !prev; // first revision, show only additions
+        const currentNote = current.note || {};
+        const prevNote = prev?.note || {};
+        const titleDiff = renderInlineDiff(prevNote.title || '', currentNote.title || '', initialOnly);
+        const contentDiff = renderInlineDiff(prevNote.content || '', currentNote.content || '', initialOnly);
+        const colorDiff = renderColorDiff(prevNote.color, currentNote.color, initialOnly);
+        const pinnedDiff = renderPinnedDiff(prevNote.pinned, currentNote.pinned, initialOnly);
+        const tagsDiff = renderTagsDiff(prevNote.tags || [], currentNote.tags || [], initialOnly);
+        const container = revisionList?.querySelector(`[data-diff-block="${current.revision}"]`);
+        if (!container) return;
+        container.innerHTML = `
+            <div class="card border-secondary-subtle">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Diff vs ${prev ? ('#' + prev.revision) : 'current'}</span>
+                        <button class="btn btn-sm btn-link text-decoration-none" data-action="hide-diff" data-rev-id="${current.revision}">Close</button>
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-semibold mb-2">Title</div>
+                        ${titleDiff}
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-semibold mb-2">Content</div>
+                        ${contentDiff}
+                    </div>
+                    <hr class="my-3">
+                    <div class="mb-2">
+                        <div class="fw-semibold mb-1">Color</div>
+                        ${colorDiff}
+                    </div>
+                    <div class="mb-2">
+                        <div class="fw-semibold mb-1">Pinned</div>
+                        ${pinnedDiff}
+                    </div>
+                    <div>
+                        <div class="fw-semibold mb-1">Tags</div>
+                        ${tagsDiff}
+                    </div>
+                </div>
+            </div>`;
+        container.classList.remove('d-none');
+    }
+
     async function openRevisionModal(noteId) {
         if (!revisionModal) return;
         const cached = noteCache.get(noteId);
@@ -433,13 +577,14 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         revisionSpinner?.classList.remove('d-none');
         revisionModal.show();
         try {
-        const res = await Api.fetchRevisions(noteId, currentAuditor());
-            const revisions = res || [];
+            const res = await Api.fetchRevisions(noteId, currentAuditor());
+            const revisions = (res || []).sort((a, b) => (b.revision ?? 0) - (a.revision ?? 0));
+            revisionCache = revisions;
             if (revisionList) {
                 if (!revisions || revisions.length === 0) {
                     revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
                 } else {
-                    revisionList.innerHTML = revisions.map(rev => renderRevisionItem(rev, noteId)).join('');
+                    revisionList.innerHTML = revisions.map((rev, idx) => renderRevisionItem(rev, noteId, idx)).join('');
                 }
             }
         } catch (e) {
@@ -1401,6 +1546,23 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     });
 
     Ui.bindRevisionActions(revisionList, (noteId, revId) => restoreRevision(noteId, revId));
+    if (revisionList) {
+        revisionList.addEventListener('click', (e) => {
+            const diffBtn = e.target.closest('[data-action="revision-diff"]');
+            if (diffBtn) {
+                const idx = parseInt(diffBtn.getAttribute('data-rev-index'), 10);
+                showRevisionDiff(idx);
+                return;
+            }
+            const hideBtn = e.target.closest('[data-action="hide-diff"]');
+            if (hideBtn) {
+                const revId = hideBtn.getAttribute('data-rev-id');
+                const block = revisionList.querySelector(`[data-diff-block="${revId}"]`);
+                if (block) block.classList.add('d-none');
+                return;
+            }
+        });
+    }
 
     updateEmptyTrashButton();
     loadNotes();
