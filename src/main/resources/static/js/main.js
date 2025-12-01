@@ -94,6 +94,40 @@ const { diffLines, diffLinesDetailed } = Diff;
         addNoteBtn.disabled = state.view === 'trash';
     }
 
+    function diffWords(oldText, newText) {
+        const a = (oldText || '').split('');
+        const b = (newText || '').split('');
+        const m = a.length;
+        const n = b.length;
+        const lcs = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+        for (let i = m - 1; i >= 0; i--) {
+            for (let j = n - 1; j >= 0; j--) {
+                if (a[i] === b[j]) {
+                    lcs[i][j] = 1 + lcs[i + 1][j + 1];
+                } else {
+                    lcs[i][j] = Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+                }
+            }
+        }
+        const ops = [];
+        let i = 0, j = 0;
+        while (i < m && j < n) {
+            if (a[i] === b[j]) {
+                ops.push({ type: 'eq', value: a[i] });
+                i++; j++;
+            } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
+                ops.push({ type: 'del', value: a[i] });
+                i++;
+            } else {
+                ops.push({ type: 'add', value: b[j] });
+                j++;
+            }
+        }
+        while (i < m) ops.push({ type: 'del', value: a[i++] });
+        while (j < n) ops.push({ type: 'add', value: b[j++] });
+        return ops;
+    }
+
     function switchView(view) {
         if (state.view === view) return;
         state.view = view;
@@ -499,22 +533,38 @@ const { diffLines, diffLinesDetailed } = Diff;
     }
 
     function renderInlineDiff(oldText, newText, additionsOnly = false) {
-        const ops = diffLinesDetailed(oldText, newText);
-        const changes = ops.filter(op => op.type !== 'eq');
-        const filtered = additionsOnly ? changes.filter(op => op.type === 'add') : changes;
-        if (!filtered.length) {
+        const ops = diffWords(oldText, newText);
+        const hasChange = ops.some(op => op.type !== 'eq');
+        if (!hasChange) {
             return '<span class="text-muted small">No changes.</span>';
         }
-        return filtered.map(op => {
-            const val = escapeHtml(op.newValue || op.oldValue || '');
+        // Merge consecutive ops of the same type to avoid per-character badges
+        const segments = [];
+        ops.forEach(op => {
+            if (additionsOnly && op.type === 'del') {
+                return;
+            }
+            const last = segments[segments.length - 1];
+            if (last && last.type === op.type) {
+                last.value += op.value;
+            } else {
+                segments.push({ type: op.type, value: op.value });
+            }
+        });
+        const spans = segments.map(op => {
+            const val = escapeHtml(op.value);
+            if (op.type === 'eq') {
+                return val;
+            }
             if (op.type === 'add') {
-                return `<div class="text-success bg-success-subtle border border-success-subtle rounded px-2 py-1 d-inline-flex align-items-center gap-1">+ ${val}</div>`;
+                return `<span class="bg-success-subtle text-success border border-success-subtle rounded px-1">${val}</span>`;
             }
             if (op.type === 'del') {
-                return `<div class="text-danger bg-danger-subtle border border-danger-subtle rounded px-2 py-1 d-inline-flex align-items-center gap-1">− ${val}</div>`;
+                return additionsOnly ? '' : `<span class="bg-danger-subtle text-danger border border-danger-subtle rounded px-1 text-decoration-line-through">${val}</span>`;
             }
-            return '';
+            return val;
         }).join('');
+        return spans || '<span class="text-muted small">No changes.</span>';
     }
 
     function showRevisionDiff(index) {
