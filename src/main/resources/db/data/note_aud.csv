@@ -19,3 +19,13 @@ id;title;content;pinned;color;created_by;created_date;last_modified_by;last_modi
 18;Record DTOs;NoteDTO and request DTOs use Java records.;false;#22c55e;rachel;;rachel;;false;;;1;0
 19;MapStruct update;Update uses mapper to merge request into entity.;false;#22c55e;sam;;sam;;false;;;1;0
 20;H2 TCP;H2 exposed on 9092 for external tooling.;false;#2563eb;tina;;tina;;false;;;1;0
+1;Welcome note v2;Updated intro text with more context.;true;#2563eb;alice;;alice;;false;;;2;1
+1;Welcome note v3;Switched to a calm cyan theme.;false;#0ea5e9;bob;;bob;;false;;;3;1
+1;Welcome note v4;Added welcome checklist.;true;#0ea5e9;carol;;carol;;false;;;4;1
+1;Welcome note v5;Checklist reordered and clarified.;true;#0ea5e9;dave;;dave;;false;;;5;1
+1;Welcome note v6;Color reverted to indigo for contrast.;true;#2563eb;erin;;erin;;false;;;6;1
+1;Welcome note v7;Pinned off temporarily.;false;#2563eb;frank;;frank;;false;;;7;1
+1;Welcome note v8;Restored pin, cleaned text.;true;#2563eb;grace;;grace;;false;;;8;1
+1;Welcome note v9;Tweaked wording for clarity.;true;#2563eb;harry;;harry;;false;;;9;1
+1;Welcome note v10;Minor typo fixes.;true;#2563eb;irene;;irene;;false;;;10;1
+1;Welcome note v11;Pinned off for review.;false;#2563eb;jane;;jane;;false;;;11;1

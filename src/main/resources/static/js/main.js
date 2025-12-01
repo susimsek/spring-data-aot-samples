@@ -101,8 +101,8 @@ const { diffLines, diffLinesDetailed } = Diff;
     }
 
     function diffWords(oldText, newText) {
-        const a = (oldText || '').split('');
-        const b = (newText || '').split('');
+        const a = (oldText || '').split(/\s+/);
+        const b = (newText || '').split(/\s+/);
         const m = a.length;
         const n = b.length;
         const lcs = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
@@ -544,7 +544,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (!hasChange) {
             return '<span class="text-muted small">No changes.</span>';
         }
-        // Merge consecutive ops of the same type to avoid per-character badges
+        // Merge consecutive ops of the same type (word-level)
         const segments = [];
         ops.forEach(op => {
             if (additionsOnly && op.type === 'del') {
@@ -552,7 +552,7 @@ const { diffLines, diffLinesDetailed } = Diff;
             }
             const last = segments[segments.length - 1];
             if (last && last.type === op.type) {
-                last.value += op.value;
+                last.value += ' ' + op.value;
             } else {
                 segments.push({ type: op.type, value: op.value });
             }
@@ -563,13 +563,13 @@ const { diffLines, diffLinesDetailed } = Diff;
                 return val;
             }
             if (op.type === 'add') {
-                return `<span class="bg-success-subtle text-success border border-success-subtle rounded px-1">${val}</span>`;
+                return `<span class="bg-success-subtle text-success border border-success-subtle rounded px-2">${val}</span>`;
             }
             if (op.type === 'del') {
-                return additionsOnly ? '' : `<span class="bg-danger-subtle text-danger border border-danger-subtle rounded px-1 text-decoration-line-through">${val}</span>`;
+                return additionsOnly ? '' : `<span class="bg-danger-subtle text-danger border border-danger-subtle rounded px-2 text-decoration-line-through">${val}</span>`;
             }
             return val;
-        }).join('');
+        }).join(' ');
         return spans || '<span class="text-muted small">No changes.</span>';
     }
 
