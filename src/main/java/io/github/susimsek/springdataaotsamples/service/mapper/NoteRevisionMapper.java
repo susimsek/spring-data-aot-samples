@@ -61,7 +61,7 @@ public interface NoteRevisionMapper {
         var pageable = page.getPageable();
         var content = page.getContent();
         var total = page.getTotalElements();
-        var pageOffset = (long) pageable.getPageNumber() * pageable.getPageSize();
+        var pageOffset = pageable.getOffset();
         var mapped = IntStream.range(0, content.size())
                 .mapToObj(i -> {
                     var revision = content.get(i);
