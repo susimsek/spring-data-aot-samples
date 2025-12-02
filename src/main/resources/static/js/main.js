@@ -94,6 +94,15 @@ const { diffLines, diffLinesDetailed } = Diff;
     let revisionNoteId = null;
     let revisionTotal = 0;
 
+    function resetRevisionState() {
+        revisionCache = [];
+        revisionPage = 0;
+        revisionHasMore = false;
+        revisionTotal = 0;
+        isLoadingRevisions = false;
+        revisionNoteId = null;
+    }
+
     const noteCache = new Map();
     const defaultSort = 'createdDate,desc';
     state.sort = defaultSort;
@@ -725,11 +734,14 @@ const { diffLines, diffLinesDetailed } = Diff;
 
     async function loadRevisionPage(noteId, append = false) {
         if (!revisionList || !revisionNoteId) return;
+        if (revisionNoteId !== noteId) return;
         if (isLoadingRevisions || (!revisionHasMore && append)) return;
         if (!append) {
             revisionList.innerHTML = '';
         }
+        clearRevisionError();
         isLoadingRevisions = true;
+        const activeNoteId = revisionNoteId;
         revisionSpinner?.classList.remove('d-none');
         try {
             const pageData = await Api.fetchRevisions(noteId, currentAuditor(), revisionPage, revisionPageSize);
@@ -749,13 +761,17 @@ const { diffLines, diffLinesDetailed } = Diff;
             revisionHasMore = typeof totalPages === 'number'
                 ? revisionPage + 1 < totalPages
                 : Boolean(content.length);
-            renderRevisionItems(content, noteId, startIndex, append);
-            revisionPage += 1;
+            if (revisionNoteId === activeNoteId) {
+                renderRevisionItems(content, noteId, startIndex, append);
+                revisionPage += 1;
+            }
         } catch (e) {
             showRevisionError(e.message || 'Failed to load revisions');
         } finally {
-            revisionSpinner?.classList.add('d-none');
-            isLoadingRevisions = false;
+            if (revisionNoteId === activeNoteId) {
+                revisionSpinner?.classList.add('d-none');
+                isLoadingRevisions = false;
+            }
         }
     }
 
@@ -789,12 +805,7 @@ const { diffLines, diffLinesDetailed } = Diff;
     }
     if (revisionModalEl) {
         revisionModalEl.addEventListener('hidden.bs.modal', () => {
-            revisionNoteId = null;
-            revisionCache = [];
-            revisionPage = 0;
-            revisionHasMore = false;
-            revisionTotal = 0;
-            isLoadingRevisions = false;
+            resetRevisionState();
             if (revisionList) {
                 revisionList.innerHTML = '';
             }
