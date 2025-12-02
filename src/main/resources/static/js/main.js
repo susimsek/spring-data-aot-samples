@@ -150,9 +150,8 @@ const { diffLines, diffLinesDetailed } = Diff;
     function initTheme() {
         const attrTheme = document.documentElement.getAttribute('data-bs-theme');
         const stored = getStoredTheme();
-        const initial = stored || attrTheme || 'light';
+        const initial = attrTheme || stored || 'light';
         applyTheme(initial);
-        storeTheme(initial);
     }
 
     function toggleTheme() {
