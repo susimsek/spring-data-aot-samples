@@ -65,10 +65,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             this.createProblemDetail(
                 ex,
                 HttpStatus.INTERNAL_SERVER_ERROR,
+                "problemDetail.title.internalServerError",
                 "An unexpected error occurred. Please try again later.",
                 "problemDetail.internalServerError",
                 null,
-                "problemDetail.title.internalServerError",
                 request
             ),
             HttpHeaders.EMPTY,
@@ -79,10 +79,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ProblemDetail createProblemDetail(
         Exception ex,
         HttpStatusCode status,
+        String titleMessageCode,
         String defaultDetail,
         String detailMessageCode,
         Object[] detailMessageArguments,
-        String titleMessageCode,
         WebRequest request
     ) {
         ErrorResponse.Builder builder = ErrorResponse.builder(ex, status, defaultDetail);
