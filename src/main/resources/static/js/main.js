@@ -294,7 +294,7 @@ const { diffLines, diffLinesDetailed } = Diff;
 
             if (state.view === 'trash') {
                 fragments.push(`
-                <div class="col-md-6 col-xl-4">
+                <div class="col-12 col-md-6 col-xl-6">
                     <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
                         <div class="card-body d-flex flex-column gap-2">
                             <div class="d-flex justify-content-between align-items-start">
@@ -329,28 +329,38 @@ const { diffLines, diffLinesDetailed } = Diff;
                                 <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
                                 ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
                             </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span><i class="fa-regular fa-calendar me-1"></i>Created: ${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
-                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
-                            </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span><i class="fa-regular fa-calendar-check me-1"></i>Updated: ${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
-                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                            <div class="d-flex flex-column text-muted small gap-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-regular fa-calendar me-1"></i>
+                                    <span>Created:</span>
+                                    <span class="text-nowrap">${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
+                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-regular fa-calendar-check me-1"></i>
+                                    <span>Updated:</span>
+                                    <span class="text-nowrap">${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
+                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                                </div>
                             </div>
                             <div class="d-flex gap-3 text-muted small">
                                 <span><i class="fa-solid fa-ban me-1"></i>Deleted by: ${escapeHtml(deletedBy || '—')}</span>
                             </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                ${deletedText ? `<span><i class="fa-regular fa-calendar me-1"></i>Deleted: ${escapeHtml(deletedText.split(' ')[0] ?? deletedText)}</span>` : ''}
-                                ${deletedText ? `<span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(deletedText.split(' ')[1] ?? '')}</span>` : ''}
-                            </div>
+                                ${deletedText ? `
+                                <div class="d-flex text-muted small align-items-center gap-2 flex-wrap mt-1">
+                                    <i class="fa-regular fa-calendar me-1"></i>
+                                    <span>Deleted:</span>
+                                    <span class="text-nowrap">${escapeHtml(deletedText.split(' ')[0] ?? deletedText)}</span>
+                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(deletedText.split(' ')[1] ?? '')}</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
             `);
             } else {
                 fragments.push(`
-                <div class="col-md-6 col-xl-4">
+                <div class="col-12 col-md-6 col-xl-6">
                     <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
                         <div class="card-body d-flex flex-column gap-2">
                             <div class="d-flex justify-content-between align-items-start view-mode">
@@ -431,13 +441,19 @@ const { diffLines, diffLinesDetailed } = Diff;
                                 <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
                                 ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
                             </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span><i class="fa-regular fa-calendar me-1"></i>Created: ${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
-                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
-                            </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span><i class="fa-regular fa-calendar-check me-1"></i>Updated: ${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
-                                <span><i class="fa-regular fa-clock me-1"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                            <div class="d-flex flex-column text-muted small gap-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-regular fa-calendar me-1"></i>
+                                    <span>Created:</span>
+                                    <span class="text-nowrap">${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
+                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <i class="fa-regular fa-calendar-check me-1"></i>
+                                    <span>Updated:</span>
+                                    <span class="text-nowrap">${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
+                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

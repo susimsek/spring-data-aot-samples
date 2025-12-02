@@ -16,10 +16,10 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
+import lombok.RequiredArgsConstructor;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -258,4 +258,5 @@ public class NoteService {
 
         return new LinkedHashSet<>(byName.values());
     }
+
 }
