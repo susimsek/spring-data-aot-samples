@@ -48,7 +48,7 @@ const Diff = (() => {
             if (op.type === DIFF_DEL) {
                 return `<div class="text-danger bg-danger-subtle border border-danger-subtle rounded px-2 py-1">− ${safeOld}</div>`;
             }
-            return `<div class="text-body bg-light border rounded px-2 py-1">  ${safeOld}</div>`;
+            return `<div class="text-body bg-body-secondary border rounded px-2 py-1">  ${safeOld}</div>`;
         }).join('');
         return html || '<div class="text-muted small">No differences.</div>';
     }

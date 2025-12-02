@@ -83,6 +83,9 @@ const { diffLines, diffLinesDetailed } = Diff;
     const revisionSpinner = document.getElementById('revisionSpinner');
     const revisionError = document.getElementById('revisionError');
     const revisionModalTitle = document.getElementById('revisionModalTitle');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleIcon = document.getElementById('themeToggleIcon');
+    const themeToggleLabel = document.getElementById('themeToggleLabel');
     let revisionCache = [];
     let revisionPageSize = 5;
     let revisionPage = 0;
@@ -99,6 +102,64 @@ const { diffLines, diffLinesDetailed } = Diff;
 
     if (addNoteBtn) {
         addNoteBtn.disabled = state.view === 'trash';
+    }
+
+    initTheme();
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    const THEME_KEY = 'theme';
+
+    function systemPrefersDark() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function getStoredTheme() {
+        try {
+            return localStorage.getItem(THEME_KEY);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function storeTheme(theme) {
+        try {
+            localStorage.setItem(THEME_KEY, theme);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function applyTheme(theme) {
+        const next = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', next);
+        if (themeToggleIcon) {
+            themeToggleIcon.classList.toggle('fa-moon', next === 'light');
+            themeToggleIcon.classList.toggle('fa-sun', next === 'dark');
+        }
+        if (themeToggleLabel) {
+            themeToggleLabel.textContent = next === 'dark' ? 'Light' : 'Dark';
+        }
+        if (themeToggle) {
+            themeToggle.setAttribute('aria-pressed', next === 'dark');
+            themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
+        }
+    }
+
+    function initTheme() {
+        const attrTheme = document.documentElement.getAttribute('data-bs-theme');
+        const stored = getStoredTheme();
+        const initial = stored || attrTheme || 'light';
+        applyTheme(initial);
+        storeTheme(initial);
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        storeTheme(next);
     }
 
 
@@ -208,7 +269,7 @@ const { diffLines, diffLinesDetailed } = Diff;
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
                                         ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
-                                        ${note.color ? `<span class="badge rounded-pill text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                                        ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
                                     </div>
                                     <div class="text-muted small">${escapeHtml(note.content)}</div>
                                     ${renderTags(note)}
@@ -264,7 +325,7 @@ const { diffLines, diffLinesDetailed } = Diff;
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
                                         ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
-                                        ${note.color ? `<span class="badge rounded-pill text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                                        ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
                                     </div>
                                     <div class="text-muted small">${escapeHtml(note.content)}</div>
                                     ${renderTags(note)}
@@ -394,8 +455,8 @@ const { diffLines, diffLinesDetailed } = Diff;
             : '';
         const pinnedBadge = note.pinned
             ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
-            : '<span class="badge bg-light text-secondary border">Unpinned</span>';
-        const colorDot = note.color ? `<span class="badge text-bg-light border" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
+            : '<span class="badge bg-body-secondary text-secondary border">Unpinned</span>';
+        const colorDot = note.color ? `<span class="badge bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
         const revTypeClass = revisionTypeBadge(rev.revisionType);
         const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
         const displayLocal = localNumber ?? revisionLocalNumber(index);
@@ -450,8 +511,8 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (oldColor === newColor) {
             return '<span class="text-muted small">No color changes.</span>';
         }
-        const oldDot = oldColor ? `<span class="badge text-bg-light border" style="border-color:${escapeHtml(oldColor)};color:${escapeHtml(oldColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(oldColor)}"></i></span>` : '<span class="text-muted small">none</span>';
-        const newDot = newColor ? `<span class="badge text-bg-light border" style="border-color:${escapeHtml(newColor)};color:${escapeHtml(newColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(newColor)}"></i></span>` : '<span class="text-muted small">none</span>';
+        const oldDot = oldColor ? `<span class="badge bg-body-secondary border text-body" style="border-color:${escapeHtml(oldColor)};color:${escapeHtml(oldColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(oldColor)}"></i></span>` : '<span class="text-muted small">none</span>';
+        const newDot = newColor ? `<span class="badge bg-body-secondary border text-body" style="border-color:${escapeHtml(newColor)};color:${escapeHtml(newColor)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(newColor)}"></i></span>` : '<span class="text-muted small">none</span>';
         if (additionsOnly) {
             return `<div class="d-flex flex-wrap gap-2">
                         <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${newDot}</span>
@@ -469,7 +530,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         }
         const badge = (val) => val
             ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
-            : '<span class="badge bg-light text-secondary border">Unpinned</span>';
+            : '<span class="badge bg-body-secondary text-secondary border">Unpinned</span>';
         if (additionsOnly) {
             return `<div class="d-flex flex-wrap gap-2">
                         <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">+ ${badge(!!newPinned)}</span>
@@ -512,6 +573,41 @@ const { diffLines, diffLinesDetailed } = Diff;
             return tag.name ?? tag.label ?? '';
         }
         return String(tag);
+    }
+
+    function diffWords(oldText, newText) {
+        const a = (oldText || '').split(/\s+/);
+        const b = (newText || '').split(/\s+/);
+        const m = a.length;
+        const n = b.length;
+        const lcs = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+        for (let i = m - 1; i >= 0; i--) {
+            for (let j = n - 1; j >= 0; j--) {
+                if (a[i] === b[j]) {
+                    lcs[i][j] = 1 + lcs[i + 1][j + 1];
+                } else {
+                    lcs[i][j] = Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+                }
+            }
+        }
+        const ops = [];
+        let i = 0;
+        let j = 0;
+        while (i < m && j < n) {
+            if (a[i] === b[j]) {
+                ops.push({ type: 'eq', value: a[i] });
+                i++; j++;
+            } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
+                ops.push({ type: 'del', value: a[i] });
+                i++;
+            } else {
+                ops.push({ type: 'add', value: b[j] });
+                j++;
+            }
+        }
+        while (i < m) ops.push({ type: 'del', value: a[i++] });
+        while (j < n) ops.push({ type: 'add', value: b[j++] });
+        return ops;
     }
 
     function renderInlineDiff(oldText, newText, additionsOnly = false) {
@@ -952,7 +1048,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         tagsListEl.innerHTML = '';
         currentTags.forEach(tag => {
             const pill = document.createElement('span');
-            pill.className = 'badge rounded-pill text-bg-light border text-secondary-emphasis d-inline-flex align-items-center gap-1 px-2 py-1 small';
+            pill.className = 'badge rounded-pill bg-body-secondary border text-body-secondary d-inline-flex align-items-center gap-1 px-2 py-1 small';
             pill.innerHTML = `${escapeHtml(tag)} <button type="button" class="btn btn-sm btn-link p-0 text-secondary remove-tag" aria-label="Remove tag" data-tag="${escapeHtml(tag)}"><i class="fa-solid fa-xmark"></i></button>`;
             tagsListEl.appendChild(pill);
         });
@@ -1055,7 +1151,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         const tagSet = inlineTagsState.get(id) || new Set();
         tagSet.forEach(tag => {
             const pill = document.createElement('span');
-            pill.className = 'badge rounded-pill text-bg-light border text-secondary-emphasis d-inline-flex align-items-center gap-1 px-2 py-1';
+            pill.className = 'badge rounded-pill bg-body-secondary border text-body-secondary d-inline-flex align-items-center gap-1 px-2 py-1';
             pill.innerHTML = `${escapeHtml(tag)} <button type="button" class="btn btn-sm btn-link p-0 text-secondary" data-inline-tag-remove="${id}" data-tag="${escapeHtml(tag)}"><i class="fa-solid fa-xmark"></i></button>`;
             listEl.appendChild(pill);
         });
