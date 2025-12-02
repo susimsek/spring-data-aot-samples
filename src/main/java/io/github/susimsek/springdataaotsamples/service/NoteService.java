@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -88,7 +89,7 @@ public class NoteService {
                 pageable.getPageSize(),
                 RevisionSort.desc());
         var revisions = noteRepository.findRevisions(id, pageRequest);
-        return revisions.map(noteRevisionMapper::toRevisionDto);
+        return noteRevisionMapper.toRevisionDtoPage(revisions);
     }
 
     @Transactional(readOnly = true)

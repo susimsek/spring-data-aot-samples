@@ -449,7 +449,10 @@ const { diffLines, diffLinesDetailed } = Diff;
         syncCheckboxStates();
     }
 
-    function revisionLocalNumber(globalIndex) {
+    function revisionLocalNumber(globalIndex, provided) {
+        if (provided != null) {
+            return provided;
+        }
         if (typeof revisionTotal === 'number' && revisionTotal > 0) {
             return revisionTotal - globalIndex;
         }
@@ -467,7 +470,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         const colorDot = note.color ? `<span class="badge bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
         const revTypeClass = revisionTypeBadge(rev.revisionType);
         const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
-        const displayLocal = localNumber ?? revisionLocalNumber(index);
+        const displayLocal = revisionLocalNumber(index, localNumber ?? rev.versionNumber);
         return `
         <div class="list-group-item">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -658,8 +661,8 @@ const { diffLines, diffLinesDetailed } = Diff;
         const current = revisionCache[index];
         if (!current) return;
         const prev = revisionCache[index + 1] || null;
-        const currentLocal = revisionLocalNumber(index);
-        const prevLocal = prev ? revisionLocalNumber(index + 1) : null;
+        const currentLocal = revisionLocalNumber(index, current?.versionNumber);
+        const prevLocal = prev ? revisionLocalNumber(index + 1, prev.versionNumber) : null;
         const initialOnly = !prev; // first revision, show only additions
         const currentNote = current.note || {};
         const prevNote = prev?.note || {};
@@ -714,7 +717,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         }
         const html = (items || []).map((rev, idx) => {
             const globalIndex = startIndex + idx;
-            const localNumber = revisionLocalNumber(globalIndex);
+            const localNumber = revisionLocalNumber(globalIndex, rev.versionNumber);
             return renderRevisionItem(rev, noteId, globalIndex, localNumber);
         }).join('');
         revisionList.insertAdjacentHTML('beforeend', html);
