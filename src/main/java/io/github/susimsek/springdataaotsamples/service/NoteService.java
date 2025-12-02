@@ -13,6 +13,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
@@ -152,8 +153,10 @@ public class NoteService {
 
     @Transactional
     public void deletePermanently(Long id) {
-        if (!noteRepository.existsById(id)) {
-            throw new NoteNotFoundException(id);
+        var note = noteRepository.findById(id)
+                .orElseThrow(() -> new NoteNotFoundException(id));
+        if (!note.isDeleted()) {
+            throw new InvalidPermanentDeleteException(id);
         }
         noteRepository.deleteById(id);
     }
@@ -169,6 +172,23 @@ public class NoteService {
             case DELETE_SOFT -> noteRepository.softDeleteByIds(List.copyOf(ids));
             case RESTORE -> noteRepository.restoreByIds(List.copyOf(ids));
             case DELETE_FOREVER -> {
+                var notes = noteRepository.findAllById(ids);
+                var foundIds = notes.stream()
+                        .map(Note::getId)
+                        .collect(Collectors.toSet());
+                var missingIds = ids.stream()
+                        .filter(id -> !foundIds.contains(id))
+                        .findFirst();
+                if (missingIds.isPresent()) {
+                    throw new NoteNotFoundException(missingIds.get());
+                }
+                var activeIds = notes.stream()
+                        .filter(note -> !note.isDeleted())
+                        .map(Note::getId)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                if (!activeIds.isEmpty()) {
+                    throw new InvalidPermanentDeleteException(activeIds);
+                }
                 noteRepository.deleteAllByIdInBatch(ids);
                 yield ids.size();
             }
