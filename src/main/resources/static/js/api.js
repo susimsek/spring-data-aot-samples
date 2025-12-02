@@ -2,7 +2,7 @@
 const Api = (() => {
     const jsonHeaders = (auditor) => ({
         'Content-Type': 'application/json',
-        'X-Auditor': auditor || 'system'
+        'X-User': auditor || 'system'
     });
 
     class ApiError extends Error {
