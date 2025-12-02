@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -65,6 +66,7 @@ public class NoteController {
     )
     @GetMapping
     public Page<NoteDTO> findAll(@ParameterObject Pageable pageable,
+                                 @RequestParam(value = "q", required = false)
                                  @Parameter(description = "Search in title or content") String q) {
         return noteService.findAll(pageable, q);
     }
@@ -80,6 +82,7 @@ public class NoteController {
     )
     @GetMapping("/deleted")
     public Page<NoteDTO> findDeleted(@ParameterObject Pageable pageable,
+                                     @RequestParam(value = "q", required = false)
                                      @Parameter(description = "Search in title or content") String q) {
         return noteService.findDeleted(pageable, q);
     }
