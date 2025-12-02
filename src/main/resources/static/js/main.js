@@ -170,6 +170,34 @@ const { diffLines, diffLinesDetailed } = Diff;
         storeTheme(next);
     }
 
+    function getErrorMessage(error, fallback = 'Request failed') {
+        if (error?.body?.detail) return error.body.detail;
+        if (error?.body?.title) return error.body.title;
+        if (error?.message) return error.message;
+        return fallback;
+    }
+
+    function extractViolations(error) {
+        return error?.body?.violations || [];
+    }
+
+    async function handleApi(promise, options = {}) {
+        const { fallback = 'Request failed', onError, onFinally, silent } = options;
+        try {
+            return await promise;
+        } catch (e) {
+            const message = getErrorMessage(e, fallback);
+            if (onError) {
+                onError(e, message);
+            } else if (!silent) {
+                showToast(message, 'danger', null, e?.body?.title || e?.title);
+            }
+            return null;
+        } finally {
+            onFinally?.();
+        }
+    }
+
 
     function switchView(view) {
         if (state.view === view) return;
@@ -769,7 +797,7 @@ const { diffLines, diffLinesDetailed } = Diff;
                 revisionPage += 1;
             }
         } catch (e) {
-            showRevisionError(e.message || 'Failed to load revisions');
+            showRevisionError(getErrorMessage(e, 'Failed to load revisions'));
         } finally {
             if (revisionNoteId === activeNoteId) {
                 revisionSpinner?.classList.add('d-none');
@@ -946,32 +974,25 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (bulkConfirmLabel) {
             bulkConfirmLabel.textContent = 'Processing...';
         }
-        try {
-            const res = await Api.bulkAction({ action, ids }, currentAuditor());
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                throw new Error(err?.detail || 'Bulk action failed');
-            }
-            const result = await res.json().catch(() => ({processedCount: ids.length, failedIds: []}));
-            bulkModal.hide();
-            clearSelection();
-            await loadNotes();
-            const processed = result.processedCount ?? ids.length;
-            const failed = result.failedIds ?? [];
-            const successMsg = action === 'RESTORE' ? 'Notes restored' : 'Notes deleted';
-            if (failed.length) {
-                showToast(`${successMsg}. Processed: ${processed}. Failed: ${failed.length} (${failed.join(', ')}).`, 'warning');
-            } else {
-                showToast(successMsg, 'success');
-            }
-        } catch (e) {
-            showToast(e.message || 'Bulk action failed', 'danger');
-        } finally {
-            confirmBulkBtn.disabled = false;
-            bulkSpinner?.classList.add('d-none');
-            if (bulkConfirmLabel) {
-                bulkConfirmLabel.textContent = original || 'Confirm';
-            }
+        const result = await handleApi(Api.bulkAction({ action, ids }, currentAuditor()), {
+            fallback: 'Bulk action failed'
+        });
+        confirmBulkBtn.disabled = false;
+        bulkSpinner?.classList.add('d-none');
+        if (bulkConfirmLabel) {
+            bulkConfirmLabel.textContent = original || 'Confirm';
+        }
+        if (!result) return;
+        bulkModal.hide();
+        clearSelection();
+        await loadNotes();
+        const processed = result.processedCount ?? ids.length;
+        const failed = result.failedIds ?? [];
+        const successMsg = action === 'RESTORE' ? 'Notes restored' : 'Notes deleted';
+        if (failed.length) {
+            showToast(`${successMsg}. Processed: ${processed}. Failed: ${failed.length} (${failed.join(', ')}).`, 'warning');
+        } else {
+            showToast(successMsg, 'success');
         }
     }
 
@@ -996,7 +1017,8 @@ const { diffLines, diffLinesDetailed } = Diff;
             }
             renderNotes(data);
         } catch (e) {
-            noteGrid.innerHTML = `<div class="col-12 text-center text-danger py-3">${escapeHtml(e.message || 'Failed to load')}</div>`;
+            const message = getErrorMessage(e, 'Failed to load');
+            noteGrid.innerHTML = `<div class="col-12 text-center text-danger py-3">${escapeHtml(message)}</div>`;
             if (pageInfo) {
                 pageInfo.hidden = true;
             }
@@ -1343,18 +1365,14 @@ const { diffLines, diffLinesDetailed } = Diff;
         }
         toggleInlineMessages(titleEl, titleReq, titleSize, true);
         toggleInlineMessages(contentEl, contentReq, contentSize, true);
-        try {
-            const res = await Api.patchNote(id, {title, content, pinned, color, tags}, currentAuditor());
-            if (!res.ok) {
-                showToast('Update failed', 'danger');
-                return;
-            }
-            cancelInlineEdit(id);
-            await loadNotes();
-            showToast('Note updated');
-        } catch (e) {
-            showToast(e.message, 'danger');
-        }
+        const res = await handleApi(
+            Api.patchNote(id, {title, content, pinned, color, tags}, currentAuditor()),
+            { fallback: 'Update failed' }
+        );
+        if (!res) return;
+        cancelInlineEdit(id);
+        await loadNotes();
+        showToast('Note updated');
     }
 
     function openDelete(id) {
@@ -1364,14 +1382,10 @@ const { diffLines, diffLinesDetailed } = Diff;
 
     async function restoreNote(id) {
         if (!id) return;
-        try {
-            const res = await Api.restore(id, currentAuditor());
-            if (!res.ok) throw new Error('Restore failed');
-            await loadNotes();
-            showToast('Note restored');
-        } catch (e) {
-            showToast(e.message, 'danger');
-        }
+        const res = await handleApi(Api.restore(id, currentAuditor()), { fallback: 'Restore failed' });
+        if (!res) return;
+        await loadNotes();
+        showToast('Note restored');
     }
 
     async function restoreRevision(noteId, revisionId) {
@@ -1383,24 +1397,25 @@ const { diffLines, diffLinesDetailed } = Diff;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Restoring...';
         }
         clearRevisionError();
-        try {
-            const res = await Api.restoreRevision(noteId, revisionId, currentAuditor());
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                throw new Error(err?.detail || 'Restore failed');
+        const res = await handleApi(
+            Api.restoreRevision(noteId, revisionId, currentAuditor()),
+            {
+                fallback: 'Restore failed',
+                onError: (_, msg) => {
+                    showRevisionError(msg);
+                    showToast(msg, 'danger');
+                },
+                silent: true
             }
-            revisionModal?.hide();
-            await loadNotes();
-            showToast(`Restored to revision #${revisionId}`, 'success');
-        } catch (e) {
-            showRevisionError(e.message || 'Restore failed');
-            showToast(e.message || 'Restore failed', 'danger');
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = original ?? 'Restore';
-            }
+        );
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = original ?? 'Restore';
         }
+        if (!res) return;
+        revisionModal?.hide();
+        await loadNotes();
+        showToast(`Restored to revision #${revisionId}`, 'success');
     }
 
     function openDeleteForever(id) {
@@ -1416,35 +1431,33 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (deleteForeverLabel) {
             deleteForeverLabel.textContent = 'Deleting...';
         }
-        try {
-            const res = await Api.deletePermanent(deleteForeverId, currentAuditor());
-            if (!res.ok) throw new Error('Permanent delete failed');
-            deleteForeverModal.hide();
-            await loadNotes();
-            showToast('Note permanently deleted', 'danger');
-        } catch (e) {
-            showToast(e.message, 'danger');
-        } finally {
-            confirmDeleteForeverBtn.disabled = false;
-            deleteForeverSpinner?.classList.add('d-none');
-            if (deleteForeverLabel) {
-                deleteForeverLabel.textContent = originalText || 'Delete';
-            }
-            deleteForeverId = null;
+        const res = await handleApi(
+            Api.deletePermanent(deleteForeverId, currentAuditor()),
+            { fallback: 'Permanent delete failed' }
+        );
+        confirmDeleteForeverBtn.disabled = false;
+        deleteForeverSpinner?.classList.add('d-none');
+        if (deleteForeverLabel) {
+            deleteForeverLabel.textContent = originalText || 'Delete';
         }
+        const id = deleteForeverId;
+        deleteForeverId = null;
+        if (!res) return;
+        deleteForeverModal.hide();
+        await loadNotes();
+        showToast('Note permanently deleted', 'danger', null, 'Permanent delete');
     }
 
     async function togglePin(id) {
         const note = noteCache.get(id);
         if (!note) return;
-        try {
-            const res = await Api.patchNote(id, { pinned: !note.pinned }, currentAuditor());
-            if (!res.ok) throw new Error('Pin update failed');
-            await loadNotes();
-            showToast(note.pinned ? 'Note unpinned' : 'Note pinned', 'success');
-        } catch (e) {
-            showToast(e.message || 'Pin update failed', 'danger');
-        }
+        const res = await handleApi(
+            Api.patchNote(id, { pinned: !note.pinned }, currentAuditor()),
+            { fallback: 'Pin update failed' }
+        );
+        if (!res) return;
+        await loadNotes();
+        showToast(note.pinned ? 'Note unpinned' : 'Note pinned', 'success');
     }
 
     async function copyNote(id) {
@@ -1472,22 +1485,17 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (emptyTrashConfirmLabel) {
             emptyTrashConfirmLabel.textContent = 'Emptying...';
         }
-        try {
-            const res = await Api.emptyTrash(currentAuditor());
-            if (!res.ok) throw new Error('Failed to empty trash');
-            emptyTrashModal.hide();
-            showToast('Trash emptied', 'success');
-            await loadNotes();
-        } catch (e) {
-            showToast(e.message, 'danger');
-        } finally {
-            confirmEmptyTrashBtn.disabled = false;
-            emptyTrashConfirmSpinner?.classList.add('d-none');
-            if (emptyTrashConfirmLabel) {
-                emptyTrashConfirmLabel.textContent = originalText || 'Empty Trash';
-            }
-            updateEmptyTrashButton();
+        const res = await handleApi(Api.emptyTrash(currentAuditor()), { fallback: 'Failed to empty trash' });
+        confirmEmptyTrashBtn.disabled = false;
+        emptyTrashConfirmSpinner?.classList.add('d-none');
+        if (emptyTrashConfirmLabel) {
+            emptyTrashConfirmLabel.textContent = originalText || 'Empty Trash';
         }
+        updateEmptyTrashButton();
+        if (!res) return;
+        emptyTrashModal.hide();
+        showToast('Trash emptied', 'success');
+        await loadNotes();
     }
 
     async function saveNote(e) {
@@ -1530,33 +1538,33 @@ const { diffLines, diffLinesDetailed } = Diff;
     const url = isEdit ? `/api/notes/${state.editId}` : '/api/notes';
     const method = isEdit ? 'PUT' : 'POST';
 
-        try {
-            const res = isEdit
-                ? await Api.updateNote(state.editId, payload, currentAuditor())
-                : await Api.createNote(payload, currentAuditor());
-            if (!res.ok) {
-                const err = await res.json().catch(() => null);
-                const message = err?.detail || 'Request failed';
-                const violations = err?.violations;
-                const details = violations ? '<ul class="mb-0">' + violations.map(v => `<li>${escapeHtml(v.message || '')}</li>`).join('') + '</ul>' : '';
-            formAlert.innerHTML = `${escapeHtml(message)}${details}`;
-            formAlert.classList.remove('d-none');
-            return;
+        const res = await handleApi(
+            isEdit
+                ? Api.updateNote(state.editId, payload, currentAuditor())
+                : Api.createNote(payload, currentAuditor()),
+            {
+                fallback: 'Request failed',
+                onError: (e, msg) => {
+                    const violations = extractViolations(e);
+                    const details = violations.length
+                        ? '<ul class="mb-0">' + violations.map(v => `<li>${escapeHtml(v.message || '')}</li>`).join('') + '</ul>'
+                        : '';
+                    formAlert.innerHTML = `${escapeHtml(msg)}${details}`;
+                    formAlert.classList.remove('d-none');
+                },
+                silent: true
+            }
+        );
+        if (saveBtn) {
+            saveBtn.disabled = prevDisabled;
+            submitLabel.textContent = prevText;
+            saveSpinner?.classList.add('d-none');
         }
+        if (!res) return;
         noteModal.hide();
         clearSelection();
         await loadNotes();
         showToast(isEdit ? 'Note updated' : 'Note created');
-    } catch (e) {
-        formAlert.textContent = e.message;
-        formAlert.classList.remove('d-none');
-        } finally {
-            if (saveBtn) {
-                saveBtn.disabled = prevDisabled;
-                submitLabel.textContent = prevText;
-                saveSpinner?.classList.add('d-none');
-            }
-        }
     }
 
     async function confirmDelete() {
@@ -1571,17 +1579,18 @@ const { diffLines, diffLinesDetailed } = Diff;
                 deleteLabel.textContent = 'Deleting...';
                 deleteSpinner?.classList.remove('d-none');
             }
-            const res = await Api.softDelete(state.deleteId, currentAuditor());
-            if (!res.ok) throw new Error('Delete failed');
+            const res = await handleApi(Api.softDelete(state.deleteId, currentAuditor()), { fallback: 'Delete failed' });
             const deletedId = state.deleteId;
             deleteModal.hide();
-            await loadNotes();
-            showToast('Note deleted', 'danger', {
-                label: 'Undo',
-                handler: () => restoreNote(deletedId)
-            });
+            if (res) {
+                await loadNotes();
+                showToast('Note deleted', 'danger', {
+                    label: 'Undo',
+                    handler: () => restoreNote(deletedId)
+                });
+            }
         } catch (e) {
-            showToast(e.message, 'danger');
+            showToast(getErrorMessage(e, 'Delete failed'), 'danger');
         } finally {
             if (deleteBtn) {
                 deleteBtn.disabled = false;

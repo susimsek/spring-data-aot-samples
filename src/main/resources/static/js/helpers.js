@@ -29,7 +29,7 @@ const Helpers = (() => {
         });
     }
 
-    function showToast(message, variant = 'success', action) {
+    function showToast(message, variant = 'success', action, title) {
         if (!toastContainer) return;
         const icons = {
             success: 'fa-circle-check',
@@ -39,18 +39,24 @@ const Helpers = (() => {
         };
         const iconClass = icons[variant] || icons.info;
         const wrapper = document.createElement('div');
-        wrapper.className = `toast align-items-center text-bg-${variant} border-0`;
+        wrapper.className = `toast text-bg-${variant} border-0`;
         wrapper.setAttribute('role', 'alert');
         const actionButton = action ? `<button type="button" class="btn btn-outline-light btn-sm ms-2 d-inline-flex align-items-center gap-1" data-action="toast-action"><i class="fa-solid fa-rotate-left"></i>${action.label}</button>` : '';
-        wrapper.innerHTML = `
-            <div class="d-flex align-items-center">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    <i class="fa-solid ${iconClass}"></i>
-                    <span>${message}</span>
-                    ${actionButton}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        const header = title ? `
+            <div class="toast-header text-bg-${variant} border-0">
+                <i class="fa-solid ${iconClass} me-2"></i>
+                <strong class="me-auto">${escapeHtml(title)}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>` : '';
+        const body = `
+            <div class="toast-body d-flex align-items-center gap-2">
+                ${title ? '' : `<i class="fa-solid ${iconClass}"></i>`}
+                <span>${message}</span>
+                ${actionButton}
             </div>`;
+        wrapper.innerHTML = `
+            ${header}
+            ${body}`;
         toastContainer.appendChild(wrapper);
         const toast = new bootstrap.Toast(wrapper, {delay: 4000, autohide: true});
         if (action && typeof action.handler === 'function') {
