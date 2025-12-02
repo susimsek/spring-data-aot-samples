@@ -31,8 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -163,38 +161,61 @@ public class NoteService {
 
     @Transactional
     public BulkActionResult bulk(BulkActionRequest request) {
-        Set<Long> ids = new HashSet<>(request.ids());
+        Set<Long> ids = new LinkedHashSet<>(request.ids());
         if (ids.isEmpty()) {
             return new BulkActionResult(0, List.of());
         }
         BulkAction action = BulkAction.valueOf(request.action());
+        var failed = new ArrayList<Long>();
         int processed = switch (action) {
-            case DELETE_SOFT -> noteRepository.softDeleteByIds(List.copyOf(ids));
-            case RESTORE -> noteRepository.restoreByIds(List.copyOf(ids));
-            case DELETE_FOREVER -> {
+            case DELETE_SOFT -> {
                 var notes = noteRepository.findAllById(ids);
-                var foundIds = notes.stream()
+                var existing = notes.stream().map(Note::getId).collect(Collectors.toSet());
+                ids.stream().filter(id -> !existing.contains(id)).forEach(failed::add);
+                notes.stream()
+                        .filter(Note::isDeleted)
                         .map(Note::getId)
-                        .collect(Collectors.toSet());
-                var missingIds = ids.stream()
-                        .filter(id -> !foundIds.contains(id))
-                        .findFirst();
-                if (missingIds.isPresent()) {
-                    throw new NoteNotFoundException(missingIds.get());
-                }
-                var activeIds = notes.stream()
+                        .forEach(failed::add);
+                var toDelete = notes.stream()
                         .filter(note -> !note.isDeleted())
                         .map(Note::getId)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
-                if (!activeIds.isEmpty()) {
-                    throw new InvalidPermanentDeleteException(activeIds);
+                        .toList();
+                yield toDelete.isEmpty() ? 0 : noteRepository.softDeleteByIds(toDelete);
+            }
+            case RESTORE -> {
+                var notes = noteRepository.findAllById(ids);
+                var existing = notes.stream().map(Note::getId).collect(Collectors.toSet());
+                ids.stream().filter(id -> !existing.contains(id)).forEach(failed::add);
+                notes.stream()
+                        .filter(note -> !note.isDeleted())
+                        .map(Note::getId)
+                        .forEach(failed::add);
+                var toRestore = notes.stream()
+                        .filter(Note::isDeleted)
+                        .map(Note::getId)
+                        .toList();
+                yield toRestore.isEmpty() ? 0 : noteRepository.restoreByIds(toRestore);
+            }
+            case DELETE_FOREVER -> {
+                var notes = noteRepository.findAllById(ids);
+                var existing = notes.stream().map(Note::getId).collect(Collectors.toSet());
+                ids.stream().filter(id -> !existing.contains(id)).forEach(failed::add);
+                var deletable = notes.stream()
+                        .filter(Note::isDeleted)
+                        .map(Note::getId)
+                        .toList();
+                notes.stream()
+                        .filter(note -> !note.isDeleted())
+                        .map(Note::getId)
+                        .forEach(failed::add);
+                if (!deletable.isEmpty()) {
+                    noteRepository.deleteAllByIdInBatch(deletable);
                 }
-                noteRepository.deleteAllByIdInBatch(ids);
-                yield ids.size();
+                yield deletable.size();
             }
         };
 
-        return new BulkActionResult(processed, List.of());
+        return new BulkActionResult(processed, failed);
     }
 
     private Note findActiveNote(Long id) {

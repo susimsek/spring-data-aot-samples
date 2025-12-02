@@ -953,14 +953,17 @@ const { diffLines, diffLinesDetailed } = Diff;
                 throw new Error(err?.detail || 'Bulk action failed');
             }
             const result = await res.json().catch(() => ({processedCount: ids.length, failedIds: []}));
-            if (result.failedIds && result.failedIds.length) {
-                throw new Error(`Some items failed: ${result.failedIds.length}`);
-            }
             bulkModal.hide();
             clearSelection();
             await loadNotes();
+            const processed = result.processedCount ?? ids.length;
+            const failed = result.failedIds ?? [];
             const successMsg = action === 'RESTORE' ? 'Notes restored' : 'Notes deleted';
-            showToast(successMsg, 'success');
+            if (failed.length) {
+                showToast(`${successMsg}. Processed: ${processed}. Failed: ${failed.length} (${failed.join(', ')}).`, 'warning');
+            } else {
+                showToast(successMsg, 'success');
+            }
         } catch (e) {
             showToast(e.message || 'Bulk action failed', 'danger');
         } finally {
