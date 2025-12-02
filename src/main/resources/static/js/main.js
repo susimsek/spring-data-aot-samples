@@ -15,6 +15,7 @@ const { diffLines, diffLinesDetailed } = Diff;
     // Use state from module
     const BULK_LIMIT = 100;
     const TAG_LIMIT = 5;
+    const THEME_KEY = 'theme';
 
     const noteGrid = document.getElementById('noteGrid');
     const totalLabel = document.getElementById('totalLabel');
@@ -118,8 +119,6 @@ const { diffLines, diffLinesDetailed } = Diff;
         themeToggle.addEventListener('click', toggleTheme);
     }
 
-    const THEME_KEY = 'theme';
-
     function systemPrefersDark() {
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
@@ -159,7 +158,8 @@ const { diffLines, diffLinesDetailed } = Diff;
     function initTheme() {
         const attrTheme = document.documentElement.getAttribute('data-bs-theme');
         const stored = getStoredTheme();
-        const initial = attrTheme || stored || 'light';
+        const prefers = systemPrefersDark() ? 'dark' : 'light';
+        const initial = attrTheme || stored || prefers;
         applyTheme(initial);
     }
 
