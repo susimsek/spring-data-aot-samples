@@ -9,6 +9,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -16,7 +17,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Mapper(componentModel = "spring", uses = TagMapper.class)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = TagMapper.class)
 public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
 
     @Mapping(target = "tags", ignore = true)

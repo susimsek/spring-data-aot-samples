@@ -8,6 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
+import jakarta.persistence.criteria.JoinType;
+
+import java.util.Set;
 
 @UtilityClass
 public class NoteSpecifications {
@@ -29,6 +32,39 @@ public class NoteSpecifications {
             var title = cb.like(cb.lower(root.get("title")), like);
             var content = cb.like(cb.lower(root.get("content")), like);
             return cb.or(title, content);
+        };
+    }
+
+    public Specification<Note> hasColor(@Nullable String color) {
+        if (!StringUtils.hasText(color)) {
+            return (root, cq, cb) -> cb.conjunction();
+        }
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("color")), color.trim().toLowerCase());
+    }
+
+    public Specification<Note> isPinned(@Nullable Boolean pinned) {
+        if (pinned == null) {
+            return (root, cq, cb) -> cb.conjunction();
+        }
+        return (root, cq, cb) -> cb.equal(root.get("pinned"), pinned);
+    }
+
+    public Specification<Note> hasTags(@Nullable Set<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return (root, cq, cb) -> cb.conjunction();
+        }
+        var normalized = tags.stream()
+            .filter(StringUtils::hasText)
+            .map(tag -> tag.trim().toLowerCase())
+            .toList();
+        if (normalized.isEmpty()) {
+            return (root, cq, cb) -> cb.conjunction();
+        }
+        return (root, cq, cb) -> {
+            // Ensure we don't duplicate rows due to join
+            cq.distinct(true);
+            var join = root.join("tags", JoinType.LEFT);
+            return cb.lower(join.get("name")).in(normalized);
         };
     }
 

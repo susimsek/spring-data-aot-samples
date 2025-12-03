@@ -5,6 +5,7 @@ import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
 import org.springframework.data.history.Revision;
 
@@ -13,7 +14,7 @@ import java.util.stream.IntStream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
-@Mapper(componentModel = "spring", uses = NoteMapper.class)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = NoteMapper.class)
 public interface NoteRevisionMapper {
 
     @Mapping(target = "revision", source = "revision", qualifiedByName = "revisionNumber")

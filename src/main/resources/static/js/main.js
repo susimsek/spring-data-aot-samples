@@ -15,6 +15,7 @@ const { diffLines, diffLinesDetailed } = Diff;
     // Use state from module
     const BULK_LIMIT = 100;
     const TAG_LIMIT = 5;
+    const FILTER_TAG_LIMIT = 5;
     const THEME_KEY = 'theme';
 
     const noteGrid = document.getElementById('noteGrid');
@@ -44,6 +45,17 @@ const { diffLines, diffLinesDetailed } = Diff;
     const tagsContainer = document.getElementById('tagsContainer');
     const tagsListEl = document.getElementById('tagsList');
     const tagsLimitMsg = document.getElementById('tagsLimitMessage');
+    const tagSuggestions = document.getElementById('tagSuggestions');
+    const filterTagsInput = document.getElementById('filterTagsInput');
+    const filterTagsContainer = document.getElementById('filterTagsContainer');
+    const filterTagsList = document.getElementById('filterTagsList');
+    const filterTagsError = document.getElementById('filterTagsError');
+    const filterTagsSuggestions = document.getElementById('filterTagsSuggestions');
+    const filterColorInput = document.getElementById('filterColor');
+    const clearColorFilterBtn = document.getElementById('clearColorFilter');
+    const filterPinnedSelect = document.getElementById('filterPinned');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const applyFiltersBtn = document.getElementById('applyFilters');
     const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
     const TAG_FORMAT_MESSAGE = 'Tags must be 1-30 characters using letters, digits, hyphen, or underscore.';
     let currentTags = new Set();
@@ -152,6 +164,12 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (themeToggle) {
             themeToggle.setAttribute('aria-pressed', next === 'dark');
             themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
+        }
+    }
+
+    function setColorFilterActive(active) {
+        if (filterColorInput) {
+            filterColorInput.dataset.active = active ? 'true' : 'false';
         }
     }
 
@@ -420,7 +438,7 @@ const { diffLines, diffLinesDetailed } = Diff;
                                     <label class="form-label small mb-1" for="inlineTagsInput-${note.id}">Tags</label>
                                     <div class="form-control p-2 pe-5" data-inline-tags-container="${note.id}">
                                         <div class="d-flex flex-wrap gap-2 mb-2" data-inline-tags-list="${note.id}"></div>
-                                        <input class="form-control form-control-sm border-0 shadow-none p-0" type="text" id="inlineTagsInput-${note.id}" data-inline-tags-input="${note.id}" placeholder="Type and press Enter or comma">
+                                        <input class="form-control form-control-sm border-0 shadow-none p-0" type="text" id="inlineTagsInput-${note.id}" data-inline-tags-input="${note.id}" placeholder="Type and press Enter or comma" list="tagSuggestions">
                                     </div>
                                     <div class="invalid-feedback d-none" data-inline-tags-error="${note.id}"></div>
                                 </div>
@@ -1021,7 +1039,10 @@ const { diffLines, diffLinesDetailed } = Diff;
                 size: state.size,
                 sort: state.sort || defaultSort,
                 query: state.query,
-                auditor: currentAuditor()
+                auditor: currentAuditor(),
+                tags: Array.from(state.filterTags || []),
+                color: state.filterColor || null,
+                pinned: state.filterPinned
             });
             const meta = data?.page ?? data;
             if (meta && typeof meta.totalPages === 'number') {
@@ -1144,6 +1165,93 @@ const { diffLines, diffLinesDetailed } = Diff;
         }
     }
 
+    function renderFilterTags() {
+        if (!filterTagsList) return;
+        filterTagsList.innerHTML = '';
+        state.filterTags.forEach(tag => {
+            const pill = document.createElement('span');
+            pill.className = 'badge rounded-pill bg-body-secondary border text-body-secondary d-inline-flex align-items-center gap-1 px-2 py-1 small';
+            pill.innerHTML = `${escapeHtml(tag)} <button type="button" class="btn btn-sm btn-link p-0 text-secondary" data-filter-tag-remove="${escapeHtml(tag)}" aria-label="Remove tag"><i class="fa-solid fa-xmark"></i></button>`;
+            filterTagsList.appendChild(pill);
+        });
+    }
+
+    function showFilterTagError(message) {
+        filterTagsContainer?.classList.add('is-invalid');
+        if (filterTagsError) {
+            filterTagsError.textContent = message;
+            filterTagsError.classList.remove('d-none');
+        }
+    }
+
+    function clearFilterTagError() {
+        filterTagsContainer?.classList.remove('is-invalid');
+        if (filterTagsError) {
+            filterTagsError.textContent = '';
+            filterTagsError.classList.add('d-none');
+        }
+    }
+
+    function addFilterTagsFromInput() {
+        if (!filterTagsInput) return;
+        const raw = filterTagsInput.value || '';
+        if (!raw.trim()) return;
+        const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
+        const invalid = parts.find(part => !TAG_PATTERN.test(part));
+        if (invalid) {
+            showFilterTagError(TAG_FORMAT_MESSAGE);
+            return;
+        }
+        let limitHit = false;
+        parts.forEach(tag => {
+            if (state.filterTags.size < FILTER_TAG_LIMIT) {
+                state.filterTags.add(tag);
+            } else {
+                limitHit = true;
+            }
+        });
+        if (limitHit) {
+            showToast(`You can filter by up to ${FILTER_TAG_LIMIT} tags.`, 'warning');
+        }
+        filterTagsInput.value = '';
+        renderFilterTags();
+        clearFilterTagError();
+    }
+
+    const loadTagSuggestions = debounce(async (query) => {
+        try {
+            const tags = await Api.fetchTags(query);
+            if (!filterTagsSuggestions) return;
+            filterTagsSuggestions.innerHTML = '';
+            (tags || []).forEach(tag => {
+                const opt = document.createElement('option');
+                opt.value = tag;
+                filterTagsSuggestions.appendChild(opt);
+            });
+        } catch (_) {
+            // ignore suggestions errors
+        }
+    }, 200);
+
+    const loadNoteTagSuggestions = debounce(async (query) => {
+        if (!tagSuggestions) return;
+        if (!query || query.length < 2) {
+            tagSuggestions.innerHTML = '';
+            return;
+        }
+        try {
+            const tags = await Api.fetchTags(query);
+            tagSuggestions.innerHTML = '';
+            (tags || []).forEach(tag => {
+                const opt = document.createElement('option');
+                opt.value = tag;
+                tagSuggestions.appendChild(opt);
+            });
+        } catch (_) {
+            tagSuggestions.innerHTML = '';
+        }
+    }, 200);
+
     function markInlineTagsValid(id) {
         const container = document.querySelector(`[data-inline-tags-container="${id}"]`);
         if (!container) return;
@@ -1261,6 +1369,12 @@ const { diffLines, diffLinesDetailed } = Diff;
                 } else {
                     clearInlineTagError(id);
                 }
+                const trimmed = value.trim();
+                if (trimmed.length >= 2) {
+                    loadNoteTagSuggestions(trimmed);
+                } else if (tagSuggestions) {
+                    tagSuggestions.innerHTML = '';
+                }
             });
             input.addEventListener('blur', () => addInlineTagsFromInput(id));
         }
@@ -1285,6 +1399,29 @@ const { diffLines, diffLinesDetailed } = Diff;
         resetInlineTagValidation(id);
         renderInlineTags(id);
         bindInlineTagInputs(id);
+    }
+
+    function resetFilterControls() {
+        state.filterTags = new Set();
+        renderFilterTags();
+        clearFilterTagError();
+        state.filterColor = '';
+        if (filterColorInput) {
+            filterColorInput.value = '#2563eb';
+        }
+        setColorFilterActive(false);
+        state.filterPinned = null;
+        if (filterPinnedSelect) {
+            filterPinnedSelect.value = '';
+        }
+    }
+
+    function applyFilterStateFromUi() {
+        state.filterColor = (filterColorInput && filterColorInput.dataset.active === 'true')
+            ? (filterColorInput.value?.trim() || '')
+            : '';
+        const pinnedVal = filterPinnedSelect?.value;
+        state.filterPinned = pinnedVal === '' ? null : pinnedVal === 'true';
     }
 
     function openCreate() {
@@ -1660,6 +1797,81 @@ const { diffLines, diffLinesDetailed } = Diff;
         });
     }
 
+    if (filterTagsInput) {
+        filterTagsInput.addEventListener('keydown', (e) => {
+            if (['Enter', ','].includes(e.key)) {
+                e.preventDefault();
+                addFilterTagsFromInput();
+            }
+        });
+        filterTagsInput.addEventListener('input', () => {
+            const raw = filterTagsInput.value || '';
+            if (raw.includes(',')) {
+                addFilterTagsFromInput();
+                return;
+            }
+            if (raw.trim().length > 0 && !TAG_PATTERN.test(raw.trim())) {
+                showFilterTagError(TAG_FORMAT_MESSAGE);
+            } else {
+                clearFilterTagError();
+            }
+            const trimmed = raw.trim();
+            if (trimmed.length >= 2) {
+                loadTagSuggestions(trimmed);
+            } else {
+                if (filterTagsSuggestions) {
+                    filterTagsSuggestions.innerHTML = '';
+                }
+            }
+        });
+        filterTagsInput.addEventListener('blur', addFilterTagsFromInput);
+    }
+
+    if (filterTagsList) {
+        filterTagsList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-filter-tag-remove]');
+            if (!btn) return;
+            const tag = btn.getAttribute('data-filter-tag-remove');
+            if (tag) {
+                state.filterTags.delete(tag);
+                renderFilterTags();
+            }
+        });
+    }
+
+    if (filterColorInput) {
+        setColorFilterActive(false);
+        filterColorInput.addEventListener('input', () => setColorFilterActive(true));
+    }
+    if (clearColorFilterBtn) {
+        clearColorFilterBtn.addEventListener('click', () => {
+            state.filterColor = '';
+            if (filterColorInput) {
+                filterColorInput.value = '#2563eb';
+            }
+            setColorFilterActive(false);
+        });
+    }
+    if (filterPinnedSelect) {
+        filterPinnedSelect.addEventListener('change', () => {
+            // lazy update, actual apply when hitting Apply
+        });
+    }
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', () => {
+            applyFilterStateFromUi();
+            state.page = 0;
+            loadNotes();
+        });
+    }
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            resetFilterControls();
+            state.page = 0;
+            loadNotes();
+        });
+    }
+
     if (activeViewBtn) {
         activeViewBtn.addEventListener('click', () => {
             state.page = 0;
@@ -1741,6 +1953,11 @@ const { diffLines, diffLinesDetailed } = Diff;
             } else {
                 clearTagError();
             }
+            if (trimmed.length >= 2) {
+                loadNoteTagSuggestions(trimmed);
+            } else if (tagSuggestions) {
+                tagSuggestions.innerHTML = '';
+            }
             if (trimmed.length > 0) {
                 tagsDirty = true;
                 markTagsValid();
@@ -1820,6 +2037,9 @@ const { diffLines, diffLinesDetailed } = Diff;
     }
 
     updateEmptyTrashButton();
+    resetFilterControls();
+    renderFilterTags();
+    loadTagSuggestions('');
     loadNotes();
 
     // Initialize auditor using shared State helper

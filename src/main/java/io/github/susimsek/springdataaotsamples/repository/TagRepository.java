@@ -2,13 +2,12 @@ package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
-public interface TagRepository extends JpaRepository<Tag, Long> {
+public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificationExecutor<Tag> {
 
     List<Tag> findByNameIn(Collection<String> names);
-
-    Optional<Tag> findByName(String name);
 }

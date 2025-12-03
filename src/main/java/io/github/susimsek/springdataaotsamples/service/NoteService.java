@@ -113,13 +113,13 @@ public class NoteService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteDTO> findAll(Pageable pageable, String query) {
-        return noteQueryService.find(new NoteCriteria(query, false), pageable);
+    public Page<NoteDTO> findAll(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return noteQueryService.find(new NoteCriteria(query, false, tags, color, pinned), pageable);
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteDTO> findDeleted(Pageable pageable, String query) {
-        return noteQueryService.find(new NoteCriteria(query, true), pageable);
+    public Page<NoteDTO> findDeleted(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return noteQueryService.find(new NoteCriteria(query, true, tags, color, pinned), pageable);
     }
 
     @Transactional(readOnly = true)

@@ -29,11 +29,19 @@ const Api = (() => {
         return body ?? {};
     };
 
-    const fetchNotes = async ({ view, page, size, sort, query, auditor }) => {
+    const fetchNotes = async ({ view, page, size, sort, query, auditor, tags, color, pinned }) => {
         const base = view === 'trash' ? '/api/notes/deleted' : '/api/notes';
-        const qParam = query ? `&q=${encodeURIComponent(query)}` : '';
-        const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
-        const res = await fetch(`${base}?page=${page}&size=${size}${sortParam}${qParam}`, {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('size', size);
+        if (sort) params.set('sort', sort);
+        if (query) params.set('q', query);
+        if (color) params.set('color', color);
+        if (typeof pinned === 'boolean') params.set('pinned', pinned);
+        if (tags && Array.isArray(tags)) {
+            tags.forEach(tag => params.append('tags', tag));
+        }
+        const res = await fetch(`${base}?${params.toString()}`, {
             headers: jsonHeaders(auditor)
         });
         return parseResponse(res);
@@ -130,6 +138,26 @@ const Api = (() => {
         return parseResponse(res);
     };
 
+    const fetchTags = async (query) => {
+        const url = new URL('/api/tags/suggest', window.location.origin);
+        url.searchParams.set('page', 0);
+        url.searchParams.set('size', 10);
+        if (query) {
+            url.searchParams.set('q', query);
+        }
+        const res = await fetch(url.toString(), {
+            headers: jsonHeaders()
+        });
+        const body = await parseResponse(res);
+        if (Array.isArray(body)) {
+            return body;
+        }
+        if (body && Array.isArray(body.content)) {
+            return body.content.map(t => t.name ?? t);
+        }
+        return [];
+    };
+
     return {
         ApiError,
         headers: jsonHeaders,
@@ -144,7 +172,8 @@ const Api = (() => {
         bulkAction,
         fetchRevisions,
         fetchRevision,
-        restoreRevision
+        restoreRevision,
+        fetchTags
     };
 })();
 

@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
@@ -67,8 +69,14 @@ public class NoteController {
     @GetMapping
     public Page<NoteDTO> findAll(@ParameterObject Pageable pageable,
                                  @RequestParam(value = "q", required = false)
-                                 @Parameter(description = "Search in title or content") String q) {
-        return noteService.findAll(pageable, q);
+                                 @Parameter(description = "Search in title or content") String q,
+                                 @RequestParam(value = "tags", required = false)
+                                 @Parameter(description = "Filter by tag names") Set<String> tags,
+                                 @RequestParam(value = "color", required = false)
+                                 @Parameter(description = "Exact color hex filter") String color,
+                                 @RequestParam(value = "pinned", required = false)
+                                 @Parameter(description = "Filter by pinned state") Boolean pinned) {
+        return noteService.findAll(pageable, q, tags, color, pinned);
     }
 
     @Operation(
@@ -83,8 +91,14 @@ public class NoteController {
     @GetMapping("/deleted")
     public Page<NoteDTO> findDeleted(@ParameterObject Pageable pageable,
                                      @RequestParam(value = "q", required = false)
-                                     @Parameter(description = "Search in title or content") String q) {
-        return noteService.findDeleted(pageable, q);
+                                     @Parameter(description = "Search in title or content") String q,
+                                     @RequestParam(value = "tags", required = false)
+                                     @Parameter(description = "Filter by tag names") Set<String> tags,
+                                     @RequestParam(value = "color", required = false)
+                                     @Parameter(description = "Exact color hex filter") String color,
+                                     @RequestParam(value = "pinned", required = false)
+                                     @Parameter(description = "Filter by pinned state") Boolean pinned) {
+        return noteService.findDeleted(pageable, q, tags, color, pinned);
     }
 
     @Operation(

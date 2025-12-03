@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.mapper;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.springframework.util.CollectionUtils;
@@ -12,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public interface TagMapper {
+public interface TagMapper extends EntityMapper<TagDTO, Tag> {
 
     default Set<Tag> toTags(Set<String> names) {
         if (CollectionUtils.isEmpty(names)) {

@@ -13,7 +13,10 @@ const State = (() => {
         query: '',
         view: 'active',
         sort: 'createdDate,desc',
-        selected: new Set()
+        selected: new Set(),
+        filterTags: new Set(),
+        filterColor: '',
+        filterPinned: null
     };
 
     function currentAuditor() {

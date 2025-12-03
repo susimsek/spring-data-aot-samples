@@ -30,11 +30,18 @@ public class NoteQueryService {
     private Specification<Note> createSpecification(NoteCriteria criteria) {
         boolean deleted = Boolean.TRUE.equals(criteria.deleted());
         String query = criteria.query();
+        var tags = criteria.tags();
+        var color = criteria.color();
+        var pinned = criteria.pinned();
 
         Specification<Note> spec = deleted
                 ? Specification.where(NoteSpecifications.isDeleted())
                 : Specification.where(NoteSpecifications.isNotDeleted());
 
-        return spec.and(NoteSpecifications.search(query));
+        return spec
+            .and(NoteSpecifications.search(query))
+            .and(NoteSpecifications.hasColor(color))
+            .and(NoteSpecifications.isPinned(pinned))
+            .and(NoteSpecifications.hasTags(tags));
     }
 }
