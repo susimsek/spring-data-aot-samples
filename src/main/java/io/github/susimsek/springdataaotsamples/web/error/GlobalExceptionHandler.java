@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,9 +33,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<@NonNull Object> handleApiException(
         @NonNull ApiException ex,
         @NonNull WebRequest request) {
-        return this.handleExceptionInternal(ex, null,
+        return this.handleExceptionInternal(
+            ex,
+            ex.getBody(),
             ex.getHeaders(),
-            ex.getStatusCode(), request);
+            ex.getStatusCode(),
+            request);
     }
 
     @Override
@@ -53,6 +58,40 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         body.setProperty("violations", violations);
 
         return this.handleExceptionInternal(ex, body, headers, status, request);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<@NonNull Object> handleAuth(
+            @NonNull AuthenticationException ex,
+            @NonNull WebRequest request
+    ) {
+        ProblemDetail body = this.createProblemDetail(
+                ex,
+                HttpStatus.UNAUTHORIZED,
+                "problemDetail.title.auth.badCredentials",
+                "Invalid credentials",
+                "problemDetail.auth.badCredentials",
+                null,
+                request
+        );
+        return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<@NonNull Object> handleAccessDenied(
+            @NonNull AccessDeniedException ex,
+            @NonNull WebRequest request
+    ) {
+        ProblemDetail body = this.createProblemDetail(
+                ex,
+                HttpStatus.FORBIDDEN,
+                "problemDetail.title.auth.accessDenied",
+                "Access is denied",
+                "problemDetail.auth.accessDenied",
+                null,
+                request
+        );
+        return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler(Exception.class)

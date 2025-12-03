@@ -21,6 +21,12 @@ spring:
           max-age: 0
           cache-public: false
 
+security:
+  jwt:
+    secret: dev-secret-change-me-32-characters-long
+    issuer: notes-app
+    access-token-ttl: PT2H
+
 logging:
   level:
     root: debug

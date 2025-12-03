@@ -1,0 +1,35 @@
+package io.github.susimsek.springdataaotsamples.security;
+
+import lombok.experimental.UtilityClass;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.Optional;
+
+@UtilityClass
+public class SecurityUtils {
+    public static final String AUTHORITIES_CLAIM = "auth";
+    public static final String USER_ID_CLAIM = "userId";
+
+    public Optional<String> getCurrentUserLogin() {
+        var ctx = SecurityContextHolder.getContext();
+        return Optional.ofNullable(extractPrincipal(ctx.getAuthentication()));
+    }
+
+    private String extractPrincipal(Authentication authentication) {
+        if (authentication == null) {
+            return null;
+        }
+        var principal = authentication.getPrincipal();
+        if (principal instanceof Jwt jwt) {
+            return jwt.getSubject();
+        } else if (principal instanceof UserDetails ud) {
+            return ud.getUsername();
+        } else if (principal instanceof String username) {
+            return username;
+        }
+        return null;
+    }
+}

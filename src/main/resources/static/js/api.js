@@ -1,9 +1,19 @@
+import State from '/js/state.js';
+
 // API client for note operations
 const Api = (() => {
-    const jsonHeaders = (auditor) => ({
-        'Content-Type': 'application/json',
-        'X-User': auditor || 'system'
-    });
+    const { currentToken } = State;
+
+    const jsonHeaders = () => {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        const token = currentToken();
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+        return headers;
+    };
 
     class ApiError extends Error {
         constructor(message, status, body, title) {
@@ -29,7 +39,23 @@ const Api = (() => {
         return body ?? {};
     };
 
-    const fetchNotes = async ({ view, page, size, sort, query, auditor, tags, color, pinned }) => {
+    const login = async (payload) => {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify(payload)
+        });
+        return parseResponse(res);
+    };
+
+    const currentUser = async () => {
+        const res = await fetch('/api/auth/me', {
+            headers: jsonHeaders()
+        });
+        return parseResponse(res);
+    };
+
+    const fetchNotes = async ({ view, page, size, sort, query, tags, color, pinned }) => {
         const base = view === 'trash' ? '/api/notes/deleted' : '/api/notes';
         const params = new URLSearchParams();
         params.set('page', page);
@@ -42,98 +68,98 @@ const Api = (() => {
             tags.forEach(tag => params.append('tags', tag));
         }
         const res = await fetch(`${base}?${params.toString()}`, {
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const createNote = async (payload, auditor) => {
+    const createNote = async (payload) => {
         const res = await fetch('/api/notes', {
             method: 'POST',
-            headers: jsonHeaders(auditor),
+            headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
         return parseResponse(res);
     };
 
-    const updateNote = async (id, payload, auditor) => {
+    const updateNote = async (id, payload) => {
         const res = await fetch(`/api/notes/${id}`, {
             method: 'PUT',
-            headers: jsonHeaders(auditor),
+            headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
         return parseResponse(res);
     };
 
-    const patchNote = async (id, payload, auditor) => {
+    const patchNote = async (id, payload) => {
         const res = await fetch(`/api/notes/${id}`, {
             method: 'PATCH',
-            headers: jsonHeaders(auditor),
+            headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
         return parseResponse(res);
     };
 
-    const softDelete = async (id, auditor) => {
+    const softDelete = async (id) => {
         const res = await fetch(`/api/notes/${id}`, {
             method: 'DELETE',
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const restore = async (id, auditor) => {
+    const restore = async (id) => {
         const res = await fetch(`/api/notes/${id}/restore`, {
             method: 'POST',
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const deletePermanent = async (id, auditor) => {
+    const deletePermanent = async (id) => {
         const res = await fetch(`/api/notes/${id}/permanent`, {
             method: 'DELETE',
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const emptyTrash = async (auditor) => {
+    const emptyTrash = async () => {
         const res = await fetch('/api/notes/deleted', {
             method: 'DELETE',
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const bulkAction = async (payload, auditor) => {
+    const bulkAction = async (payload) => {
         const res = await fetch('/api/notes/bulk', {
             method: 'POST',
-            headers: jsonHeaders(auditor),
+            headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
         return parseResponse(res);
     };
 
-    const fetchRevisions = async (id, auditor, page = 0, size = 5, sort) => {
+    const fetchRevisions = async (id, page = 0, size = 5, sort) => {
         const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
         const res = await fetch(`/api/notes/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const fetchRevision = async (id, revisionId, auditor) => {
+    const fetchRevision = async (id, revisionId) => {
         const res = await fetch(`/api/notes/${id}/revisions/${revisionId}`, {
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
 
-    const restoreRevision = async (id, revisionId, auditor) => {
+    const restoreRevision = async (id, revisionId) => {
         const res = await fetch(`/api/notes/${id}/revisions/${revisionId}/restore`, {
             method: 'POST',
-            headers: jsonHeaders(auditor)
+            headers: jsonHeaders()
         });
         return parseResponse(res);
     };
@@ -160,6 +186,8 @@ const Api = (() => {
 
     return {
         ApiError,
+        login,
+        currentUser,
         headers: jsonHeaders,
         fetchNotes,
         createNote,

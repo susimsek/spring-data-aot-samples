@@ -6,11 +6,11 @@ import Ui from '/js/ui.js';
 import Validation from '/js/validation.js';
 import Diff from '/js/diff.js';
 
-const { state, currentAuditor, saveAuditor } = State;
+const { state, currentAuditor, saveAuditor, currentToken, saveToken, clearToken, currentUsername } = State;
 const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 const { renderTags, revisionTypeBadge } = Render;
 const { toggleSizeMessages, toggleInlineMessages } = Validation;
-const { diffLines, diffLinesDetailed } = Diff;
+    const { diffLines, diffLinesDetailed } = Diff;
 
     // Use state from module
     const BULK_LIMIT = 100;
@@ -56,6 +56,11 @@ const { diffLines, diffLinesDetailed } = Diff;
     const filterPinnedSelect = document.getElementById('filterPinned');
     const resetFiltersBtn = document.getElementById('resetFilters');
     const applyFiltersBtn = document.getElementById('applyFilters');
+    const authBtn = document.getElementById('authBtn');
+    const authBtnLabel = document.getElementById('authBtnLabel');
+    const authUserLabel = document.getElementById('authUserLabel');
+    const authMenu = document.getElementById('authMenu');
+    const signOutBtn = document.getElementById('signOutBtn');
     const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
     const TAG_FORMAT_MESSAGE = 'Tags must be 1-30 characters using letters, digits, hyphen, or underscore.';
     let currentTags = new Set();
@@ -131,6 +136,10 @@ const { diffLines, diffLinesDetailed } = Diff;
         themeToggle.addEventListener('click', toggleTheme);
     }
 
+    function redirectToLogin() {
+        window.location.href = '/login.html';
+    }
+
     function systemPrefersDark() {
         return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
@@ -199,11 +208,86 @@ const { diffLines, diffLinesDetailed } = Diff;
         return error?.body?.violations || [];
     }
 
+    function isAuthenticated() {
+        return !!currentToken();
+    }
+
+    function updateAuthUi() {
+        const username = currentUsername();
+        const signedIn = isAuthenticated();
+        if (authBtnLabel) {
+            authBtnLabel.textContent = signedIn ? (username || 'Signed in') : 'Sign in';
+        }
+        if (authUserLabel) {
+            authUserLabel.textContent = signedIn ? `Signed in as ${username || ''}` : 'Not signed in';
+        }
+        if (signOutBtn) {
+            signOutBtn.classList.toggle('d-none', !signedIn);
+        }
+        if (authMenu) {
+            authMenu.classList.toggle('d-none', !signedIn);
+        }
+        if (authBtn) {
+            authBtn.classList.toggle('dropdown-toggle', signedIn);
+            if (signedIn) {
+                authBtn.setAttribute('data-bs-toggle', 'dropdown');
+            } else {
+                authBtn.removeAttribute('data-bs-toggle');
+            }
+        }
+    }
+
+    function handleUnauthorized(message = 'Authentication required') {
+        clearToken();
+        updateAuthUi();
+        showToast(message, 'warning');
+        redirectToLogin();
+    }
+
+    async function handleLoginSubmit(event) {
+        event.preventDefault();
+        if (!authForm) return;
+        // Not used; login handled on separate page
+    }
+
+    function handleLogout(event) {
+        event?.preventDefault();
+        clearToken();
+        updateAuthUi();
+        showToast('Signed out', 'info');
+        window.location.href = '/login.html';
+    }
+
+    async function bootstrapAuth() {
+        updateAuthUi();
+        if (!isAuthenticated()) {
+            redirectToLogin();
+            return;
+        }
+        const me = await handleApi(Api.currentUser(), {
+            silent: true,
+            onError: () => {
+                clearToken();
+                updateAuthUi();
+                showToast('Session expired. Please sign in again.', 'warning');
+                redirectToLogin();
+            }
+        });
+        if (me?.username) {
+            saveToken(currentToken(), me.username);
+            updateAuthUi();
+        }
+    }
+
     async function handleApi(promise, options = {}) {
         const { fallback = 'Request failed', onError, onFinally, silent } = options;
         try {
             return await promise;
         } catch (e) {
+            if (e?.status === 401) {
+                handleUnauthorized('Session expired or unauthorized');
+                return null;
+            }
             const message = getErrorMessage(e, fallback);
             if (onError) {
                 onError(e, message);
@@ -809,7 +893,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         const activeNoteId = revisionNoteId;
         revisionSpinner?.classList.remove('d-none');
         try {
-            const pageData = await Api.fetchRevisions(noteId, currentAuditor(), revisionPage, revisionPageSize);
+            const pageData = await Api.fetchRevisions(noteId, revisionPage, revisionPageSize);
             const content = pageData?.content ?? pageData ?? [];
             const meta = pageData?.page ?? pageData;
             const totalElements = meta?.totalElements;
@@ -1008,7 +1092,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (bulkConfirmLabel) {
             bulkConfirmLabel.textContent = 'Processing...';
         }
-        const result = await handleApi(Api.bulkAction({ action, ids }, currentAuditor()), {
+        const result = await handleApi(Api.bulkAction({ action, ids }), {
             fallback: 'Bulk action failed'
         });
         confirmBulkBtn.disabled = false;
@@ -1039,7 +1123,6 @@ const { diffLines, diffLinesDetailed } = Diff;
                 size: state.size,
                 sort: state.sort || defaultSort,
                 query: state.query,
-                auditor: currentAuditor(),
                 tags: Array.from(state.filterTags || []),
                 color: state.filterColor || null,
                 pinned: state.filterPinned
@@ -1519,7 +1602,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         toggleInlineMessages(titleEl, titleReq, titleSize, true);
         toggleInlineMessages(contentEl, contentReq, contentSize, true);
         const res = await handleApi(
-            Api.patchNote(id, {title, content, pinned, color, tags}, currentAuditor()),
+            Api.patchNote(id, {title, content, pinned, color, tags}),
             { fallback: 'Update failed' }
         );
         if (!res) return;
@@ -1535,7 +1618,7 @@ const { diffLines, diffLinesDetailed } = Diff;
 
     async function restoreNote(id) {
         if (!id) return;
-        const res = await handleApi(Api.restore(id, currentAuditor()), { fallback: 'Restore failed' });
+        const res = await handleApi(Api.restore(id), { fallback: 'Restore failed' });
         if (!res) return;
         await loadNotes();
         showToast('Note restored');
@@ -1551,7 +1634,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         }
         clearRevisionError();
         const res = await handleApi(
-            Api.restoreRevision(noteId, revisionId, currentAuditor()),
+            Api.restoreRevision(noteId, revisionId),
             {
                 fallback: 'Restore failed',
                 onError: (_, msg) => {
@@ -1585,7 +1668,7 @@ const { diffLines, diffLinesDetailed } = Diff;
             deleteForeverLabel.textContent = 'Deleting...';
         }
         const res = await handleApi(
-            Api.deletePermanent(deleteForeverId, currentAuditor()),
+            Api.deletePermanent(deleteForeverId),
             { fallback: 'Permanent delete failed' }
         );
         confirmDeleteForeverBtn.disabled = false;
@@ -1605,7 +1688,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         const note = noteCache.get(id);
         if (!note) return;
         const res = await handleApi(
-            Api.patchNote(id, { pinned: !note.pinned }, currentAuditor()),
+            Api.patchNote(id, { pinned: !note.pinned }),
             { fallback: 'Pin update failed' }
         );
         if (!res) return;
@@ -1638,7 +1721,7 @@ const { diffLines, diffLinesDetailed } = Diff;
         if (emptyTrashConfirmLabel) {
             emptyTrashConfirmLabel.textContent = 'Emptying...';
         }
-        const res = await handleApi(Api.emptyTrash(currentAuditor()), { fallback: 'Failed to empty trash' });
+        const res = await handleApi(Api.emptyTrash(), { fallback: 'Failed to empty trash' });
         confirmEmptyTrashBtn.disabled = false;
         emptyTrashConfirmSpinner?.classList.add('d-none');
         if (emptyTrashConfirmLabel) {
@@ -1693,8 +1776,8 @@ const { diffLines, diffLinesDetailed } = Diff;
 
         const res = await handleApi(
             isEdit
-                ? Api.updateNote(state.editId, payload, currentAuditor())
-                : Api.createNote(payload, currentAuditor()),
+                ? Api.updateNote(state.editId, payload)
+                : Api.createNote(payload),
             {
                 fallback: 'Request failed',
                 onError: (e, msg) => {
@@ -1732,7 +1815,7 @@ const { diffLines, diffLinesDetailed } = Diff;
                 deleteLabel.textContent = 'Deleting...';
                 deleteSpinner?.classList.remove('d-none');
             }
-            const res = await handleApi(Api.softDelete(state.deleteId, currentAuditor()), { fallback: 'Delete failed' });
+        const res = await handleApi(Api.softDelete(state.deleteId), { fallback: 'Delete failed' });
             const deletedId = state.deleteId;
             deleteModal.hide();
             if (res) {
@@ -1869,6 +1952,18 @@ const { diffLines, diffLinesDetailed } = Diff;
             resetFilterControls();
             state.page = 0;
             loadNotes();
+        });
+    }
+
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', handleLogout);
+    }
+    if (authBtn) {
+        authBtn.addEventListener('click', (e) => {
+            if (!isAuthenticated()) {
+                e.preventDefault();
+                window.location.href = '/login.html';
+            }
         });
     }
 
@@ -2040,21 +2135,8 @@ const { diffLines, diffLinesDetailed } = Diff;
     resetFilterControls();
     renderFilterTags();
     loadTagSuggestions('');
+    bootstrapAuth();
     loadNotes();
 
     // Initialize auditor using shared State helper
-    (function initAuditor() {
-        if (auditorInput) {
-            auditorInput.value = currentAuditor();
-        }
-        if (saveAuditorBtn) {
-            saveAuditorBtn.addEventListener('click', () => {
-                const val = auditorInput?.value?.trim() || '';
-                saveAuditor(val);
-                if (!val && auditorInput) auditorInput.value = currentAuditor();
-                showToast(val ? 'Auditor saved' : 'Auditor reset to default', 'info');
-                const modal = bootstrap.Modal.getInstance(document.getElementById('auditorModal'));
-                modal?.hide();
-            });
-        }
-    })();
+    // Auditor input removed; JWT user used for auditing

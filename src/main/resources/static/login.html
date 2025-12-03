@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in · Notes</title>
+    <script>
+        (() => {
+            const THEME_KEY = 'theme';
+            let stored;
+            try {
+                stored = localStorage.getItem(THEME_KEY);
+            } catch (e) {
+                stored = null;
+            }
+            const theme = stored || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+    <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/css/all.min.css">
+</head>
+<body>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary">
+    <div class="card shadow-sm" style="min-width: 360px; max-width: 420px;">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3 gap-2">
+                <i class="fa-solid fa-clipboard-list text-primary fs-4"></i>
+                <h1 class="h5 mb-0">Sign in to Notes</h1>
+            </div>
+            <div class="alert alert-danger d-none" role="alert" id="loginAlert"></div>
+            <form id="loginForm" novalidate>
+                <div class="mb-3">
+                    <label class="form-label" for="loginUsername">Username</label>
+                    <input id="loginUsername" name="username" class="form-control" autocomplete="username" required minlength="3" maxlength="100" placeholder="admin">
+                    <div class="invalid-feedback" data-error-type="loginUsername-required">Username is required.</div>
+                    <div class="invalid-feedback" data-error-type="loginUsername-size">Username must be between 3 and 100 characters.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <input id="loginPassword" name="password" type="password" class="form-control" autocomplete="current-password" required minlength="4" maxlength="255" placeholder="••••••">
+                    <div class="invalid-feedback" data-error-type="loginPassword-required">Password is required.</div>
+                    <div class="invalid-feedback" data-error-type="loginPassword-size">Password must be at least 4 characters.</div>
+                </div>
+                <button class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" type="submit" id="loginSubmit">
+                    <span class="spinner-border spinner-border-sm d-none" id="loginSpinner" role="status" aria-hidden="true"></span>
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Sign in</span>
+                </button>
+            </form>
+            <p class="text-muted small mt-3 mb-0">Default users: admin/admin, user/user</p>
+        </div>
+    </div>
+</div>
+<script src="/webjars/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="/js/login.js"></script>
+</body>
+</html>

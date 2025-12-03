@@ -1,6 +1,7 @@
 // Global state and auditor handling
 const State = (() => {
-    const AUDITOR_KEY = 'notes.auditor';
+    const TOKEN_KEY = 'notes.token';
+    const USERNAME_KEY = 'notes.username';
     const state = {
         page: 0,
         size: 10,
@@ -20,22 +21,34 @@ const State = (() => {
     };
 
     function currentAuditor() {
-        const input = document.getElementById('auditorInput');
-        const fromInput = input?.value?.trim();
-        if (fromInput) return fromInput;
-        const saved = localStorage.getItem(AUDITOR_KEY);
-        return saved?.trim() || 'system';
+        return 'system';
     }
 
-    function saveAuditor(value) {
-        if (value && value.trim()) {
-            localStorage.setItem(AUDITOR_KEY, value.trim());
+    function currentToken() {
+        return localStorage.getItem(TOKEN_KEY) || '';
+    }
+
+    function currentUsername() {
+        return localStorage.getItem(USERNAME_KEY) || '';
+    }
+
+    function saveToken(token, username) {
+        if (token) {
+            localStorage.setItem(TOKEN_KEY, token);
         } else {
-            localStorage.removeItem(AUDITOR_KEY);
+            localStorage.removeItem(TOKEN_KEY);
+        }
+        if (username) {
+            localStorage.setItem(USERNAME_KEY, username);
         }
     }
 
-    return { state, currentAuditor, saveAuditor };
+    function clearToken() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USERNAME_KEY);
+    }
+
+    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername };
 })();
 
 export default State;

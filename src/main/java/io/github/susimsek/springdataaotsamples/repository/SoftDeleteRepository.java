@@ -12,12 +12,12 @@ public interface SoftDeleteRepository<T extends SoftDeletableEntity, ID> {
 
     @Modifying
     @Transactional
-    @Query("update #{#entityName} e set e.deleted = true, e.deletedBy = :#{auditor.username}, e.deletedDate = :#{T(java.time.Instant).now()} where e.id in :ids and e.deleted = false")
+    @Query("update #{#entityName} e set e.deleted = true, e.deletedBy = :#{authentication?.name}, e.deletedDate = :#{T(java.time.Instant).now()} where e.id in :ids and e.deleted = false")
     int softDeleteByIds(@Param("ids") Iterable<ID> ids);
 
     @Modifying
     @Transactional
-    @Query("update #{#entityName} e set e.deleted = true, e.deletedBy = :#{auditor.username}, e.deletedDate = :#{T(java.time.Instant).now()} where e.id = :id and e.deleted = false")
+    @Query("update #{#entityName} e set e.deleted = true, e.deletedBy = :#{authentication?.name}, e.deletedDate = :#{T(java.time.Instant).now()} where e.id = :id and e.deleted = false")
     int softDeleteById(@Param("id") ID id);
 
     @Modifying

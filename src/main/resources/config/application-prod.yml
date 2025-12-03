@@ -23,6 +23,12 @@ spring:
           max-age: 30d
           cache-public: true
 
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET}
+    issuer: notes-app
+    access-token-ttl: PT30M
+
 springdoc:
   api-docs:
     enabled: false
