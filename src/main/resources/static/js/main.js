@@ -240,9 +240,6 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         clearToken();
         updateAuthUi();
         showToast(message, 'warning');
-        if (!window.location.pathname.includes('/login')) {
-            redirectToLogin();
-        }
     }
 
     async function handleLoginSubmit(event) {

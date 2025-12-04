@@ -16,6 +16,9 @@ const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsern
 const usernameSizeMsg = document.querySelector('[data-error-type="loginUsername-size"]');
 const passwordRequiredMsg = document.querySelector('[data-error-type="loginPassword-required"]');
 const passwordSizeMsg = document.querySelector('[data-error-type="loginPassword-size"]');
+const themeToggle = document.getElementById('themeToggle');
+const themeToggleIcon = document.getElementById('themeToggleIcon');
+const themeToggleLabel = document.getElementById('themeToggleLabel');
 
 const { toggleInlineMessages } = Validation;
 
@@ -118,7 +121,61 @@ function init() {
     if (usernameInput) {
         usernameInput.focus();
     }
+    initTheme();
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
     bindLiveValidation();
 }
 
 init();
+
+function systemPrefersDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function getStoredTheme() {
+    try {
+        return localStorage.getItem('theme');
+    } catch (e) {
+        return null;
+    }
+}
+
+function storeTheme(theme) {
+    try {
+        localStorage.setItem('theme', theme);
+    } catch (e) {
+        // ignore
+    }
+}
+
+function applyTheme(theme) {
+    const next = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-bs-theme', next);
+    if (themeToggleIcon) {
+        themeToggleIcon.classList.toggle('fa-moon', next === 'light');
+        themeToggleIcon.classList.toggle('fa-sun', next === 'dark');
+    }
+    if (themeToggleLabel) {
+        themeToggleLabel.textContent = next === 'dark' ? 'Light' : 'Dark';
+    }
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-pressed', next === 'dark');
+        themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
+    }
+}
+
+function initTheme() {
+    const stored = getStoredTheme();
+    const prefers = systemPrefersDark() ? 'dark' : 'light';
+    const initial = document.documentElement.getAttribute('data-bs-theme') || stored || prefers;
+    applyTheme(initial);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    storeTheme(next);
+}
