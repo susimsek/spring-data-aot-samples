@@ -1,0 +1,40 @@
+package io.github.susimsek.springdataaotsamples.security;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.experimental.UtilityClass;
+import org.springframework.http.ResponseCookie;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.WebUtils;
+
+import java.time.Instant;
+
+@UtilityClass
+public class CookieUtils {
+
+    public String getCookieValue(HttpServletRequest request, String name) {
+        var cookie = WebUtils.getCookie(request, name);
+        String val = cookie != null ? cookie.getValue() : null;
+        return StringUtils.hasText(val) ? val : null;
+    }
+
+    public ResponseCookie authCookie(String tokenValue, Instant expiresAt) {
+        long maxAge = Math.max(0, expiresAt.getEpochSecond() - Instant.now().getEpochSecond());
+        return ResponseCookie.from(SecurityUtils.AUTH_COOKIE, tokenValue)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(maxAge)
+                .build();
+    }
+
+    public ResponseCookie clearAuthCookie() {
+        return ResponseCookie.from(SecurityUtils.AUTH_COOKIE, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(0)
+                .build();
+    }
+}

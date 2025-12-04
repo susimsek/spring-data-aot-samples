@@ -5,8 +5,9 @@ import Render from '/js/render.js';
 import Ui from '/js/ui.js';
 import Validation from '/js/validation.js';
 import Diff from '/js/diff.js';
+import Theme from '/js/theme.js';
 
-const { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser } = State;
+const { state, currentAuditor, clearToken, currentUsername, setCurrentUser } = State;
 const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 const { renderTags, revisionTypeBadge } = Render;
 const { toggleSizeMessages, toggleInlineMessages } = Validation;
@@ -16,8 +17,6 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const BULK_LIMIT = 100;
     const TAG_LIMIT = 5;
     const FILTER_TAG_LIMIT = 5;
-    const THEME_KEY = 'theme';
-
     const noteGrid = document.getElementById('noteGrid');
     const totalLabel = document.getElementById('totalLabel');
     const pageInfo = document.getElementById('pageInfo');
@@ -130,70 +129,16 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         addNoteBtn.disabled = state.view === 'trash';
     }
 
-    initTheme();
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
+    Theme.init({ button: themeToggle, icon: themeToggleIcon, label: themeToggleLabel });
 
     function redirectToLogin() {
         window.location.href = '/login.html';
-    }
-
-    function systemPrefersDark() {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    function getStoredTheme() {
-        try {
-            return localStorage.getItem(THEME_KEY);
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function storeTheme(theme) {
-        try {
-            localStorage.setItem(THEME_KEY, theme);
-        } catch (e) {
-            // ignore
-        }
-    }
-
-    function applyTheme(theme) {
-        const next = theme === 'dark' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-bs-theme', next);
-        if (themeToggleIcon) {
-            themeToggleIcon.classList.toggle('fa-moon', next === 'light');
-            themeToggleIcon.classList.toggle('fa-sun', next === 'dark');
-        }
-        if (themeToggleLabel) {
-            themeToggleLabel.textContent = next === 'dark' ? 'Light' : 'Dark';
-        }
-        if (themeToggle) {
-            themeToggle.setAttribute('aria-pressed', next === 'dark');
-            themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
-        }
     }
 
     function setColorFilterActive(active) {
         if (filterColorInput) {
             filterColorInput.dataset.active = active ? 'true' : 'false';
         }
-    }
-
-    function initTheme() {
-        const attrTheme = document.documentElement.getAttribute('data-bs-theme');
-        const stored = getStoredTheme();
-        const prefers = systemPrefersDark() ? 'dark' : 'light';
-        const initial = attrTheme || stored || prefers;
-        applyTheme(initial);
-    }
-
-    function toggleTheme() {
-        const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
-        const next = current === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        storeTheme(next);
     }
 
     function getErrorMessage(error, fallback = 'Request failed') {
@@ -208,7 +153,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     }
 
     function isAuthenticated() {
-        return !!currentToken();
+        return !!state.currentUser;
     }
 
     function updateAuthUi() {
@@ -250,18 +195,17 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
 
     function handleLogout(event) {
         event?.preventDefault();
-        clearToken();
-        updateAuthUi();
-        showToast('Signed out', 'info');
-        window.location.href = '/login.html';
+        handleApi(Api.logout(), { silent: true })
+            .finally(() => {
+                clearToken();
+                updateAuthUi();
+                showToast('Signed out', 'info');
+                window.location.href = '/login.html';
+            });
     }
 
     async function bootstrapAuth() {
         updateAuthUi();
-        if (!isAuthenticated()) {
-            redirectToLogin();
-            return;
-        }
         const me = await handleApi(Api.currentUser(), {
             silent: true,
             onError: () => {

@@ -1,6 +1,5 @@
 // Global state and auditor handling
 const State = (() => {
-    const TOKEN_KEY = 'notes.token';
     const state = {
         page: 0,
         size: 10,
@@ -25,23 +24,16 @@ const State = (() => {
     }
 
     function currentToken() {
-        return localStorage.getItem(TOKEN_KEY) || '';
+        return '';
     }
 
     function currentUsername() {
         return state.currentUser?.username || '';
     }
 
-    function saveToken(token) {
-        if (token) {
-            localStorage.setItem(TOKEN_KEY, token);
-        } else {
-            localStorage.removeItem(TOKEN_KEY);
-        }
-    }
+    function saveToken() {}
 
     function clearToken() {
-        localStorage.removeItem(TOKEN_KEY);
         state.currentUser = null;
     }
 

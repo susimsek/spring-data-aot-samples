@@ -2,9 +2,13 @@ import State from '/js/state.js';
 import Api from '/js/api.js';
 import Helpers from '/js/helpers.js';
 import Validation from '/js/validation.js';
+import Theme from '/js/theme.js';
 
-const { saveToken, clearToken, setCurrentUser } = State;
+const { clearToken, setCurrentUser } = State;
 const { showToast } = Helpers;
+const urlParams = new URLSearchParams(window.location.search);
+const rawRedirect = urlParams.get('redirect');
+const redirectTarget = rawRedirect && !rawRedirect.includes('/login') ? rawRedirect : '/';
 
 const form = document.getElementById('loginForm');
 const alertBox = document.getElementById('loginAlert');
@@ -16,11 +20,14 @@ const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsern
 const usernameSizeMsg = document.querySelector('[data-error-type="loginUsername-size"]');
 const passwordRequiredMsg = document.querySelector('[data-error-type="loginPassword-required"]');
 const passwordSizeMsg = document.querySelector('[data-error-type="loginPassword-size"]');
-const themeToggle = document.getElementById('themeToggle');
-const themeToggleIcon = document.getElementById('themeToggleIcon');
-const themeToggleLabel = document.getElementById('themeToggleLabel');
-
 const { toggleInlineMessages } = Validation;
+
+function hideAlert() {
+    if (alertBox) {
+        alertBox.classList.add('d-none');
+        alertBox.textContent = '';
+    }
+}
 
 function setLoading(loading) {
     if (loading) {
@@ -46,19 +53,22 @@ function clearValidation() {
         if (!el) return;
         el.classList.remove('is-invalid', 'is-valid');
     });
-    if (alertBox) {
-        alertBox.classList.add('d-none');
-        alertBox.textContent = '';
-    }
+    hideAlert();
 }
 
 function bindLiveValidation() {
     const inputs = [usernameInput, passwordInput];
     if (usernameInput) {
-        usernameInput.addEventListener('input', () => toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg));
+        usernameInput.addEventListener('input', () => {
+            hideAlert();
+            toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg);
+        });
     }
     if (passwordInput) {
-        passwordInput.addEventListener('input', () => toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg));
+        passwordInput.addEventListener('input', () => {
+            hideAlert();
+            toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg);
+        });
     }
 }
 
@@ -100,7 +110,6 @@ async function handleSubmit(event) {
         return;
     }
 
-    saveToken(response.token);
     try {
         const me = await Api.currentUser();
         setCurrentUser(me);
@@ -110,7 +119,7 @@ async function handleSubmit(event) {
     form.reset();
     form.classList.remove('was-validated');
     showToast('Signed in', 'success');
-    window.location.href = '/';
+    window.location.replace(redirectTarget);
 }
 
 function init() {
@@ -121,61 +130,8 @@ function init() {
     if (usernameInput) {
         usernameInput.focus();
     }
-    initTheme();
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
+    Theme.init({ button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel' });
     bindLiveValidation();
 }
 
 init();
-
-function systemPrefersDark() {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-function getStoredTheme() {
-    try {
-        return localStorage.getItem('theme');
-    } catch (e) {
-        return null;
-    }
-}
-
-function storeTheme(theme) {
-    try {
-        localStorage.setItem('theme', theme);
-    } catch (e) {
-        // ignore
-    }
-}
-
-function applyTheme(theme) {
-    const next = theme === 'dark' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-bs-theme', next);
-    if (themeToggleIcon) {
-        themeToggleIcon.classList.toggle('fa-moon', next === 'light');
-        themeToggleIcon.classList.toggle('fa-sun', next === 'dark');
-    }
-    if (themeToggleLabel) {
-        themeToggleLabel.textContent = next === 'dark' ? 'Light' : 'Dark';
-    }
-    if (themeToggle) {
-        themeToggle.setAttribute('aria-pressed', next === 'dark');
-        themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
-    }
-}
-
-function initTheme() {
-    const stored = getStoredTheme();
-    const prefers = systemPrefersDark() ? 'dark' : 'light';
-    const initial = document.documentElement.getAttribute('data-bs-theme') || stored || prefers;
-    applyTheme(initial);
-}
-
-function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    storeTheme(next);
-}

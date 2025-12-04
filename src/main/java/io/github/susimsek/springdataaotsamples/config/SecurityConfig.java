@@ -4,6 +4,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
+import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
+import io.github.susimsek.springdataaotsamples.security.CookieAwareBearerTokenResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +27,10 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
@@ -42,33 +47,39 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        AccessDeniedHandlerImpl htmlAccessDenied = new AccessDeniedHandlerImpl();
+        htmlAccessDenied.setErrorPage("/403.html");
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                     .defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint("/login.html"),
+                        new RedirectAwareAuthenticationEntryPoint("/login.html"),
                         new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
-                    .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
+                    .defaultAccessDeniedHandlerFor(
+                        htmlAccessDenied,
+                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
+                        .requestMatchers("/actuator/**").hasAuthority(AuthoritiesConstants.ADMIN)
                         .requestMatchers(HttpMethod.GET,
-                                "/",
-                                "/login",
                                 "/login.html",
-                                "/index.html",
+                                "/403.html",
+                                "/404.html",
                                 "/favicon.ico",
                                 "/favicon-16x16.png",
                                 "/favicon-32x32.png",
                                 "/favicon.svg",
-                                "/static/**",
                                 "/js/**",
                                 "/webjars/**").permitAll()
                         .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(withDefaults())
+            );
         return http.build();
     }
 
@@ -106,5 +117,14 @@ public class SecurityConfig {
         JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
         authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
         return authenticationConverter;
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        CookieAwareBearerTokenResolver resolver = new CookieAwareBearerTokenResolver();
+        resolver.setAllowUriQueryParameter(false);
+        resolver.setAllowFormEncodedBodyParameter(false);
+        resolver.setAllowCookie(true);
+        return resolver;
     }
 }

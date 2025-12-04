@@ -12,6 +12,7 @@ import java.util.Optional;
 public class SecurityUtils {
     public static final String AUTHORITIES_CLAIM = "auth";
     public static final String USER_ID_CLAIM = "userId";
+    public static final String AUTH_COOKIE = "AUTH-TOKEN";
 
     public Optional<String> getCurrentUserLogin() {
         var ctx = SecurityContextHolder.getContext();

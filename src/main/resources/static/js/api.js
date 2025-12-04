@@ -2,16 +2,10 @@ import State from '/js/state.js';
 
 // API client for note operations
 const Api = (() => {
-    const { currentToken } = State;
-
     const jsonHeaders = () => {
         const headers = {
             'Content-Type': 'application/json'
         };
-        const token = currentToken();
-        if (token) {
-            headers.Authorization = `Bearer ${token}`;
-        }
         return headers;
     };
 
@@ -50,6 +44,14 @@ const Api = (() => {
 
     const currentUser = async () => {
         const res = await fetch('/api/auth/me', {
+            headers: jsonHeaders()
+        });
+        return parseResponse(res);
+    };
+
+    const logout = async () => {
+        const res = await fetch('/api/auth/logout', {
+            method: 'POST',
             headers: jsonHeaders()
         });
         return parseResponse(res);
@@ -188,6 +190,7 @@ const Api = (() => {
         ApiError,
         login,
         currentUser,
+        logout,
         headers: jsonHeaders,
         fetchNotes,
         createNote,
