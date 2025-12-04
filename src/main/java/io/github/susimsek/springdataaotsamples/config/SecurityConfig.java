@@ -28,16 +28,15 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.nio.charset.StandardCharsets;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
+import static io.github.susimsek.springdataaotsamples.security.SecurityUtils.JWT_ALGORITHM;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration(proxyBeanMethods = false)
@@ -105,7 +104,7 @@ public class SecurityConfig {
 
     private SecretKey secretKey(JwtProperties properties) {
         byte[] keyBytes = properties.getSecret().getBytes(StandardCharsets.UTF_8);
-        return new SecretKeySpec(keyBytes, "HmacSHA256");
+        return new SecretKeySpec(keyBytes,  JWT_ALGORITHM.getName());
     }
 
     @Bean

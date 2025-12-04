@@ -5,7 +5,6 @@ import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -47,7 +46,7 @@ public class TokenService {
                 .claim(SecurityUtils.USER_ID_CLAIM, userId)
                 .build();
 
-        var headers = JwsHeader.with(MacAlgorithm.HS256).build();
+        var headers = JwsHeader.with(SecurityUtils.JWT_ALGORITHM).build();
         var parameters = JwtEncoderParameters.from(headers, claims);
         var jwt = jwtEncoder.encode(parameters);
 
