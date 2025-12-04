@@ -6,7 +6,7 @@ import Ui from '/js/ui.js';
 import Validation from '/js/validation.js';
 import Diff from '/js/diff.js';
 
-const { state, currentAuditor, saveAuditor, currentToken, saveToken, clearToken, currentUsername } = State;
+const { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser } = State;
 const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 const { renderTags, revisionTypeBadge } = Render;
 const { toggleSizeMessages, toggleInlineMessages } = Validation;
@@ -26,7 +26,6 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const pagination = document.getElementById('pagination');
     const pager = document.getElementById('pager');
     const auditorInput = document.getElementById('auditorInput');
-    const saveAuditorBtn = document.getElementById('saveAuditorBtn');
     const addNoteBtn = document.getElementById('addNoteBtn');
     const activeViewBtn = document.getElementById('activeViewTab');
     const trashViewBtn = document.getElementById('trashViewTab');
@@ -241,7 +240,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         clearToken();
         updateAuthUi();
         showToast(message, 'warning');
-        redirectToLogin();
+        if (!window.location.pathname.includes('/login')) {
+            redirectToLogin();
+        }
     }
 
     async function handleLoginSubmit(event) {
@@ -274,7 +275,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             }
         });
         if (me?.username) {
-            saveToken(currentToken(), me.username);
+            setCurrentUser(me);
             updateAuthUi();
         }
     }

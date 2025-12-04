@@ -1,7 +1,6 @@
 // Global state and auditor handling
 const State = (() => {
     const TOKEN_KEY = 'notes.token';
-    const USERNAME_KEY = 'notes.username';
     const state = {
         page: 0,
         size: 10,
@@ -17,7 +16,8 @@ const State = (() => {
         selected: new Set(),
         filterTags: new Set(),
         filterColor: '',
-        filterPinned: null
+        filterPinned: null,
+        currentUser: null
     };
 
     function currentAuditor() {
@@ -29,26 +29,27 @@ const State = (() => {
     }
 
     function currentUsername() {
-        return localStorage.getItem(USERNAME_KEY) || '';
+        return state.currentUser?.username || '';
     }
 
-    function saveToken(token, username) {
+    function saveToken(token) {
         if (token) {
             localStorage.setItem(TOKEN_KEY, token);
         } else {
             localStorage.removeItem(TOKEN_KEY);
         }
-        if (username) {
-            localStorage.setItem(USERNAME_KEY, username);
-        }
     }
 
     function clearToken() {
         localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USERNAME_KEY);
+        state.currentUser = null;
     }
 
-    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername };
+    function setCurrentUser(user) {
+        state.currentUser = user || null;
+    }
+
+    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser };
 })();
 
 export default State;

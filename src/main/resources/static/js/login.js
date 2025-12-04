@@ -3,7 +3,7 @@ import Api from '/js/api.js';
 import Helpers from '/js/helpers.js';
 import Validation from '/js/validation.js';
 
-const { saveToken, clearToken } = State;
+const { saveToken, clearToken, setCurrentUser } = State;
 const { showToast } = Helpers;
 
 const form = document.getElementById('loginForm');
@@ -97,7 +97,13 @@ async function handleSubmit(event) {
         return;
     }
 
-    saveToken(response.token, response.username || username);
+    saveToken(response.token);
+    try {
+        const me = await Api.currentUser();
+        setCurrentUser(me);
+    } catch (e) {
+        setCurrentUser({ username });
+    }
     form.reset();
     form.classList.remove('was-validated');
     showToast('Signed in', 'success');
