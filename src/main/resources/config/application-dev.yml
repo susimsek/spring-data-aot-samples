@@ -24,7 +24,7 @@ spring:
 security:
   jwt:
     secret: CDyi/yxfK/EMHtj20eOFoLc0t08WVHotnfcpgpnjdt4
-    issuer: notes-app
+    issuer: http://localhost:8080
     access-token-ttl: PT1H
 
 logging:

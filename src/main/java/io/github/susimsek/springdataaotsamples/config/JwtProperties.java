@@ -14,12 +14,12 @@ public class JwtProperties {
     /**
      * Secret used for HMAC signing. Replace in production.
      */
-    private String secret = "change-me-demo-secret-please-change-32";
+    private String secret;
 
     /**
      * Token issuer value.
      */
-    private String issuer = "notes-app";
+    private String issuer;
 
     /**
      * Access token lifetime.
