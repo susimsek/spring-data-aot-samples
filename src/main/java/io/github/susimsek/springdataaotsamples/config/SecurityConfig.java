@@ -104,7 +104,7 @@ public class SecurityConfig {
 
     private SecretKey secretKey(JwtProperties properties) {
         byte[] keyBytes = properties.getSecret().getBytes(StandardCharsets.UTF_8);
-        return new SecretKeySpec(keyBytes,  JWT_ALGORITHM.getName());
+        return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
     }
 
     @Bean
