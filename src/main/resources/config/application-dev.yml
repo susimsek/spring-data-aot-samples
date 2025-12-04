@@ -23,6 +23,7 @@ spring:
 
 security:
   jwt:
+    # Generate at least a 256-bit secret, e.g. openssl rand -base64 32
     secret: CDyi/yxfK/EMHtj20eOFoLc0t08WVHotnfcpgpnjdt4
     issuer: http://localhost:8080
     access-token-ttl: PT1H

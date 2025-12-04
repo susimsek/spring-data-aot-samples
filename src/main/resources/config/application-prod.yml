@@ -25,6 +25,7 @@ spring:
 
 security:
   jwt:
+    # Generate at least a 256-bit secret, e.g. openssl rand -base64 32
     secret: ${SECURITY_JWT_SECRET}
     issuer: https://api.example.com
     access-token-ttl: PT30M
