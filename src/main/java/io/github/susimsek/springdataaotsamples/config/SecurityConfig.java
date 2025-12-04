@@ -94,7 +94,9 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(JwtProperties properties) {
-        return NimbusJwtDecoder.withSecretKey(secretKey(properties)).build();
+        return NimbusJwtDecoder.withSecretKey(secretKey(properties))
+            .macAlgorithm(JWT_ALGORITHM)
+            .build();
     }
 
     @Bean
