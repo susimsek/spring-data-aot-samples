@@ -23,9 +23,9 @@ spring:
 
 security:
   jwt:
-    secret: dev-secret-change-me-32-characters-long
+    secret: CDyi/yxfK/EMHtj20eOFoLc0t08WVHotnfcpgpnjdt4
     issuer: notes-app
-    access-token-ttl: PT2H
+    access-token-ttl: PT1H
 
 logging:
   level:

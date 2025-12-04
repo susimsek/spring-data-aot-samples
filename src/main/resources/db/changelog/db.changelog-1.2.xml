@@ -99,9 +99,7 @@
             <column header="id" type="bigint"/>
             <column header="name" type="string"/>
             <column header="created_by" type="string"/>
-            <column header="created_date" type="timestamp"/>
             <column header="last_modified_by" type="string"/>
-            <column header="last_modified_date" type="timestamp"/>
         </loadData>
 
         <loadData tableName="user_identity"
@@ -114,9 +112,7 @@
             <column header="password" type="string"/>
             <column header="enabled" type="boolean"/>
             <column header="created_by" type="string"/>
-            <column header="created_date" type="timestamp"/>
             <column header="last_modified_by" type="string"/>
-            <column header="last_modified_date" type="timestamp"/>
         </loadData>
 
         <loadData tableName="user_authority"

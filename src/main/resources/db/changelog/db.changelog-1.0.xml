@@ -113,6 +113,8 @@
                   usePreparedStatements="true"
                   encoding="UTF-8">
             <column header="name" type="string"/>
+            <column header="created_by" type="string"/>
+            <column header="last_modified_by" type="string"/>
         </loadData>
     </changeSet>
 

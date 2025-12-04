@@ -40,5 +40,5 @@ spring:
 security:
   jwt:
     secret: ${SECURITY_JWT_SECRET:change-me-demo-secret-please-change-32}
-    issuer: notes-app
+    issuer: http://localhost:8080
     access-token-ttl: PT30M
