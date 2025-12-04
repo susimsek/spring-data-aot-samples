@@ -12,7 +12,7 @@ import java.time.Duration;
 public class JwtProperties {
 
     /**
-     * Secret used for HMAC signing. Replace in production.
+     * Secret used for HMAC signing.
      */
     private String secret;
 
