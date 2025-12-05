@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
@@ -71,18 +72,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull AuthenticationException ex,
             @NonNull WebRequest request
     ) {
-        if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
-            ProblemDetail body = this.createProblemDetail(
-                oAuth2AuthenticationException,
-                    HttpStatus.UNAUTHORIZED,
-                    "problemDetail.title.auth.invalidToken",
-                oAuth2AuthenticationException.getMessage(),
-                    "problemDetail.auth.invalidToken",
-                    null,
-                    request
-            );
-            return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+        if (ex instanceof DisabledException disabled) {
+            return handleDisabled(disabled, request);
         }
+        if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
+            return handleOAuth2Auth(oAuth2AuthenticationException, request);
+        }
+        return handleBadCredentials(ex, request);
+    }
+
+    private ResponseEntity<@NonNull Object> handleBadCredentials(AuthenticationException ex, WebRequest request) {
         ProblemDetail body = this.createProblemDetail(
                 ex,
                 HttpStatus.UNAUTHORIZED,
@@ -95,17 +94,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
 
-    @ExceptionHandler(InvalidBearerTokenException.class)
-    public ResponseEntity<@NonNull Object> handleInvalidBearerToken(
-            @NonNull InvalidBearerTokenException ex,
-            @NonNull WebRequest request
-    ) {
+    private ResponseEntity<@NonNull Object> handleOAuth2Auth(OAuth2AuthenticationException ex, WebRequest request) {
         ProblemDetail body = this.createProblemDetail(
                 ex,
                 HttpStatus.UNAUTHORIZED,
                 "problemDetail.title.auth.invalidToken",
-                "Invalid or expired token",
+                ex.getMessage(),
                 "problemDetail.auth.invalidToken",
+                null,
+                request
+        );
+        return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+    }
+
+    private ResponseEntity<@NonNull Object> handleDisabled(DisabledException ex, WebRequest request) {
+        ProblemDetail body = this.createProblemDetail(
+                ex,
+                HttpStatus.UNAUTHORIZED,
+                "problemDetail.title.auth.disabled",
+                "Account is disabled",
+                "problemDetail.auth.disabled",
                 null,
                 request
         );

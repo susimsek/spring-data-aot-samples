@@ -6,8 +6,10 @@ import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
+import io.github.susimsek.springdataaotsamples.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,7 +18,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -33,6 +34,7 @@ public class TokenService {
     private final JwtProperties jwtProperties;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public TokenDTO generateToken(Authentication authentication) {
@@ -48,19 +50,18 @@ public class TokenService {
         String tokenHash = HashingUtils.sha256Hex(refreshTokenValue);
         RefreshToken existing = refreshTokenRepository.findByTokenAndRevokedFalse(tokenHash)
                 .orElseThrow(() -> new InvalidBearerTokenException("Invalid refresh token"));
+        refreshTokenService.revoke(existing);
 
         if (existing.getExpiresAt().isBefore(Instant.now())) {
-            existing.setRevoked(true);
-            refreshTokenRepository.save(existing);
             throw new InvalidBearerTokenException("Refresh token expired");
         }
 
         User user = userRepository.findOneWithAuthoritiesById(existing.getUserId())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        existing.setRevoked(true);
-        refreshTokenRepository.save(existing);
-        refreshTokenRepository.deleteByUserIdAndExpiresAtBefore(user.getId(), Instant.now());
+        if (!user.isEnabled()) {
+            throw new DisabledException("User is disabled");
+        }
         UserPrincipal principal = UserPrincipal.from(user);
         return issueTokens(principal);
     }
