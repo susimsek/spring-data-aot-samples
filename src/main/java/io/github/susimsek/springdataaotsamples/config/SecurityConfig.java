@@ -66,7 +66,8 @@ public class SecurityConfig {
                         htmlAccessDenied,
                         new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/logout", "/api/auth/me").authenticated()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority(AuthoritiesConstants.ADMIN)

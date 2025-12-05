@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.web;
 
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import io.github.susimsek.springdataaotsamples.security.AuthService;
@@ -58,7 +59,15 @@ public class AuthController {
 
     @Operation(summary = "Logout", description = "Clears auth cookie.")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(
+            HttpServletRequest request,
+            @RequestBody(required = false) LogoutRequest body
+    ) {
+        String refreshToken = body.refreshToken();
+        if (!StringUtils.hasText(refreshToken)) {
+            refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
+        }
+        authService.logout(refreshToken);
         ResponseCookie clearCookie = CookieUtils.clearAuthCookie();
         ResponseCookie clearRefresh = CookieUtils.clearRefreshCookie();
         return ResponseEntity.noContent()
@@ -75,7 +84,7 @@ public class AuthController {
             HttpServletRequest request,
             @Valid @RequestBody(required = false) RefreshTokenRequest body
     ) {
-        String refreshToken = body.refreshToken();
+        String refreshToken = body != null ? body.refreshToken() : null;
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }
