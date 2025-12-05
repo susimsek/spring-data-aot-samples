@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="13" author="codex">
+        <createSequence sequenceName="refresh_token_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="refresh_token">
+            <column name="id" type="bigint" defaultValueSequenceNext="refresh_token_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="varchar(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="issued_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revoked" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="refresh_token"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="user_identity"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_refresh_token_user"/>
+
+        <createIndex tableName="refresh_token" indexName="idx_refresh_token_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

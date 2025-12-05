@@ -18,6 +18,8 @@ const Api = (() => {
         }
     }
 
+    let refreshInFlight = null;
+
     const parseResponse = async (res) => {
         let body = null;
         try {
@@ -33,6 +35,36 @@ const Api = (() => {
         return body ?? {};
     };
 
+    const request = async (url, options = {}, { retry = true } = {}) => {
+        try {
+            const res = await fetch(url, options);
+            return await parseResponse(res);
+        } catch (err) {
+            if (err instanceof ApiError && err.status === 401 && retry) {
+                try {
+                    await refresh();
+                    const res = await fetch(url, options);
+                    return await parseResponse(res);
+                } catch (refreshErr) {
+                    throw refreshErr;
+                }
+            }
+            throw err;
+        }
+    };
+
+    const refresh = async () => {
+        if (!refreshInFlight) {
+            refreshInFlight = fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: jsonHeaders()
+            }).then(parseResponse).finally(() => {
+                refreshInFlight = null;
+            });
+        }
+        return refreshInFlight;
+    };
+
     const login = async (payload) => {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
@@ -43,10 +75,7 @@ const Api = (() => {
     };
 
     const currentUser = async () => {
-        const res = await fetch('/api/auth/me', {
-            headers: jsonHeaders()
-        });
-        return parseResponse(res);
+        return request('/api/auth/me', { headers: jsonHeaders() });
     };
 
     const logout = async () => {
@@ -69,101 +98,87 @@ const Api = (() => {
         if (tags && Array.isArray(tags)) {
             tags.forEach(tag => params.append('tags', tag));
         }
-        const res = await fetch(`${base}?${params.toString()}`, {
-            headers: jsonHeaders()
-        });
-        return parseResponse(res);
+        return request(`${base}?${params.toString()}`, { headers: jsonHeaders() });
     };
 
     const createNote = async (payload) => {
-        const res = await fetch('/api/notes', {
+        return request('/api/notes', {
             method: 'POST',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
-        return parseResponse(res);
     };
 
     const updateNote = async (id, payload) => {
-        const res = await fetch(`/api/notes/${id}`, {
+        return request(`/api/notes/${id}`, {
             method: 'PUT',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
-        return parseResponse(res);
     };
 
     const patchNote = async (id, payload) => {
-        const res = await fetch(`/api/notes/${id}`, {
+        return request(`/api/notes/${id}`, {
             method: 'PATCH',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
-        return parseResponse(res);
     };
 
     const softDelete = async (id) => {
-        const res = await fetch(`/api/notes/${id}`, {
+        return request(`/api/notes/${id}`, {
             method: 'DELETE',
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const restore = async (id) => {
-        const res = await fetch(`/api/notes/${id}/restore`, {
+        return request(`/api/notes/${id}/restore`, {
             method: 'POST',
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const deletePermanent = async (id) => {
-        const res = await fetch(`/api/notes/${id}/permanent`, {
+        return request(`/api/notes/${id}/permanent`, {
             method: 'DELETE',
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const emptyTrash = async () => {
-        const res = await fetch('/api/notes/deleted', {
+        return request('/api/notes/deleted', {
             method: 'DELETE',
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const bulkAction = async (payload) => {
-        const res = await fetch('/api/notes/bulk', {
+        return request('/api/notes/bulk', {
             method: 'POST',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
         });
-        return parseResponse(res);
     };
 
     const fetchRevisions = async (id, page = 0, size = 5, sort) => {
         const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
-        const res = await fetch(`/api/notes/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
+        return request(`/api/notes/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const fetchRevision = async (id, revisionId) => {
-        const res = await fetch(`/api/notes/${id}/revisions/${revisionId}`, {
+        return request(`/api/notes/${id}/revisions/${revisionId}`, {
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const restoreRevision = async (id, revisionId) => {
-        const res = await fetch(`/api/notes/${id}/revisions/${revisionId}/restore`, {
+        return request(`/api/notes/${id}/revisions/${revisionId}/restore`, {
             method: 'POST',
             headers: jsonHeaders()
         });
-        return parseResponse(res);
     };
 
     const fetchTags = async (query) => {
@@ -173,10 +188,7 @@ const Api = (() => {
         if (query) {
             url.searchParams.set('q', query);
         }
-        const res = await fetch(url.toString(), {
-            headers: jsonHeaders()
-        });
-        const body = await parseResponse(res);
+        const body = await request(url.toString(), { headers: jsonHeaders() });
         if (Array.isArray(body)) {
             return body;
         }
@@ -191,6 +203,7 @@ const Api = (() => {
         login,
         currentUser,
         logout,
+        refresh,
         headers: jsonHeaders,
         fetchNotes,
         createNote,

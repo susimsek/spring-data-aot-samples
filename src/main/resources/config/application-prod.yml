@@ -28,7 +28,9 @@ security:
     # Generate at least a 256-bit secret, e.g. openssl rand -base64 32
     secret: ${SECURITY_JWT_SECRET}
     issuer: https://api.example.com
-    access-token-ttl: PT30M
+    audience: note-api
+    access-token-ttl: PT5M
+    refresh-token-ttl: P7D
 
 springdoc:
   api-docs:

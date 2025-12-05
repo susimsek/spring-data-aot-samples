@@ -15,6 +15,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.ui.Model;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -69,12 +71,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull AuthenticationException ex,
             @NonNull WebRequest request
     ) {
+        if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
+            ProblemDetail body = this.createProblemDetail(
+                oAuth2AuthenticationException,
+                    HttpStatus.UNAUTHORIZED,
+                    "problemDetail.title.auth.invalidToken",
+                oAuth2AuthenticationException.getMessage(),
+                    "problemDetail.auth.invalidToken",
+                    null,
+                    request
+            );
+            return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+        }
         ProblemDetail body = this.createProblemDetail(
                 ex,
                 HttpStatus.UNAUTHORIZED,
                 "problemDetail.title.auth.badCredentials",
                 "Invalid credentials",
                 "problemDetail.auth.badCredentials",
+                null,
+                request
+        );
+        return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+    }
+
+    @ExceptionHandler(InvalidBearerTokenException.class)
+    public ResponseEntity<@NonNull Object> handleInvalidBearerToken(
+            @NonNull InvalidBearerTokenException ex,
+            @NonNull WebRequest request
+    ) {
+        ProblemDetail body = this.createProblemDetail(
+                ex,
+                HttpStatus.UNAUTHORIZED,
+                "problemDetail.title.auth.invalidToken",
+                "Invalid or expired token",
+                "problemDetail.auth.invalidToken",
                 null,
                 request
         );

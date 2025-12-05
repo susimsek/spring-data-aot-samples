@@ -1,15 +1,25 @@
 package io.github.susimsek.springdataaotsamples.security;
 
 import io.github.susimsek.springdataaotsamples.config.JwtProperties;
+import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
+import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
+import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Set;
@@ -21,41 +31,100 @@ public class TokenService {
 
     private final JwtEncoder jwtEncoder;
     private final JwtProperties jwtProperties;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
 
+    @Transactional
     public TokenDTO generateToken(Authentication authentication) {
-        Instant now = Instant.now();
-        Instant expiresAt = now.plus(jwtProperties.getAccessTokenTtl());
+        UserPrincipal principal = extractPrincipal(authentication);
+        return issueTokens(principal);
+    }
 
-        String username = authentication.getName();
-        Long userId = null;
-        if (authentication.getPrincipal() instanceof UserPrincipal principal) {
-            userId = principal.id();
-            username = principal.getUsername();
+    @Transactional
+    public TokenDTO refresh(String refreshTokenValue) {
+        if (!StringUtils.hasText(refreshTokenValue)) {
+            throw new InvalidBearerTokenException("Refresh token is missing");
+        }
+        String tokenHash = HashingUtils.sha256Hex(refreshTokenValue);
+        RefreshToken existing = refreshTokenRepository.findByTokenAndRevokedFalse(tokenHash)
+                .orElseThrow(() -> new InvalidBearerTokenException("Invalid refresh token"));
+
+        if (existing.getExpiresAt().isBefore(Instant.now())) {
+            existing.setRevoked(true);
+            refreshTokenRepository.save(existing);
+            throw new InvalidBearerTokenException("Refresh token expired");
         }
 
-        Set<String> authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
+        User user = userRepository.findOneWithAuthoritiesById(existing.getUserId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        existing.setRevoked(true);
+        refreshTokenRepository.save(existing);
+        refreshTokenRepository.deleteByUserIdAndExpiresAtBefore(user.getId(), Instant.now());
+        UserPrincipal principal = UserPrincipal.from(user);
+        return issueTokens(principal);
+    }
+
+    private String encodeAccessToken(UserPrincipal principal,
+                                     Set<String> authorities,
+                                     Instant issuedAt,
+                                     Instant expiresAt) {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtProperties.getIssuer())
-                .subject(username)
-                .issuedAt(now)
+                .audience(jwtProperties.getAudience())
+                .subject(principal.getUsername())
+                .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
                 .claim(SecurityUtils.AUTHORITIES_CLAIM, authorities)
-                .claim(SecurityUtils.USER_ID_CLAIM, userId)
+                .claim(SecurityUtils.USER_ID_CLAIM, principal.id())
                 .build();
 
         var headers = JwsHeader.with(SecurityUtils.JWT_ALGORITHM).build();
         var parameters = JwtEncoderParameters.from(headers, claims);
-        var jwt = jwtEncoder.encode(parameters);
+        return jwtEncoder.encode(parameters).getTokenValue();
+    }
 
+    private RefreshToken createRefreshToken(UserPrincipal principal, Instant issuedAt) {
+        Long userId = principal.id();
+        if (userId == null) {
+            throw new InvalidBearerTokenException("User id is required to issue refresh token");
+        }
+        var refreshToken = new RefreshToken();
+        refreshToken.setUserId(userId);
+        refreshToken.setIssuedAt(issuedAt);
+        refreshToken.setExpiresAt(issuedAt.plus(jwtProperties.getRefreshTokenTtl()));
+        String rawToken = RandomUtils.hexRefreshToken();
+        refreshToken.setToken(HashingUtils.sha256Hex(rawToken));
+        refreshToken.setRawToken(rawToken);
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    private TokenDTO issueTokens(UserPrincipal principal) {
+        Set<String> authorities = principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
+        Instant now = Instant.now();
+        Instant accessExpiresAt = now.plus(jwtProperties.getAccessTokenTtl());
+        String accessToken = encodeAccessToken(principal, authorities, now, accessExpiresAt);
+
+        RefreshToken refreshToken = createRefreshToken(principal, now);
         return new TokenDTO(
-                jwt.getTokenValue(),
+                accessToken,
                 "Bearer",
-                expiresAt,
-                username,
+                accessExpiresAt,
+                refreshToken.getRawToken(),
+                refreshToken.getExpiresAt(),
+                principal.getUsername(),
                 authorities
         );
     }
+
+    private UserPrincipal extractPrincipal(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof UserPrincipal principal) {
+            return principal;
+        }
+        throw new BadCredentialsException("Unsupported authentication principal");
+    }
+
 }

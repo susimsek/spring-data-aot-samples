@@ -14,6 +14,7 @@ public class SecurityUtils {
     public static final String AUTHORITIES_CLAIM = "auth";
     public static final String USER_ID_CLAIM = "userId";
     public static final String AUTH_COOKIE = "AUTH-TOKEN";
+    public static final String REFRESH_COOKIE = "REFRESH-TOKEN";
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS256;
 
     public Optional<String> getCurrentUserLogin() {

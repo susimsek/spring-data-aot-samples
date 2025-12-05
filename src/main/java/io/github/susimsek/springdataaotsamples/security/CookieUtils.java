@@ -37,4 +37,25 @@ public class CookieUtils {
                 .maxAge(0)
                 .build();
     }
+
+    public ResponseCookie refreshCookie(String tokenValue, Instant expiresAt) {
+        long maxAge = Math.max(0, expiresAt.getEpochSecond() - Instant.now().getEpochSecond());
+        return ResponseCookie.from(SecurityUtils.REFRESH_COOKIE, tokenValue)
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/auth")
+                .sameSite("Strict")
+                .maxAge(maxAge)
+                .build();
+    }
+
+    public ResponseCookie clearRefreshCookie() {
+        return ResponseCookie.from(SecurityUtils.REFRESH_COOKIE, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/auth")
+                .sameSite("Strict")
+                .maxAge(0)
+                .build();
+    }
 }

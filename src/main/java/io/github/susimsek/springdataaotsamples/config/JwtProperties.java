@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,4 +26,14 @@ public class JwtProperties {
      * Access token lifetime.
      */
     private Duration accessTokenTtl = Duration.ofMinutes(30);
+
+    /**
+     * Refresh token lifetime.
+     */
+    private Duration refreshTokenTtl = Duration.ofDays(30);
+
+    /**
+     * Expected audiences for issued tokens.
+     */
+    private List<String> audience = List.of("note-api");
 }

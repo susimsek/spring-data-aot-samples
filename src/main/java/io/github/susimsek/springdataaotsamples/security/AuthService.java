@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.security;
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
         return tokenService.generateToken(authentication);
+    }
+
+    public TokenDTO refresh(String refreshToken) {
+        return tokenService.refresh(refreshToken);
     }
 
     public UserDTO getCurrentUser() {

@@ -5,8 +5,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
-import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
 import io.github.susimsek.springdataaotsamples.security.CookieAwareBearerTokenResolver;
+import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
+import io.github.susimsek.springdataaotsamples.security.AudienceValidator;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,10 +22,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
@@ -94,9 +99,15 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(JwtProperties properties) {
-        return NimbusJwtDecoder.withSecretKey(secretKey(properties))
-            .macAlgorithm(JWT_ALGORITHM)
-            .build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey(properties))
+                .macAlgorithm(JWT_ALGORITHM)
+                .build();
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefaultWithIssuer(properties.getIssuer()),
+                new AudienceValidator(properties.getAudience())
+        );
+        decoder.setJwtValidator(validator);
+        return decoder;
     }
 
     @Bean
