@@ -16,6 +16,7 @@ const submitBtn = document.getElementById('loginSubmit');
 const spinner = document.getElementById('loginSpinner');
 const usernameInput = document.getElementById('loginUsername');
 const passwordInput = document.getElementById('loginPassword');
+const rememberMeInput = document.getElementById('loginRememberMe');
 const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
 const usernameSizeMsg = document.querySelector('[data-error-type="loginUsername-size"]');
 const passwordRequiredMsg = document.querySelector('[data-error-type="loginPassword-required"]');
@@ -90,9 +91,10 @@ async function handleSubmit(event) {
 
     const username = usernameInput?.value?.trim();
     const password = passwordInput?.value || '';
+    const rememberMe = !!rememberMeInput?.checked;
 
     setLoading(true);
-    const response = await Api.login({ username, password }).catch(err => {
+    const response = await Api.login({ username, password, rememberMe }).catch(err => {
         return { error: err };
     });
     setLoading(false);

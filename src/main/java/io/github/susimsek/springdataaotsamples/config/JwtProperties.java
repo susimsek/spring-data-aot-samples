@@ -33,6 +33,11 @@ public class JwtProperties {
     private Duration refreshTokenTtl = Duration.ofDays(30);
 
     /**
+     * Refresh token lifetime when remember-me is enabled.
+     */
+    private Duration refreshTokenTtlForRememberMe = Duration.ofDays(30);
+
+    /**
      * Expected audiences for issued tokens.
      */
     private List<String> audience = List.of("note-api");

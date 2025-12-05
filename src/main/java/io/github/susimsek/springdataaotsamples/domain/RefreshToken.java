@@ -38,6 +38,9 @@ public class RefreshToken {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
+    @Column(name = "remember_me", nullable = false)
+    private boolean rememberMe = false;
+
     @Column(name = "revoked", nullable = false)
     private boolean revoked = false;
 

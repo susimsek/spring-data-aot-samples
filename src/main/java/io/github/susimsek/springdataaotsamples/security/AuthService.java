@@ -32,7 +32,7 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
 
-        return tokenService.generateToken(authentication);
+        return tokenService.generateToken(authentication, request.rememberMe());
     }
 
     public TokenDTO refresh(String refreshToken) {

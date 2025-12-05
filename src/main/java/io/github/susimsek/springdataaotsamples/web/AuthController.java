@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -63,9 +64,9 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
-            @RequestBody(required = false) LogoutRequest body
+            @Nullable @Valid @RequestBody(required = false) LogoutRequest body
     ) {
-        String refreshToken = body.refreshToken();
+        String refreshToken = body != null ? body.refreshToken() : null;
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }
@@ -85,9 +86,9 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<TokenDTO> refresh(
             HttpServletRequest request,
-            @Valid @RequestBody(required = false) RefreshTokenRequest body
+            @Nullable @Valid @RequestBody(required = false) RefreshTokenRequest body
     ) {
-        String refreshToken = body.refreshToken();
+        String refreshToken = body != null ? body.refreshToken() : null;
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }

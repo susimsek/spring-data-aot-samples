@@ -30,6 +30,9 @@
             <column name="expires_at" type="timestamp">
                 <constraints nullable="false"/>
             </column>
+            <column name="remember_me" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
             <column name="revoked" type="boolean" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>

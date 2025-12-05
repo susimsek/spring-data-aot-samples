@@ -36,9 +36,9 @@ public class TokenService {
     private final RefreshTokenService refreshTokenService;
 
     @Transactional
-    public TokenDTO generateToken(Authentication authentication) {
+    public TokenDTO generateToken(Authentication authentication, boolean rememberMe) {
         UserPrincipal principal = extractPrincipal(authentication);
-        return issueTokens(principal);
+        return issueTokens(principal, rememberMe);
     }
 
     @Transactional
@@ -61,8 +61,9 @@ public class TokenService {
         if (!user.isEnabled()) {
             throw new DisabledException("User is disabled");
         }
+        boolean rememberMe = existing.isRememberMe();
         UserPrincipal principal = UserPrincipal.from(user);
-        return issueTokens(principal);
+        return issueTokens(principal, rememberMe);
     }
 
     private String encodeAccessToken(UserPrincipal principal,
@@ -84,7 +85,7 @@ public class TokenService {
         return jwtEncoder.encode(parameters).getTokenValue();
     }
 
-    private RefreshToken createRefreshToken(UserPrincipal principal, Instant issuedAt) {
+    private RefreshToken createRefreshToken(UserPrincipal principal, Instant issuedAt, boolean rememberMe) {
         Long userId = principal.id();
         if (userId == null) {
             throw new InvalidBearerTokenException("User id is required to issue refresh token");
@@ -92,14 +93,18 @@ public class TokenService {
         var refreshToken = new RefreshToken();
         refreshToken.setUserId(userId);
         refreshToken.setIssuedAt(issuedAt);
-        refreshToken.setExpiresAt(issuedAt.plus(jwtProperties.getRefreshTokenTtl()));
+        var ttl = rememberMe
+                ? jwtProperties.getRefreshTokenTtlForRememberMe()
+                : jwtProperties.getRefreshTokenTtl();
+        refreshToken.setExpiresAt(issuedAt.plus(ttl));
+        refreshToken.setRememberMe(rememberMe);
         String rawToken = RandomUtils.hexRefreshToken();
         refreshToken.setToken(HashingUtils.sha256Hex(rawToken));
         refreshToken.setRawToken(rawToken);
         return refreshTokenRepository.save(refreshToken);
     }
 
-    private TokenDTO issueTokens(UserPrincipal principal) {
+    private TokenDTO issueTokens(UserPrincipal principal, boolean rememberMe) {
         Set<String> authorities = principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
@@ -108,7 +113,7 @@ public class TokenService {
         Instant accessExpiresAt = now.plus(jwtProperties.getAccessTokenTtl());
         String accessToken = encodeAccessToken(principal, authorities, now, accessExpiresAt);
 
-        RefreshToken refreshToken = createRefreshToken(principal, now);
+        RefreshToken refreshToken = createRefreshToken(principal, now, rememberMe);
         return new TokenDTO(
                 accessToken,
                 "Bearer",

@@ -27,8 +27,9 @@ security:
     secret: CDyi/yxfK/EMHtj20eOFoLc0t08WVHotnfcpgpnjdt4
     issuer: http://localhost:8080
     audience: note-api
-    access-token-ttl: PT10M
-    refresh-token-ttl: P7D
+    access-token-ttl: PT30M
+    refresh-token-ttl: PT2H
+    refresh-token-ttl-for-remember-me: P30D
 
 logging:
   level:

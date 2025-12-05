@@ -29,8 +29,9 @@ security:
     secret: ${SECURITY_JWT_SECRET}
     issuer: https://api.example.com
     audience: note-api
-    access-token-ttl: PT5M
-    refresh-token-ttl: P7D
+    access-token-ttl: PT15M
+    refresh-token-ttl: PT30M
+    refresh-token-ttl-for-remember-me: P7D
 
 springdoc:
   api-docs:
