@@ -43,7 +43,7 @@ public class CookieUtils {
         return ResponseCookie.from(SecurityUtils.REFRESH_COOKIE, tokenValue)
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth")
+                .path("/")
                 .sameSite("Strict")
                 .maxAge(maxAge)
                 .build();
@@ -53,7 +53,7 @@ public class CookieUtils {
         return ResponseCookie.from(SecurityUtils.REFRESH_COOKIE, "")
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth")
+                .path("/")
                 .sameSite("Strict")
                 .maxAge(0)
                 .build();
