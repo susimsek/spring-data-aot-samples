@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
     @ApiResponse(responseCode = "200", description = "Token issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
@@ -76,6 +78,7 @@ public class AuthController {
                 .build();
     }
 
+    @SecurityRequirements
     @Operation(summary = "Refresh access token", description = "Rotates refresh token and issues a new access token.")
     @ApiResponse(responseCode = "200", description = "New tokens issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
@@ -84,7 +87,7 @@ public class AuthController {
             HttpServletRequest request,
             @Valid @RequestBody(required = false) RefreshTokenRequest body
     ) {
-        String refreshToken = body != null ? body.refreshToken() : null;
+        String refreshToken = body.refreshToken();
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }
