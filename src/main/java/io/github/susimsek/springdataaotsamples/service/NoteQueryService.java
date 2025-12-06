@@ -24,7 +24,8 @@ public class NoteQueryService {
     public Page<NoteDTO> find(NoteCriteria criteria, Pageable pageable) {
         var specification = createSpecification(criteria);
         var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
-        return noteRepository.findAll(specification, pageableWithPinned).map(noteMapper::toDto);
+        return noteRepository.findAllWithTags(specification, pageableWithPinned)
+                .map(noteMapper::toDto);
     }
 
     private Specification<Note> createSpecification(NoteCriteria criteria) {
