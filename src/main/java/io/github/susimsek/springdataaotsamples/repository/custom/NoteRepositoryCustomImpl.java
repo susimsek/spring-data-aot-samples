@@ -58,9 +58,7 @@ public class NoteRepositoryCustomImpl implements NoteRepositoryCustom {
         Root<Note> root = countQuery.from(Note.class);
         countQuery.select(cb.countDistinct(root));
         Predicate predicate = applySpecification(specification, cb, countQuery, root);
-        if (predicate != null) {
-            countQuery.where(predicate);
-        }
+        countQuery.where(predicate);
         return em.createQuery(countQuery).getSingleResult();
     }
 
