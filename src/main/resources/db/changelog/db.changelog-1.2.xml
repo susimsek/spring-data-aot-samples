@@ -3,7 +3,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="10" author="codex">
         <createSequence sequenceName="user_identity_seq"
@@ -96,7 +96,7 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="bigint"/>
+            <column header="id" type="numeric"/>
             <column header="name" type="string"/>
             <column header="created_by" type="string"/>
             <column header="last_modified_by" type="string"/>
@@ -107,7 +107,7 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="bigint"/>
+            <column header="id" type="numeric"/>
             <column header="username" type="string"/>
             <column header="password" type="string"/>
             <column header="enabled" type="boolean"/>
@@ -120,8 +120,8 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="user_id" type="bigint"/>
-            <column header="authority_id" type="bigint"/>
+            <column header="user_id" type="numeric"/>
+            <column header="authority_id" type="numeric"/>
         </loadData>
     </changeSet>
 

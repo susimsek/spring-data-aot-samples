@@ -3,7 +3,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="1" author="codex">
         <createSequence sequenceName="note_seq"
@@ -124,8 +124,8 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="note_id" type="bigint"/>
-            <column header="tag_id" type="bigint"/>
+            <column header="note_id" type="numeric"/>
+            <column header="tag_id" type="numeric"/>
         </loadData>
     </changeSet>
 

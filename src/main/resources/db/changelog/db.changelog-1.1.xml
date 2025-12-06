@@ -3,7 +3,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="5" author="codex">
         <createSequence sequenceName="rev_seq"
@@ -119,7 +119,7 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="bigint"/>
+            <column header="id" type="numeric"/>
             <column header="title" type="string"/>
             <column header="content" type="string"/>
             <column header="pinned" type="boolean"/>
@@ -131,8 +131,8 @@
             <column header="deleted" type="boolean"/>
             <column header="deleted_by" type="string"/>
             <column header="deleted_date" type="timestamp"/>
-            <column header="rev" type="bigint"/>
-            <column header="revtype" type="smallint"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
         </loadData>
 
         <loadData tableName="tag_aud"
@@ -140,14 +140,14 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="bigint"/>
+            <column header="id" type="numeric"/>
             <column header="name" type="string"/>
             <column header="created_by" type="string"/>
             <column header="created_date" type="timestamp"/>
             <column header="last_modified_by" type="string"/>
             <column header="last_modified_date" type="timestamp"/>
-            <column header="rev" type="bigint"/>
-            <column header="revtype" type="smallint"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
         </loadData>
 
         <loadData tableName="note_tag_aud"
@@ -155,10 +155,10 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="note_id" type="bigint"/>
-            <column header="tag_id" type="bigint"/>
-            <column header="rev" type="bigint"/>
-            <column header="revtype" type="smallint"/>
+            <column header="note_id" type="numeric"/>
+            <column header="tag_id" type="numeric"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
         </loadData>
     </changeSet>
 
