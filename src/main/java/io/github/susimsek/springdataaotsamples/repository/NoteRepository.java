@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.repository.custom.NoteRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public interface NoteRepository extends
         JpaRepository<Note, Long>,
         JpaSpecificationExecutor<Note>,
+       NoteRepositoryCustom,
         SoftDeleteRepository<Note, Long>,
         RevisionRepository<Note, Long, Long> {
 
@@ -30,14 +32,12 @@ public interface NoteRepository extends
     default Page<Note> findAllWithTags(Specification<Note> spec,
                                        Pageable pageable) {
 
-        Page<Note> page = findAll(spec, pageable);
-        if (page.isEmpty()) {
-            return page;
+        Page<Long> idPage = findIds(spec, pageable);
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
         }
 
-        var ids = page.getContent().stream()
-            .map(Note::getId)
-            .toList();
+        var ids = idPage.getContent();
 
         var loadedNotes = findAllByIdIn(ids);
 
@@ -53,6 +53,6 @@ public interface NoteRepository extends
             .map(noteMap::get)
             .toList();
 
-        return new PageImpl<>(ordered, pageable, page.getTotalElements());
+        return new PageImpl<>(ordered, pageable, idPage.getTotalElements());
     }
 }
