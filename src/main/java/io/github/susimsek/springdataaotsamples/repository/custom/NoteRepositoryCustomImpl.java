@@ -22,7 +22,7 @@ public class NoteRepositoryCustomImpl implements NoteRepositoryCustom {
     private EntityManager em;
 
     @Override
-    public Page<Long> findIds(@Nullable Specification<Note> specification,
+    public Page<Long> findIds(Specification<Note> specification,
                               Pageable pageable) {
         var cb = em.getCriteriaBuilder();
 
@@ -31,13 +31,12 @@ public class NoteRepositoryCustomImpl implements NoteRepositoryCustom {
         idQuery.select(root.get("id"));
 
         Predicate predicate = applySpecification(specification, cb, idQuery, root);
-        if (predicate != null) {
-            idQuery.where(predicate);
-        }
+        idQuery.where(predicate);
+
         if (pageable.getSort().isSorted()) {
             idQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, cb));
         }
-        // Avoid DISTINCT + ORDER BY select columns issue (e.g. H2) by disabling distinct and de-duplicating in memory
+
         idQuery.distinct(false);
 
         var typed = em.createQuery(idQuery);
@@ -71,9 +70,6 @@ public class NoteRepositoryCustomImpl implements NoteRepositoryCustom {
             CriteriaQuery<?> query,
             Root<Note> root
     ) {
-        if (specification == null) {
-            return null;
-        }
         return specification.toPredicate(root, query, cb);
     }
 }
