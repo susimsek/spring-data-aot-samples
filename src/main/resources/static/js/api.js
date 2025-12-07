@@ -225,6 +225,26 @@ const Api = (() => {
         return [];
     };
 
+    const searchUsers = async (query, page = 0, size = 10) => {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('size', size);
+        if (query) {
+            params.set('q', query);
+        }
+        return request(`/api/admin/users/search?${params.toString()}`, {
+            headers: jsonHeaders()
+        });
+    };
+
+    const changeOwner = async (id, payload) => {
+        return request(`/api/admin/notes/${id}/owner`, {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify(payload)
+        });
+    };
+
     return {
         ApiError,
         login,
@@ -244,7 +264,9 @@ const Api = (() => {
         fetchRevisions,
         fetchRevision,
         restoreRevision,
-        fetchTags
+        fetchTags,
+        searchUsers,
+        changeOwner
     };
 })();
 

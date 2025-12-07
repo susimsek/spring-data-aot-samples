@@ -100,6 +100,22 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const revisionSpinner = document.getElementById('revisionSpinner');
     const revisionError = document.getElementById('revisionError');
     const revisionModalTitle = document.getElementById('revisionModalTitle');
+    const ownerModalEl = document.getElementById('ownerModal');
+    const ownerModal = ownerModalEl ? bootstrap.Modal.getOrCreateInstance(ownerModalEl) : null;
+    const ownerForm = document.getElementById('ownerForm');
+    const ownerInput = document.getElementById('ownerInput');
+    const ownerNoteTitleText = document.getElementById('ownerNoteTitleText');
+    const ownerAlert = document.getElementById('ownerAlert');
+    const ownerSuggestions = document.getElementById('ownerSuggestions');
+    const ownerSubmit = document.getElementById('ownerSubmit');
+    const ownerSubmitSpinner = document.getElementById('ownerSubmitSpinner');
+    const ownerCurrentLabel = document.getElementById('ownerCurrentLabel');
+    const ownerLoadMoreBtn = document.getElementById('ownerLoadMore');
+    const OWNER_SEARCH_PAGE_SIZE = 5;
+    let ownerSearchPage = 0;
+    let ownerSearchHasMore = false;
+    let ownerSearchQuery = '';
+    let ownerSearchLoading = false;
     const themeToggle = document.getElementById('themeToggle');
     const themeToggleIcon = document.getElementById('themeToggleIcon');
     const themeToggleLabel = document.getElementById('themeToggleLabel');
@@ -125,6 +141,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     state.sort = defaultSort;
     state.selected = new Set();
     let deleteForeverId = null;
+    let ownerNoteId = null;
 
     if (addNoteBtn) {
         addNoteBtn.disabled = state.view === 'trash';
@@ -237,6 +254,153 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             return null;
         } finally {
             onFinally?.();
+        }
+    }
+
+    function clearOwnerModal() {
+        ownerAlert?.classList.add('d-none');
+        if (ownerSuggestions) ownerSuggestions.innerHTML = '';
+        if (ownerInput) {
+            ownerInput.value = '';
+            ownerInput.classList.remove('is-invalid');
+        }
+        ownerSubmit?.setAttribute('disabled', 'disabled');
+        ownerSubmitSpinner?.classList.add('d-none');
+        ownerSearchPage = 0;
+        ownerSearchHasMore = false;
+        ownerSearchQuery = '';
+        ownerSearchLoading = false;
+        if (ownerLoadMoreBtn) {
+            ownerLoadMoreBtn.classList.add('d-none');
+            ownerLoadMoreBtn.disabled = false;
+        }
+    }
+
+    function openOwnerModal(noteId) {
+        if (!ownerModal || !isAdmin?.()) return;
+        ownerNoteId = noteId;
+        const note = noteCache.get(noteId);
+        if (ownerNoteTitleText) {
+            ownerNoteTitleText.textContent = note?.title
+                ? `Change owner for "${note.title}"`
+                : 'Change owner';
+        }
+        if (ownerCurrentLabel) {
+            const hasOwner = !!note?.owner;
+            ownerCurrentLabel.textContent = hasOwner ? `Current owner: ${note.owner}` : '';
+            ownerCurrentLabel.classList.toggle('d-none', !hasOwner);
+        }
+        clearOwnerModal();
+        ownerModal.show();
+        ownerInput?.focus();
+        if (ownerInput?.value) {
+            loadOwnerSuggestions(ownerInput.value);
+        }
+    }
+
+    function renderOwnerSuggestions(users, append = false) {
+        if (!ownerSuggestions) return;
+        const rows = Array.isArray(users) ? users : [];
+        if (!append) {
+            ownerSuggestions.innerHTML = '';
+        }
+        if (rows.length === 0 && !append) {
+            ownerSuggestions.innerHTML = '<div class="text-muted small px-2 py-1">Sonuç yok</div>';
+            return;
+        }
+        ownerSuggestions.insertAdjacentHTML('beforeend', rows.map(user => {
+            const username = user.username || '';
+            const initial = username ? escapeHtml(username.charAt(0).toUpperCase()) : '?';
+            const status = user.enabled === false
+                ? '<span class="badge bg-secondary text-uppercase small">Disabled</span>'
+                : '<span class="badge bg-success-subtle text-success text-uppercase small">Active</span>';
+            return `
+                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-username="${escapeHtml(username)}">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge rounded-circle bg-primary-subtle text-primary fw-semibold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">${initial}</span>
+                        <span class="fw-semibold">${escapeHtml(username)}</span>
+                    </div>
+                    ${status}
+                </button>
+            `;
+        }).join(''));
+    }
+
+    const debouncedOwnerSearch = debounce((query) => loadOwnerSuggestions(query, false), 250);
+
+    async function loadOwnerSuggestions(query, append = false) {
+        if (!ownerModal || !isAdmin?.()) return;
+        if (ownerSearchLoading) return;
+        ownerSearchLoading = true;
+        if (append && ownerLoadMoreBtn) {
+            ownerLoadMoreBtn.querySelector('[data-owner-load-more-spinner="true"]')?.classList.remove('d-none');
+            ownerLoadMoreBtn.setAttribute('disabled', 'disabled');
+        }
+        const page = append ? ownerSearchPage + 1 : 0;
+        const result = await handleApi(Api.searchUsers(query, page, OWNER_SEARCH_PAGE_SIZE), {
+            fallback: 'Could not search users',
+            silent: true
+        });
+        const content = result?.content ?? result ?? [];
+        const meta = result?.page ?? result;
+        ownerSearchPage = page;
+        const totalPages = meta?.totalPages ?? 1;
+        ownerSearchHasMore = ownerSearchPage + 1 < totalPages;
+        renderOwnerSuggestions(content, append);
+        if (ownerLoadMoreBtn) {
+            ownerLoadMoreBtn.classList.toggle('d-none', !ownerSearchHasMore);
+            ownerLoadMoreBtn.disabled = !ownerSearchHasMore;
+            ownerLoadMoreBtn.querySelector('[data-owner-load-more-spinner="true"]')?.classList.add('d-none');
+        }
+        ownerSearchLoading = false;
+    }
+
+    function handleOwnerInput() {
+        if (!ownerInput) return;
+        ownerInput.classList.remove('is-invalid');
+        ownerAlert?.classList.add('d-none');
+        const val = ownerInput.value?.trim() || '';
+        ownerSearchQuery = val;
+        ownerSearchPage = 0;
+        ownerSearchHasMore = false;
+        if (ownerSubmit) {
+            ownerSubmit.disabled = val.length === 0;
+        }
+        if (val.length >= 2) {
+            debouncedOwnerSearch(val);
+        } else {
+            if (ownerSuggestions) {
+                ownerSuggestions.innerHTML = '';
+            }
+            if (ownerLoadMoreBtn) {
+                ownerLoadMoreBtn.classList.add('d-none');
+            }
+        }
+    }
+
+    async function submitOwnerChange(event) {
+        event?.preventDefault();
+        if (!ownerInput || !ownerNoteId) return;
+        const owner = (ownerInput.value || '').trim();
+        if (!owner) {
+            ownerInput.classList.add('is-invalid');
+            return;
+        }
+        ownerSubmit?.setAttribute('disabled', 'disabled');
+        ownerSubmitSpinner?.classList.remove('d-none');
+        const result = await handleApi(Api.changeOwner(ownerNoteId, { owner }), {
+            fallback: 'Failed to change owner',
+            onFinally: () => {
+                ownerSubmitSpinner?.classList.add('d-none');
+                ownerSubmit?.removeAttribute('disabled');
+            }
+        });
+        if (result) {
+            ownerModal?.hide();
+            ownerNoteId = null;
+            clearOwnerModal();
+            showToast('Owner updated', 'success');
+            loadNotes();
         }
     }
 
@@ -361,6 +525,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
+                                    ${showOwner ? `<button class="btn btn-outline-dark btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                        <i class="fa-solid fa-user-gear"></i>
+                                    </button>` : ''}
                                     <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
@@ -434,6 +601,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
+                                    ${showOwner ? `<button class="btn btn-outline-dark btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                        <i class="fa-solid fa-user-gear"></i>
+                                    </button>` : ''}
                                     <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
@@ -817,11 +987,26 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         }
         if (revisionHasMore) {
             revisionList.insertAdjacentHTML('beforeend', `
-                <div class="list-group-item text-center">
+                <div class="list-group-item text-center d-flex justify-content-center align-items-center gap-2">
+                    <span class="spinner-border spinner-border-sm d-none" data-revision-load-spinner="true" role="status" aria-hidden="true"></span>
                     <button class="btn btn-outline-secondary btn-sm" data-action="revision-load-more" data-note-id="${noteId}">
                         Load more
                     </button>
                 </div>`);
+        }
+    }
+
+    function toggleRevisionLoadSpinner(show) {
+        const row = revisionList?.querySelector('[data-action="revision-load-more"]')?.closest('.list-group-item');
+        if (!row) return;
+        const spinner = row.querySelector('[data-revision-load-spinner="true"]');
+        const button = row.querySelector('button');
+        if (show) {
+            spinner?.classList.remove('d-none');
+            button?.setAttribute('disabled', 'disabled');
+        } else {
+            spinner?.classList.add('d-none');
+            button?.removeAttribute('disabled');
         }
     }
 
@@ -835,7 +1020,12 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         clearRevisionError();
         isLoadingRevisions = true;
         const activeNoteId = revisionNoteId;
-        revisionSpinner?.classList.remove('d-none');
+        const startedAt = Date.now();
+        if (append) {
+            toggleRevisionLoadSpinner(true);
+        } else {
+            revisionSpinner?.classList.remove('d-none');
+        }
         try {
             const pageData = await Api.fetchRevisions(noteId, revisionPage, revisionPageSize);
             const content = pageData?.content ?? pageData ?? [];
@@ -862,7 +1052,17 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             showRevisionError(getErrorMessage(e, 'Failed to load revisions'));
         } finally {
             if (revisionNoteId === activeNoteId) {
-                revisionSpinner?.classList.add('d-none');
+                if (append) {
+                    const elapsed = Date.now() - startedAt;
+                    const hide = () => toggleRevisionLoadSpinner(false);
+                    if (elapsed < 120) {
+                        setTimeout(hide, 120 - elapsed);
+                    } else {
+                        hide();
+                    }
+                } else {
+                    revisionSpinner?.classList.add('d-none');
+                }
                 isLoadingRevisions = false;
             }
         }
@@ -2029,6 +2229,41 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         });
     }
 
+    if (ownerInput) {
+        ownerInput.addEventListener('input', handleOwnerInput);
+    }
+    if (ownerSuggestions) {
+        ownerSuggestions.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-username]');
+            if (!btn || !ownerInput) return;
+            ownerInput.value = btn.getAttribute('data-username') || '';
+            handleOwnerInput();
+        });
+        ownerSuggestions.addEventListener('scroll', () => {
+            if (!ownerSearchHasMore || ownerSearchLoading) return;
+            const threshold = 40;
+            if (ownerSuggestions.scrollTop + ownerSuggestions.clientHeight >= ownerSuggestions.scrollHeight - threshold) {
+                loadOwnerSuggestions(ownerSearchQuery, true);
+            }
+        });
+    }
+    if (ownerForm) {
+        ownerForm.addEventListener('submit', submitOwnerChange);
+    }
+    if (ownerLoadMoreBtn) {
+        ownerLoadMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!ownerSearchHasMore) return;
+            loadOwnerSuggestions(ownerSearchQuery, true);
+        });
+    }
+    if (ownerModalEl) {
+        ownerModalEl.addEventListener('hidden.bs.modal', () => {
+            ownerNoteId = null;
+            clearOwnerModal();
+        });
+    }
+
     Ui.bindNoteGridActions(noteGrid, {
         'restore': restoreNote,
         'copy': copyNote,
@@ -2039,7 +2274,8 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         'delete': openDelete,
         'revisions': openRevisionModal,
         'inline-cancel': cancelInlineEdit,
-        'inline-save': saveInlineEdit
+        'inline-save': saveInlineEdit,
+        'change-owner': openOwnerModal
     });
 
     Ui.bindRevisionActions(revisionList, (noteId, revId) => restoreRevision(noteId, revId));
@@ -2061,7 +2297,17 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             const loadMore = e.target.closest('[data-action="revision-load-more"]');
             if (loadMore) {
                 const noteId = parseInt(loadMore.getAttribute('data-note-id'), 10);
-                loadRevisionPage(noteId, true);
+                const row = loadMore.closest('.list-group-item');
+                if (row) {
+                    row.querySelector('[data-revision-load-spinner="true"]')?.classList.remove('d-none');
+                    row.querySelector('button')?.setAttribute('disabled', 'disabled');
+                }
+                loadRevisionPage(noteId, true).finally(() => {
+                    if (row) {
+                        row.querySelector('[data-revision-load-spinner="true"]')?.classList.add('d-none');
+                        row.querySelector('button')?.removeAttribute('disabled');
+                    }
+                });
                 return;
             }
         });

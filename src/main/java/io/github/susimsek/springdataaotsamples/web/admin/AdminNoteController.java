@@ -5,6 +5,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.OwnerChangeRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Set;
 
@@ -146,6 +148,24 @@ public class AdminNoteController {
             @Valid @RequestBody NotePatchRequest request
     ) {
         return noteService.patch(id, request);
+    }
+
+    @Operation(
+            summary = "Change note owner (admin)",
+            description = "Updates the owner of a note."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Owner updated",
+            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+    )
+    @ApiResponse(responseCode = "404", description = "Note or user not found")
+    @PostMapping("/{id}/owner")
+    public NoteDTO changeOwner(
+            @Parameter(description = "Note identifier") @PathVariable Long id,
+            @Valid @RequestBody OwnerChangeRequest request
+    ) {
+        return noteService.changeOwner(id, request.owner());
     }
 
     @Operation(

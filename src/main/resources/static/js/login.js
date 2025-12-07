@@ -19,9 +19,25 @@ const passwordInput = document.getElementById('loginPassword');
 const rememberMeInput = document.getElementById('loginRememberMe');
 const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
 const usernameSizeMsg = document.querySelector('[data-error-type="loginUsername-size"]');
+const usernamePatternMsg = document.querySelector('[data-error-type="loginUsername-pattern"]');
 const passwordRequiredMsg = document.querySelector('[data-error-type="loginPassword-required"]');
 const passwordSizeMsg = document.querySelector('[data-error-type="loginPassword-size"]');
 const { toggleInlineMessages } = Validation;
+
+function validateUsernamePattern() {
+    if (!usernameInput) return true;
+    usernameInput.setCustomValidity('');
+    usernamePatternMsg?.classList.add('d-none');
+    const val = usernameInput.value?.trim() || '';
+    const patternMismatch = usernameInput.validity?.patternMismatch;
+    if (val && patternMismatch) {
+        usernameInput.setCustomValidity('pattern');
+        usernameInput.classList.add('is-invalid');
+        usernamePatternMsg?.classList.remove('d-none');
+        return false;
+    }
+    return true;
+}
 
 function hideAlert() {
     if (alertBox) {
@@ -63,6 +79,7 @@ function bindLiveValidation() {
         usernameInput.addEventListener('input', () => {
             hideAlert();
             toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg);
+            validateUsernamePattern();
         });
     }
     if (passwordInput) {
@@ -79,6 +96,9 @@ async function handleSubmit(event) {
     clearValidation();
     form.classList.add('was-validated');
     toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg);
+    if (!validateUsernamePattern()) {
+        return;
+    }
     toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg);
     if (!form.checkValidity()) {
         [usernameInput, passwordInput].forEach(input => {

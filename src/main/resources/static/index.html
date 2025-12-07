@@ -367,7 +367,7 @@
 
 <!-- Revision History Modal -->
 <div class="modal fade" id="revisionModal" tabindex="-1" aria-labelledby="revisionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2" id="revisionModalLabel">
@@ -383,12 +383,54 @@
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div class="list-group" id="revisionList"></div>
+                <div class="list-group" id="revisionList" style="overflow-y: auto; overflow-x: hidden;"></div>
                 <div class="text-muted small mt-2">
                     <i class="fa-regular fa-circle-question me-1"></i>
                     Selecting “Restore” will overwrite the current note with the chosen snapshot.
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Owner Modal -->
+<div class="modal fade" id="ownerModal" tabindex="-1" aria-labelledby="ownerNoteTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="ownerForm" novalidate>
+                <div class="modal-header">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="ownerNoteTitle">
+                        <i class="fa-solid fa-user-gear text-primary"></i>
+                        <span id="ownerNoteTitleText">Change owner</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ownerAlert" class="alert alert-danger d-none"></div>
+                    <div id="ownerCurrentLabel" class="text-muted small mb-2 d-none"></div>
+                    <label class="form-label" for="ownerInput">New owner</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="ownerInput" name="owner" placeholder="Search username" autocomplete="off" required>
+                    </div>
+                    <div class="list-group mt-2" id="ownerSuggestions" style="overflow-y: auto; overflow-x: hidden;"></div>
+                    <div class="d-grid mt-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm d-none d-flex align-items-center justify-content-center gap-2" id="ownerLoadMore">
+                            <span class="spinner-border spinner-border-sm d-none" data-owner-load-more-spinner="true" role="status" aria-hidden="true"></span>
+                            <span>Load more</span>
+                        </button>
+                    </div>
+                    <div class="form-text text-muted">Type to search and pick a user to set as owner.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="ownerSubmit" disabled>
+                        <span class="spinner-border spinner-border-sm d-none" id="ownerSubmitSpinner" role="status" aria-hidden="true"></span>
+                        <i class="fa-solid fa-user-check"></i> <span>Change owner</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

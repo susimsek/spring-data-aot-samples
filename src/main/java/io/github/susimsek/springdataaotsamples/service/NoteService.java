@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.service;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.BulkAction;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
+import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
@@ -14,6 +15,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
@@ -45,6 +47,7 @@ public class NoteService {
     private final TagService tagService;
     private final NoteMapper noteMapper;
     private final NoteRevisionMapper noteRevisionMapper;
+    private final UserRepository userRepository;
 
     @Transactional
     public NoteDTO create(NoteCreateRequest request) {
@@ -95,6 +98,18 @@ public class NoteService {
         if (request.tags() != null) {
             note.setTags(tagService.resolveTags(request.tags()));
         }
+        // owner change ignored for non-admin path
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
+    }
+
+    @Transactional
+    public NoteDTO changeOwner(Long id, String owner) {
+        if (!userRepository.existsByUsername(owner)) {
+            throw new UserNotFoundException(owner);
+        }
+        var note = findActiveNote(id);
+        note.setOwner(owner);
         var saved = noteRepository.save(note);
         return noteMapper.toDto(saved);
     }
