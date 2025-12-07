@@ -59,6 +59,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const authUserLabel = document.getElementById('authUserLabel');
     const authMenu = document.getElementById('authMenu');
     const signOutBtn = document.getElementById('signOutBtn');
+    const signOutDivider = document.getElementById('signOutDivider');
     const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
     const TAG_FORMAT_MESSAGE = 'Tags must be 1-30 characters using letters, digits, hyphen, or underscore.';
     let currentTags = new Set();
@@ -159,32 +160,34 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     function updateAuthUi() {
         const username = currentUsername();
         const signedIn = isAuthenticated();
-        if (authBtnLabel) {
-            authBtnLabel.textContent = signedIn ? (username || 'Signed in') : 'Sign in';
-        }
-        if (authUserLabel) {
-            authUserLabel.textContent = signedIn ? `Signed in as ${username || ''}` : 'Not signed in';
-        }
         if (signOutBtn) {
             signOutBtn.classList.toggle('d-none', !signedIn);
+        }
+        if (authBtn) {
+            authBtn.classList.toggle('d-none', !signedIn);
+            authBtn.classList.toggle('dropdown-toggle', signedIn);
+            if (signedIn) {
+                authBtn.setAttribute('data-bs-toggle', 'dropdown');
+                if (authBtnLabel) {
+                    authBtnLabel.textContent = username || 'User';
+                }
+            } else {
+                authBtn.removeAttribute('data-bs-toggle');
+                if (authBtnLabel) {
+                    authBtnLabel.textContent = '';
+                }
+            }
+        }
+        if (authUserLabel) {
+            authUserLabel.classList.toggle('d-none', !signedIn);
+            authUserLabel.textContent = signedIn ? `Signed in as ${username || ''}` : '';
         }
         if (authMenu) {
             authMenu.classList.toggle('d-none', !signedIn);
         }
-        if (authBtn) {
-            authBtn.classList.toggle('dropdown-toggle', signedIn);
-            if (signedIn) {
-                authBtn.setAttribute('data-bs-toggle', 'dropdown');
-            } else {
-                authBtn.removeAttribute('data-bs-toggle');
-            }
+        if (signOutDivider) {
+            signOutDivider.classList.toggle('d-none', !signedIn);
         }
-    }
-
-    function handleUnauthorized(message = 'Authentication required') {
-        clearToken();
-        updateAuthUi();
-        showToast(message, 'warning');
     }
 
     async function handleLoginSubmit(event) {
@@ -205,20 +208,15 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     }
 
     async function bootstrapAuth() {
-        updateAuthUi();
-        const me = await handleApi(Api.currentUser(), {
-            silent: true,
-            onError: () => {
-                clearToken();
-                updateAuthUi();
-                showToast('Session expired. Please sign in again.', 'warning');
-                redirectToLogin();
-            }
-        });
-        if (me?.username) {
-            setCurrentUser(me);
+        const username = currentUsername();
+        if (!username) {
+            clearToken();
             updateAuthUi();
+            redirectToLogin();
+            return false;
         }
+        updateAuthUi();
+        return true;
     }
 
     async function handleApi(promise, options = {}) {
@@ -226,10 +224,6 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         try {
             return await promise;
         } catch (e) {
-            if (e?.status === 401) {
-                handleUnauthorized('Session expired or unauthorized');
-                return null;
-            }
             const message = getErrorMessage(e, fallback);
             if (onError) {
                 onError(e, message);
@@ -1900,14 +1894,6 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     if (signOutBtn) {
         signOutBtn.addEventListener('click', handleLogout);
     }
-    if (authBtn) {
-        authBtn.addEventListener('click', (e) => {
-            if (!isAuthenticated()) {
-                e.preventDefault();
-                window.location.href = '/login.html';
-            }
-        });
-    }
 
     if (activeViewBtn) {
         activeViewBtn.addEventListener('click', () => {
@@ -2076,9 +2062,13 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     updateEmptyTrashButton();
     resetFilterControls();
     renderFilterTags();
-    loadTagSuggestions('');
-    bootstrapAuth();
-    loadNotes();
+    (async () => {
+        const authenticated = await bootstrapAuth();
+        if (!authenticated) {
+            return;
+        }
+        loadNotes();
+    })();
 
     // Initialize auditor using shared State helper
     // Auditor input removed; JWT user used for auditing

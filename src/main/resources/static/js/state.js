@@ -1,5 +1,28 @@
 // Global state and auditor handling
 const State = (() => {
+    const USER_STORAGE_KEY = 'currentUser';
+
+    function loadStoredUser() {
+        try {
+            const raw = localStorage.getItem(USER_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function persistUser(user) {
+        try {
+            if (user) {
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+            } else {
+                localStorage.removeItem(USER_STORAGE_KEY);
+            }
+        } catch (e) {
+            // ignore storage errors
+        }
+    }
+
     const state = {
         page: 0,
         size: 10,
@@ -16,7 +39,7 @@ const State = (() => {
         filterTags: new Set(),
         filterColor: '',
         filterPinned: null,
-        currentUser: null
+        currentUser: loadStoredUser()
     };
 
     function currentAuditor() {
@@ -35,10 +58,12 @@ const State = (() => {
 
     function clearToken() {
         state.currentUser = null;
+        persistUser(null);
     }
 
     function setCurrentUser(user) {
         state.currentUser = user || null;
+        persistUser(state.currentUser);
     }
 
     return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser };

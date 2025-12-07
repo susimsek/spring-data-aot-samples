@@ -4,7 +4,8 @@ import State from '/js/state.js';
 const Api = (() => {
     const jsonHeaders = () => {
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         };
         return headers;
     };
@@ -19,6 +20,10 @@ const Api = (() => {
     }
 
     let refreshInFlight = null;
+    const redirectToLogin = () => {
+        State.clearToken();
+        window.location.replace('/login.html');
+    };
 
     const parseResponse = async (res) => {
         let body = null;
@@ -46,8 +51,12 @@ const Api = (() => {
                     const res = await fetch(url, options);
                     return await parseResponse(res);
                 } catch (refreshErr) {
+                    redirectToLogin();
                     throw refreshErr;
                 }
+            }
+            if (err instanceof ApiError && err.status === 401) {
+                redirectToLogin();
             }
             throw err;
         }
@@ -58,9 +67,15 @@ const Api = (() => {
             refreshInFlight = fetch('/api/auth/refresh', {
                 method: 'POST',
                 headers: jsonHeaders()
-            }).then(parseResponse).finally(() => {
-                refreshInFlight = null;
-            });
+            })
+                .then(parseResponse)
+                .catch((err) => {
+                    redirectToLogin();
+                    throw err instanceof ApiError ? err : new ApiError('Refresh failed', 401);
+                })
+                .finally(() => {
+                    refreshInFlight = null;
+                });
         }
         return refreshInFlight;
     };

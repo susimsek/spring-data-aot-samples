@@ -72,6 +72,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority(AuthoritiesConstants.ADMIN)
                         .requestMatchers(HttpMethod.GET,
+                                "/",
+                                "/index.html",
                                 "/login.html",
                                 "/403.html",
                                 "/404.html",

@@ -45,13 +45,13 @@
                 <span id="themeToggleLabel">Dark</span>
             </button>
             <div class="dropdown">
-                <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0 dropdown-toggle" type="button" id="authBtn" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    <span id="authBtnLabel">Sign in</span>
+                <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0 dropdown-toggle d-none" type="button" id="authBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-user"></i>
+                    <span id="authBtnLabel"></span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
-                    <li class="dropdown-header text-muted small" id="authUserLabel">Not signed in</li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
+                    <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
                     <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
                 </ul>
             </div>
