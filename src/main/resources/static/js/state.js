@@ -61,12 +61,17 @@ const State = (() => {
         persistUser(null);
     }
 
+    function isAdmin() {
+        const authorities = state.currentUser?.authorities;
+        return Array.isArray(authorities) && authorities.includes('ROLE_ADMIN');
+    }
+
     function setCurrentUser(user) {
         state.currentUser = user || null;
         persistUser(state.currentUser);
     }
 
-    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser };
+    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser, isAdmin };
 })();
 
 export default State;

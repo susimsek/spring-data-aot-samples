@@ -1,13 +1,13 @@
-package io.github.susimsek.springdataaotsamples.web;
+package io.github.susimsek.springdataaotsamples.web.admin;
 
 import io.github.susimsek.springdataaotsamples.service.NoteService;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,30 +21,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/notes")
+@RequestMapping("/api/admin/notes")
 @RequiredArgsConstructor
-@Tag(name = "notes", description = "Note CRUD APIs")
-public class NoteController {
+@Tag(name = "admin-notes", description = "Admin-only note APIs")
+public class AdminNoteController {
 
     private final NoteService noteService;
 
     @Operation(
-            summary = "Create note",
-            description = "Creates a note and returns the persisted resource with auditing metadata."
+            summary = "Create note (admin)",
+            description = "Creates a note."
     )
     @ApiResponse(
             responseCode = "201",
@@ -59,7 +59,7 @@ public class NoteController {
 
     @Operation(
             summary = "List notes",
-            description = "Returns paged notes."
+            description = "Returns paged notes. Admins can optionally include deleted notes."
     )
     @ApiResponse(
             responseCode = "200",
@@ -76,12 +76,12 @@ public class NoteController {
                                  @Parameter(description = "Exact color hex filter") String color,
                                  @RequestParam(value = "pinned", required = false)
                                  @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findAllForCurrentUser(pageable, q, tags, color, pinned);
+        return noteService.findAll(pageable, q, tags, color, pinned);
     }
 
     @Operation(
             summary = "List deleted notes",
-            description = "Returns paged soft-deleted notes."
+            description = "Returns paged soft-deleted notes for admins."
     )
     @ApiResponse(
             responseCode = "200",
@@ -98,22 +98,22 @@ public class NoteController {
                                      @Parameter(description = "Exact color hex filter") String color,
                                      @RequestParam(value = "pinned", required = false)
                                      @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findDeletedForCurrentUser(pageable, q, tags, color, pinned);
+        return noteService.findDeleted(pageable, q, tags, color, pinned);
     }
 
     @Operation(
-            summary = "Empty trash",
+            summary = "Empty trash (admin)",
             description = "Permanently deletes all soft-deleted notes."
     )
     @ApiResponse(responseCode = "204", description = "Trash emptied")
     @DeleteMapping("/deleted")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void emptyTrash() {
-        noteService.emptyTrashForCurrentUser();
+        noteService.emptyTrash();
     }
 
     @Operation(
-            summary = "Update note",
+            summary = "Update note (admin)",
             description = "Updates title and content of a note."
     )
     @ApiResponse(
@@ -127,11 +127,11 @@ public class NoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NoteUpdateRequest request
     ) {
-        return noteService.updateForCurrentUser(id, request);
+        return noteService.update(id, request);
     }
 
     @Operation(
-            summary = "Patch note",
+            summary = "Patch note (admin)",
             description = "Partially updates a note."
     )
     @ApiResponse(
@@ -145,11 +145,11 @@ public class NoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NotePatchRequest request
     ) {
-        return noteService.patchForCurrentUser(id, request);
+        return noteService.patch(id, request);
     }
 
     @Operation(
-            summary = "Delete note",
+            summary = "Delete note (admin)",
             description = "Deletes a note by id."
     )
     @ApiResponse(responseCode = "204", description = "Note deleted")
@@ -157,11 +157,11 @@ public class NoteController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.deleteForCurrentUser(id);
+        noteService.delete(id);
     }
 
     @Operation(
-            summary = "Bulk actions on notes",
+            summary = "Bulk actions on notes (admin)",
             description = "Performs bulk soft delete, restore, or permanent delete on provided ids."
     )
     @ApiResponse(
@@ -171,11 +171,11 @@ public class NoteController {
     )
     @PostMapping("/bulk")
     public BulkActionResult bulk(@Valid @RequestBody BulkActionRequest request) {
-        return noteService.bulkForCurrentUser(request);
+        return noteService.bulk(request);
     }
 
     @Operation(
-            summary = "Restore note",
+            summary = "Restore note (admin)",
             description = "Restores a soft-deleted note."
     )
     @ApiResponse(responseCode = "204", description = "Note restored")
@@ -183,11 +183,11 @@ public class NoteController {
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void restore(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.restoreForCurrentUser(id);
+        noteService.restore(id);
     }
 
     @Operation(
-            summary = "Delete note permanently",
+            summary = "Delete note permanently (admin)",
             description = "Permanently deletes a soft-deleted note."
     )
     @ApiResponse(responseCode = "204", description = "Note permanently deleted")
@@ -195,11 +195,11 @@ public class NoteController {
     @DeleteMapping("/{id}/permanent")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePermanently(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.deletePermanentlyForCurrentUser(id);
+        noteService.deletePermanently(id);
     }
 
     @Operation(
-            summary = "Get note",
+            summary = "Get note (admin)",
             description = "Fetches a single note by id."
     )
     @ApiResponse(
@@ -210,11 +210,11 @@ public class NoteController {
     @ApiResponse(responseCode = "404", description = "Note not found")
     @GetMapping("/{id}")
     public NoteDTO findById(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        return noteService.findByIdForCurrentUser(id);
+        return noteService.findById(id);
     }
 
     @Operation(
-            summary = "List revisions of a note",
+            summary = "List revisions of a note (admin)",
             description = "Returns historical revisions for a note including snapshots."
     )
     @ApiResponse(
@@ -226,11 +226,11 @@ public class NoteController {
     @GetMapping("/{id}/revisions")
     public Page<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id,
                                                @ParameterObject Pageable pageable) {
-        return noteService.findRevisionsForCurrentUser(id, pageable);
+        return noteService.findRevisions(id, pageable);
     }
 
     @Operation(
-            summary = "Get a single revision snapshot",
+            summary = "Get a single revision snapshot (admin)",
             description = "Fetches the note snapshot at a specific revision."
     )
     @ApiResponse(
@@ -242,11 +242,11 @@ public class NoteController {
     @GetMapping("/{id}/revisions/{revisionId}")
     public NoteRevisionDTO findRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                         @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.findRevisionForCurrentUser(id, revisionId);
+        return noteService.findRevision(id, revisionId);
     }
 
     @Operation(
-            summary = "Restore note to a revision",
+            summary = "Restore note to a revision (admin)",
             description = "Restores the current note to the content of the specified revision."
     )
     @ApiResponse(
@@ -258,6 +258,6 @@ public class NoteController {
     @PostMapping("/{id}/revisions/{revisionId}/restore")
     public NoteDTO restoreRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                    @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.restoreRevisionForCurrentUser(id, revisionId);
+        return noteService.restoreRevision(id, revisionId);
     }
 }

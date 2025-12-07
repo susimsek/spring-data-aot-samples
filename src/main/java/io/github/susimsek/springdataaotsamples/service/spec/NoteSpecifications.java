@@ -39,7 +39,7 @@ public class NoteSpecifications {
         if (!StringUtils.hasText(color)) {
             return (root, cq, cb) -> cb.conjunction();
         }
-        return (root, cq, cb) -> cb.equal(cb.lower(root.get("color")), color.trim().toLowerCase());
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("color")), color);
     }
 
     public Specification<Note> isPinned(@Nullable Boolean pinned) {
@@ -66,6 +66,13 @@ public class NoteSpecifications {
             var join = root.join("tags", JoinType.LEFT);
             return cb.lower(join.get("name")).in(normalized);
         };
+    }
+
+    public Specification<Note> createdBy(@Nullable String username) {
+        if (!StringUtils.hasText(username)) {
+            return (root, cq, cb) -> cb.conjunction();
+        }
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("createdBy")), username);
     }
 
     public Pageable prioritizePinned(Pageable pageable) {

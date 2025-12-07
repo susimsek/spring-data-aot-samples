@@ -97,6 +97,12 @@ const Api = (() => {
         return request('/api/auth/me', { headers: jsonHeaders() });
     };
 
+    const noteBase = (suffix = '') => {
+        const admin = State.isAdmin?.();
+        const base = admin ? '/api/admin/notes' : '/api/notes';
+        return `${base}${suffix}`;
+    };
+
     const logout = async () => {
         const res = await fetch('/api/auth/logout', {
             method: 'POST',
@@ -106,7 +112,9 @@ const Api = (() => {
     };
 
     const fetchNotes = async ({ view, page, size, sort, query, tags, color, pinned }) => {
-        const base = view === 'trash' ? '/api/notes/deleted' : '/api/notes';
+        const base = view === 'trash'
+            ? noteBase('/deleted')
+            : noteBase();
         const params = new URLSearchParams();
         params.set('page', page);
         params.set('size', size);
@@ -121,7 +129,7 @@ const Api = (() => {
     };
 
     const createNote = async (payload) => {
-        return request('/api/notes', {
+        return request(noteBase(), {
             method: 'POST',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
@@ -129,7 +137,7 @@ const Api = (() => {
     };
 
     const updateNote = async (id, payload) => {
-        return request(`/api/notes/${id}`, {
+        return request(`${noteBase()}/${id}`, {
             method: 'PUT',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
@@ -137,7 +145,7 @@ const Api = (() => {
     };
 
     const patchNote = async (id, payload) => {
-        return request(`/api/notes/${id}`, {
+        return request(`${noteBase()}/${id}`, {
             method: 'PATCH',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
@@ -145,35 +153,35 @@ const Api = (() => {
     };
 
     const softDelete = async (id) => {
-        return request(`/api/notes/${id}`, {
+        return request(`${noteBase()}/${id}`, {
             method: 'DELETE',
             headers: jsonHeaders()
         });
     };
 
     const restore = async (id) => {
-        return request(`/api/notes/${id}/restore`, {
+        return request(`${noteBase()}/${id}/restore`, {
             method: 'POST',
             headers: jsonHeaders()
         });
     };
 
     const deletePermanent = async (id) => {
-        return request(`/api/notes/${id}/permanent`, {
+        return request(`${noteBase()}/${id}/permanent`, {
             method: 'DELETE',
             headers: jsonHeaders()
         });
     };
 
     const emptyTrash = async () => {
-        return request('/api/notes/deleted', {
+        return request(noteBase('/deleted'), {
             method: 'DELETE',
             headers: jsonHeaders()
         });
     };
 
     const bulkAction = async (payload) => {
-        return request('/api/notes/bulk', {
+        return request(`${noteBase()}/bulk`, {
             method: 'POST',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
@@ -182,19 +190,19 @@ const Api = (() => {
 
     const fetchRevisions = async (id, page = 0, size = 5, sort) => {
         const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
-        return request(`/api/notes/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
+        return request(`${noteBase()}/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
             headers: jsonHeaders()
         });
     };
 
     const fetchRevision = async (id, revisionId) => {
-        return request(`/api/notes/${id}/revisions/${revisionId}`, {
+        return request(`${noteBase()}/${id}/revisions/${revisionId}`, {
             headers: jsonHeaders()
         });
     };
 
     const restoreRevision = async (id, revisionId) => {
-        return request(`/api/notes/${id}/revisions/${revisionId}/restore`, {
+        return request(`${noteBase()}/${id}/revisions/${revisionId}/restore`, {
             method: 'POST',
             headers: jsonHeaders()
         });

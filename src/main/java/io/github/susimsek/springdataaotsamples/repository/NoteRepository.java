@@ -9,7 +9,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.history.RevisionRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +32,9 @@ public interface NoteRepository extends
 
     @EntityGraph(attributePaths = "tags")
     List<Note> findAllByIdIn(List<Long> ids);
+
+    @Query("select n from Note n where n.id in :ids and n.createdBy = ?#{authentication.name}")
+    List<Note> findAllByIdInForCurrentUser(@Param("ids") Iterable<Long> ids);
 
     default Page<Note> findAllWithTags(Specification<Note> spec,
                                        Pageable pageable) {
@@ -55,4 +62,9 @@ public interface NoteRepository extends
 
         return new PageImpl<>(ordered, pageable, idPage.getTotalElements());
     }
+
+    @Modifying
+    @Transactional
+    @Query("delete from Note n where n.deleted = true and n.createdBy = :createdBy")
+    void purgeDeletedByCreatedBy(@Param("createdBy") String createdBy);
 }

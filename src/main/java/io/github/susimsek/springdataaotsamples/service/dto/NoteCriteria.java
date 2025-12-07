@@ -9,5 +9,6 @@ public record NoteCriteria(
     @Nullable Boolean deleted,
     @Nullable Set<String> tags,
     @Nullable String color,
-    @Nullable Boolean pinned) {
+    @Nullable Boolean pinned,
+    @Nullable String createdBy) {
 }

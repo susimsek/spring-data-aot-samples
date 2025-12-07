@@ -34,6 +34,7 @@ public class NoteQueryService {
         var tags = criteria.tags();
         var color = criteria.color();
         var pinned = criteria.pinned();
+        var createdBy = criteria.createdBy();
 
         Specification<Note> spec = deleted
                 ? Specification.where(NoteSpecifications.isDeleted())
@@ -43,6 +44,7 @@ public class NoteQueryService {
             .and(NoteSpecifications.search(query))
             .and(NoteSpecifications.hasColor(color))
             .and(NoteSpecifications.isPinned(pinned))
+            .and(NoteSpecifications.createdBy(createdBy))
             .and(NoteSpecifications.hasTags(tags));
     }
 }
