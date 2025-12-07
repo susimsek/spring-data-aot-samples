@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.history.RevisionSort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,9 @@ public class NoteService {
     @Transactional
     public NoteDTO create(NoteCreateRequest request) {
         var note = noteMapper.toEntity(request);
+        var username = SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+        note.setOwner(username);
         note.setTags(tagService.resolveTags(request.tags()));
         var saved = noteRepository.save(note);
         return noteMapper.toDto(saved);
@@ -243,7 +247,7 @@ public class NoteService {
     public void emptyTrashForCurrentUser() {
         var username = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        noteRepository.purgeDeletedByCreatedBy(username);
+        noteRepository.purgeDeletedByOwner(username);
         tagService.cleanupOrphanTagsAsync();
     }
 
@@ -367,7 +371,8 @@ public class NoteService {
     private void ensureOwner(Note note) {
         var username = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        if (!note.getCreatedBy().equals(username)) {
+        var owner = note.getOwner();
+        if (owner == null || !username.equals(owner)) {
             throw new AccessDeniedException("You are not allowed to modify this note");
         }
     }

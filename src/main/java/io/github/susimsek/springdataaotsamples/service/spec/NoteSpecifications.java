@@ -68,11 +68,11 @@ public class NoteSpecifications {
         };
     }
 
-    public Specification<Note> createdBy(@Nullable String username) {
-        if (!StringUtils.hasText(username)) {
+    public Specification<Note> ownedBy(@Nullable String owner) {
+        if (!StringUtils.hasText(owner)) {
             return (root, cq, cb) -> cb.conjunction();
         }
-        return (root, cq, cb) -> cb.equal(cb.lower(root.get("createdBy")), username);
+        return (root, cq, cb) -> cb.equal(cb.lower(root.get("owner")), owner.trim().toLowerCase());
     }
 
     public Pageable prioritizePinned(Pageable pageable) {

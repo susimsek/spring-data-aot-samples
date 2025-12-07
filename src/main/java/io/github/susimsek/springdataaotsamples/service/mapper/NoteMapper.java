@@ -38,6 +38,7 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
 
     @Override
     @Mapping(target = "tags", source = "tags")
+    @Mapping(target = "owner", source = "owner")
     NoteDTO toDto(Note note);
 
     @Mapping(target = "id", ignore = true)

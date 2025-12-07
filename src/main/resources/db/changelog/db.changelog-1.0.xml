@@ -53,6 +53,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="color" type="varchar(20)"/>
+            <column name="owner" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_by" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
@@ -98,6 +101,7 @@
             <column header="content" type="string"/>
             <column header="pinned" type="boolean"/>
             <column header="color" type="string"/>
+            <column header="owner" type="string"/>
             <column header="created_by" type="string"/>
             <column header="last_modified_by" type="string"/>
             <column header="deleted" type="boolean"/>

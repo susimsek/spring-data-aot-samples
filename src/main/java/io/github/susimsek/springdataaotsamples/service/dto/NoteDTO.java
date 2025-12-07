@@ -21,6 +21,9 @@ public record NoteDTO(
         @Schema(description = "Optional color in hex format", example = "#2563eb")
         String color,
 
+        @Schema(description = "Owner of the note", example = "alice")
+        String owner,
+
         @Schema(description = "Tags attached to the note", example = "[\"audit\",\"liquibase\"]")
         Set<String> tags,
 

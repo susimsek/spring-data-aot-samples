@@ -33,7 +33,7 @@ public interface NoteRepository extends
     @EntityGraph(attributePaths = "tags")
     List<Note> findAllByIdIn(List<Long> ids);
 
-    @Query("select n from Note n where n.id in :ids and n.createdBy = ?#{authentication.name}")
+    @Query("select n from Note n where n.id in :ids and n.owner = ?#{authentication.name}")
     List<Note> findAllByIdInForCurrentUser(@Param("ids") Iterable<Long> ids);
 
     default Page<Note> findAllWithTags(Specification<Note> spec,
@@ -65,6 +65,6 @@ public interface NoteRepository extends
 
     @Modifying
     @Transactional
-    @Query("delete from Note n where n.deleted = true and n.createdBy = :createdBy")
-    void purgeDeletedByCreatedBy(@Param("createdBy") String createdBy);
+    @Query("delete from Note n where n.deleted = true and n.owner = :owner")
+    void purgeDeletedByOwner(@Param("owner") String owner);
 }

@@ -10,5 +10,5 @@ public record NoteCriteria(
     @Nullable Set<String> tags,
     @Nullable String color,
     @Nullable Boolean pinned,
-    @Nullable String createdBy) {
+    @Nullable String owner) {
 }

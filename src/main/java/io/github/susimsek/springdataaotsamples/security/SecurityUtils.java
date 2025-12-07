@@ -2,8 +2,10 @@ package io.github.susimsek.springdataaotsamples.security;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.ClaimAccessor;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -20,6 +22,14 @@ public class SecurityUtils {
     public Optional<String> getCurrentUserLogin() {
         var ctx = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(ctx.getAuthentication()));
+    }
+
+    public Optional<Long> getCurrentUserId() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return Optional.ofNullable(securityContext.getAuthentication())
+            .filter(authentication -> authentication.getPrincipal() instanceof ClaimAccessor)
+            .map(authentication -> (ClaimAccessor) authentication.getPrincipal())
+            .map(principal -> principal.getClaim(USER_ID_CLAIM));
     }
 
     private String extractPrincipal(Authentication authentication) {

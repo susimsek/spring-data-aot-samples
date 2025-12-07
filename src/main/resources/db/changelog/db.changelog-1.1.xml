@@ -38,6 +38,7 @@
             <column name="content" type="varchar(1024)"/>
             <column name="pinned" type="boolean"/>
             <column name="color" type="varchar(20)"/>
+            <column name="owner" type="varchar(100)"/>
             <column name="created_by" type="varchar(100)"/>
             <column name="created_date" type="timestamp"/>
             <column name="last_modified_by" type="varchar(100)"/>
@@ -124,6 +125,7 @@
             <column header="content" type="string"/>
             <column header="pinned" type="boolean"/>
             <column header="color" type="string"/>
+            <column header="owner" type="string"/>
             <column header="created_by" type="string"/>
             <column header="created_date" type="timestamp"/>
             <column header="last_modified_by" type="string"/>

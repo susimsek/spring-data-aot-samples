@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +47,9 @@ public class Note extends SoftDeletableEntity {
 
     @Column(length = 20)
     private String color;
+
+    @Column(name = "owner", nullable = false, length = 100)
+    private String owner;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
     @BatchSize(size = 10)

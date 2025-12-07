@@ -7,7 +7,7 @@ import Validation from '/js/validation.js';
 import Diff from '/js/diff.js';
 import Theme from '/js/theme.js';
 
-const { state, currentAuditor, clearToken, currentUsername, setCurrentUser } = State;
+const { state, currentAuditor, clearToken, currentUsername, setCurrentUser, isAdmin } = State;
 const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 const { renderTags, revisionTypeBadge } = Render;
 const { toggleSizeMessages, toggleInlineMessages } = Validation;
@@ -279,6 +279,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     function renderNotes(data) {
         noteCache.clear();
         const notes = data?.content || [];
+        const showOwner = isAdmin?.() || false;
         const meta = data?.page ?? data;
         state.total = meta?.totalElements ?? notes.length;
         if (notes.length === 0) {
@@ -328,6 +329,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         notes.forEach(note => {
             noteCache.set(note.id, note);
             const creator = note.createdBy ?? '';
+            const owner = note.owner ?? '';
             const updater = note.lastModifiedBy ?? '';
             const createdText = formatDate(note.createdDate);
             const modifiedText = note.lastModifiedDate ? formatDate(note.lastModifiedDate) : createdText;
@@ -368,6 +370,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                 </div>
                             </div>
                             <div class="d-flex flex-column gap-1 text-muted small">
+                                ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
                                 <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
                                 ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
                             </div>
@@ -480,6 +483,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                 </div>
                             </div>
                             <div class="d-flex flex-column gap-1 text-muted small">
+                                ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
                                 <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
                                 ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
                             </div>
