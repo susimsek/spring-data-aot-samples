@@ -133,7 +133,11 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     Theme.init({ button: themeToggle, icon: themeToggleIcon, label: themeToggleLabel });
 
     function redirectToLogin() {
-        window.location.href = '/login.html';
+        const path = window.location.pathname || '';
+        if (path.includes('/login')) {
+            return;
+        }
+        window.location.replace('/login.html');
     }
 
     function setColorFilterActive(active) {

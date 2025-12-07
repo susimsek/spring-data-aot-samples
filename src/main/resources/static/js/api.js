@@ -21,6 +21,10 @@ const Api = (() => {
 
     let refreshInFlight = null;
     const redirectToLogin = () => {
+        const path = window.location.pathname || '';
+        if (path.includes('/login')) {
+            return;
+        }
         State.clearToken();
         window.location.replace('/login.html');
     };
