@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -43,7 +44,7 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Token issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
     @ApiResponse(responseCode = "401", description = "Invalid credentials",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginRequest request) {
         TokenDTO token = authService.login(request);
@@ -58,6 +59,8 @@ public class AuthController {
     @Operation(summary = "Current user", description = "Returns details for the authenticated principal.")
     @ApiResponse(responseCode = "200", description = "Current principal info",
             content = @Content(schema = @Schema(implementation = UserDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Unauthorized",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/me")
     public UserDTO me() {
         return authService.getCurrentUser();
@@ -88,7 +91,7 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "New tokens issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
     @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
-        content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/refresh")
     public ResponseEntity<TokenDTO> refresh(
             HttpServletRequest request,

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -123,7 +124,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PutMapping("/{id}")
     public NoteDTO update(
             @Parameter(description = "Note identifier") @PathVariable Long id,
@@ -142,7 +143,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PatchMapping("/{id}")
     public NoteDTO patch(
             @Parameter(description = "Note identifier") @PathVariable Long id,
@@ -157,7 +158,7 @@ public class NoteController {
     )
     @ApiResponse(responseCode = "204", description = "Note deleted")
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Parameter(description = "Note identifier") @PathVariable Long id) {
@@ -174,7 +175,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = BulkActionResult.class))
     )
     @ApiResponse(responseCode = "404", description = "Notes not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/bulk")
     public BulkActionResult bulk(@Valid @RequestBody BulkActionRequest request) {
         return noteService.bulkForCurrentUser(request);
@@ -186,7 +187,7 @@ public class NoteController {
     )
     @ApiResponse(responseCode = "204", description = "Note restored")
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void restore(@Parameter(description = "Note identifier") @PathVariable Long id) {
@@ -199,7 +200,7 @@ public class NoteController {
     )
     @ApiResponse(responseCode = "204", description = "Note permanently deleted")
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @DeleteMapping("/{id}/permanent")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePermanently(@Parameter(description = "Note identifier") @PathVariable Long id) {
@@ -216,7 +217,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/{id}")
     public NoteDTO findById(@Parameter(description = "Note identifier") @PathVariable Long id) {
         return noteService.findByIdForCurrentUser(id);
@@ -232,7 +233,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteRevisionDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/{id}/revisions")
     public Page<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id,
                                                @ParameterObject Pageable pageable) {
@@ -249,7 +250,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteRevisionDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Revision not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/{id}/revisions/{revisionId}")
     public NoteRevisionDTO findRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                         @Parameter(description = "Revision number") @PathVariable Long revisionId) {
@@ -266,7 +267,7 @@ public class NoteController {
             content = @Content(schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Revision not found",
-            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/{id}/revisions/{revisionId}/restore")
     public NoteDTO restoreRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                    @Parameter(description = "Revision number") @PathVariable Long revisionId) {
