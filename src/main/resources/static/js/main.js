@@ -280,6 +280,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         if (!ownerModal || !isAdmin?.()) return;
         ownerNoteId = noteId;
         const note = noteCache.get(noteId);
+        ownerSuggestions?.setAttribute('data-current-owner', note?.owner || '');
         if (ownerNoteTitleText) {
             ownerNoteTitleText.textContent = note?.title
                 ? `Change owner for "${note.title}"`
@@ -301,6 +302,8 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     function renderOwnerSuggestions(users, append = false) {
         if (!ownerSuggestions) return;
         const rows = Array.isArray(users) ? users : [];
+        const currentOwner = ownerSuggestions.getAttribute('data-current-owner') || '';
+        const selectedValue = ownerInput?.value?.trim() || '';
         if (!append) {
             ownerSuggestions.innerHTML = '';
         }
@@ -312,15 +315,21 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             const username = user.username || '';
             const initial = username ? escapeHtml(username.charAt(0).toUpperCase()) : '?';
             const status = user.enabled === false
-                ? '<span class="badge bg-secondary text-uppercase small">Disabled</span>'
-                : '<span class="badge bg-success-subtle text-success text-uppercase small">Active</span>';
+                ? '<span class="badge text-bg-secondary text-uppercase small">Disabled</span>'
+                : '<span class="badge text-bg-success text-uppercase small">Active</span>';
+            const isCurrent = currentOwner && currentOwner === username;
+            const isSelected = selectedValue && selectedValue === username;
             return `
-                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-username="${escapeHtml(username)}">
+                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center owner-item ${isSelected ? 'active' : ''}" data-username="${escapeHtml(username)}">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge rounded-circle bg-primary-subtle text-primary fw-semibold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">${initial}</span>
+                        <span class="badge rounded-circle text-bg-secondary fw-semibold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">${initial}</span>
                         <span class="fw-semibold">${escapeHtml(username)}</span>
                     </div>
-                    ${status}
+                    <div class="d-flex align-items-center gap-2">
+                        ${isCurrent ? '<span class="badge text-bg-secondary text-uppercase small">Current</span>' : ''}
+                        ${isSelected && !isCurrent ? '<i class="fa-solid fa-check text-success"></i>' : ''}
+                        ${status}
+                    </div>
                 </button>
             `;
         }).join(''));
@@ -360,6 +369,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         ownerInput.classList.remove('is-invalid');
         ownerAlert?.classList.add('d-none');
         const val = ownerInput.value?.trim() || '';
+        ownerSuggestions?.setAttribute('data-selected-owner', val);
         ownerSearchQuery = val;
         ownerSearchPage = 0;
         ownerSearchHasMore = false;
@@ -525,7 +535,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
-                                    ${showOwner ? `<button class="btn btn-outline-dark btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
                                         <i class="fa-solid fa-user-gear"></i>
                                     </button>` : ''}
                                     <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
@@ -601,7 +611,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
-                                    ${showOwner ? `<button class="btn btn-outline-dark btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
                                         <i class="fa-solid fa-user-gear"></i>
                                     </button>` : ''}
                                     <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
