@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web.admin;
 
+import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.NoteService;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
@@ -44,6 +45,7 @@ import java.util.Set;
 public class AdminNoteController {
 
     private final NoteService noteService;
+    private final NoteRevisionService noteRevisionService;
 
     @Operation(
             summary = "Create note (admin)",
@@ -261,7 +263,7 @@ public class AdminNoteController {
     @GetMapping("/{id}/revisions")
     public Page<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id,
                                                @ParameterObject Pageable pageable) {
-        return noteService.findRevisions(id, pageable);
+        return noteRevisionService.findRevisions(id, pageable);
     }
 
     @Operation(
@@ -278,7 +280,7 @@ public class AdminNoteController {
     @GetMapping("/{id}/revisions/{revisionId}")
     public NoteRevisionDTO findRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                         @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.findRevision(id, revisionId);
+        return noteRevisionService.findRevision(id, revisionId);
     }
 
     @Operation(

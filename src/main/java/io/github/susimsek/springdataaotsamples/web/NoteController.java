@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.web;
 
 import io.github.susimsek.springdataaotsamples.service.NoteService;
+import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
@@ -43,6 +44,7 @@ import java.util.Set;
 public class NoteController {
 
     private final NoteService noteService;
+    private final NoteRevisionService noteRevisionService;
 
     @Operation(
             summary = "Create note",
@@ -237,7 +239,7 @@ public class NoteController {
     @GetMapping("/{id}/revisions")
     public Page<NoteRevisionDTO> findRevisions(@Parameter(description = "Note identifier") @PathVariable Long id,
                                                @ParameterObject Pageable pageable) {
-        return noteService.findRevisionsForCurrentUser(id, pageable);
+        return noteRevisionService.findRevisionsForCurrentUser(id, pageable);
     }
 
     @Operation(
@@ -254,7 +256,7 @@ public class NoteController {
     @GetMapping("/{id}/revisions/{revisionId}")
     public NoteRevisionDTO findRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                         @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.findRevisionForCurrentUser(id, revisionId);
+        return noteRevisionService.findRevisionForCurrentUser(id, revisionId);
     }
 
     @Operation(

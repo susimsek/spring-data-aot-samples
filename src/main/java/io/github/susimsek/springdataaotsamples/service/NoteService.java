@@ -4,33 +4,28 @@ import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.BulkAction;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
+import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.UserNotFoundException;
-import lombok.RequiredArgsConstructor;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
-import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
-import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.history.RevisionSort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +41,8 @@ public class NoteService {
     private final NoteQueryService noteQueryService;
     private final TagService tagService;
     private final NoteMapper noteMapper;
-    private final NoteRevisionMapper noteRevisionMapper;
     private final UserRepository userRepository;
+    private final NoteAuthorizationService noteAuthorizationService;
 
     @Transactional
     public NoteDTO create(NoteCreateRequest request) {
@@ -72,7 +67,7 @@ public class NoteService {
     @Transactional
     public NoteDTO updateForCurrentUser(Long id, NoteUpdateRequest request) {
         var note = findActiveNote(id);
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         noteMapper.updateEntity(request, note);
         note.setTags(tagService.resolveTags(request.tags()));
         var saved = noteRepository.save(note);
@@ -93,7 +88,7 @@ public class NoteService {
     @Transactional
     public NoteDTO patchForCurrentUser(Long id, NotePatchRequest request) {
         var note = findActiveNote(id);
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         noteMapper.patchEntity(request, note);
         if (request.tags() != null) {
             note.setTags(tagService.resolveTags(request.tags()));
@@ -114,39 +109,10 @@ public class NoteService {
         return noteMapper.toDto(saved);
     }
 
-    @Transactional(readOnly = true)
-    public Page<NoteRevisionDTO> findRevisions(Long id, Pageable pageable) {
-        var note = findNote(id);
-        return findRevisionsInternal(note.getId(), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public NoteRevisionDTO findRevision(Long id, Long revisionNumber) {
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        return noteRevisionMapper.toRevisionDto(revision);
-    }
-
-    @Transactional(readOnly = true)
-    public NoteRevisionDTO findRevisionForCurrentUser(Long id, Long revisionNumber) {
-        var note = findNote(id);
-        ensureOwner(note);
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        return noteRevisionMapper.toRevisionDto(revision);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<NoteRevisionDTO> findRevisionsForCurrentUser(Long id, Pageable pageable) {
-        var note = findNote(id);
-        ensureOwner(note);
-        return findRevisionsInternal(note.getId(), pageable);
-    }
-
     @Transactional
     public NoteDTO restoreRevision(Long id, Long revisionNumber) {
         var note = noteRepository.findById(id)
-            .orElseThrow(() -> new NoteNotFoundException(id));
+                .orElseThrow(() -> new NoteNotFoundException(id));
         var revision = noteRepository.findRevision(id, revisionNumber)
                 .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
         var snapshot = revision.getEntity();
@@ -159,11 +125,11 @@ public class NoteService {
     @Transactional
     public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
         var note = noteRepository.findById(id)
-            .orElseThrow(() -> new NoteNotFoundException(id));
+                .orElseThrow(() -> new NoteNotFoundException(id));
         var revision = noteRepository.findRevision(id, revisionNumber)
                 .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
         var snapshot = revision.getEntity();
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
 
         noteMapper.applyRevision(snapshot, note);
 
@@ -208,7 +174,7 @@ public class NoteService {
     @Transactional(readOnly = true)
     public NoteDTO findByIdForCurrentUser(Long id) {
         var note = findActiveNote(id);
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         return noteMapper.toDto(note);
     }
 
@@ -223,7 +189,7 @@ public class NoteService {
     @Transactional
     public void deleteForCurrentUser(Long id) {
         var note = findActiveNote(id);
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         int updated = noteRepository.softDeleteById(id);
         if (updated == 0) {
             throw new NoteNotFoundException(id);
@@ -242,7 +208,7 @@ public class NoteService {
     public void restoreForCurrentUser(Long id) {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         if (!note.isDeleted()) {
             throw new NoteNotFoundException(id);
         }
@@ -281,7 +247,7 @@ public class NoteService {
     public void deletePermanentlyForCurrentUser(Long id) {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        ensureOwner(note);
+        noteAuthorizationService.ensureOwner(note);
         if (!note.isDeleted()) {
             throw new InvalidPermanentDeleteException(id);
         }
@@ -323,22 +289,13 @@ public class NoteService {
     private Note findActiveNote(Long id) {
         return noteRepository.findOne(
                 Specification.where(NoteSpecifications.isNotDeleted())
-                    .and((root, cq, cb) -> cb.equal(root.get("id"), id)))
-            .orElseThrow(() -> new NoteNotFoundException(id));
+                        .and((root, cq, cb) -> cb.equal(root.get("id"), id)))
+                .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
     private Note findNote(Long id) {
         return noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-    }
-
-    private Page<NoteRevisionDTO> findRevisionsInternal(Long noteId, Pageable pageable) {
-        var pageRequest = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                RevisionSort.desc());
-        var revisions = noteRepository.findRevisions(noteId, pageRequest);
-        return noteRevisionMapper.toRevisionDtoPage(revisions);
     }
 
     private BulkActionResult executeBulk(BulkAction action, Map<Long, Note> notesById, List<Long> failed) {
@@ -381,14 +338,5 @@ public class NoteService {
             }
         };
         return new BulkActionResult(processed, failed);
-    }
-
-    private void ensureOwner(Note note) {
-        var username = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        var owner = note.getOwner();
-        if (!username.equals(owner)) {
-            throw new AccessDeniedException("You are not allowed to modify this note");
-        }
     }
 }
