@@ -387,7 +387,7 @@ public class NoteService {
         var username = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
         var owner = note.getOwner();
-        if (owner == null || !username.equals(owner)) {
+        if (!username.equals(owner)) {
             throw new AccessDeniedException("You are not allowed to modify this note");
         }
     }

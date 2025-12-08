@@ -4,13 +4,25 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.HandlerMethod;
+import org.springdoc.core.customizers.OperationCustomizer;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
 public class OpenApiConfig {
@@ -31,5 +43,71 @@ public class OpenApiConfig {
                                         .bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
                 .servers(List.of(new Server().url("/").description("Default server")));
+    }
+
+    @Bean
+    public OperationCustomizer securityResponsesCustomizer() {
+        return (Operation operation, HandlerMethod handlerMethod) -> {
+            addSecurityErrorResponse(operation, handlerMethod);
+            addDefaultErrorResponse(operation);
+            return operation;
+        };
+    }
+
+    private void addSecurityErrorResponse(Operation operation, HandlerMethod handlerMethod) {
+        SecurityRequirements sr = handlerMethod.getMethod().getAnnotation(SecurityRequirements.class);
+        boolean hasSecurity = (sr == null || sr.value().length > 0);
+        if (!hasSecurity) {
+            return;
+        }
+        operation.getResponses().addApiResponse("401",
+            new ApiResponse().description("Unauthorized")
+              .content(new Content().addMediaType(MediaType.APPLICATION_JSON_VALUE,
+                  new io.swagger.v3.oas.models.media.MediaType()
+                     .schema(new Schema<ProblemDetail>().$ref("#/components/schemas/ProblemDetail"))
+                     .example(getUnauthorizedExample()))));
+        operation.getResponses().addApiResponse("403",
+            new ApiResponse().description("Access Denied")
+              .content(new Content().addMediaType(MediaType.APPLICATION_JSON_VALUE,
+                  new io.swagger.v3.oas.models.media.MediaType()
+                     .schema(new Schema<ProblemDetail>().$ref("#/components/schemas/ProblemDetail"))
+                     .example(getAccessDeniedExample()))));
+    }
+
+    private void addDefaultErrorResponse(Operation operation) {
+        operation.getResponses().addApiResponse("500",
+            new io.swagger.v3.oas.models.responses.ApiResponse()
+                .description("Internal Server Error")
+                .content(new Content()
+                    .addMediaType(MediaType.APPLICATION_JSON_VALUE,
+                        new io.swagger.v3.oas.models.media.MediaType()
+                            .schema(new Schema<ProblemDetail>().$ref(
+                                "#/components/schemas/ProblemDetail"))
+                            .example(getDefaultErrorExample()))));
+    }
+
+    private Map<String, Object> getUnauthorizedExample() {
+        return createProblemExample(HttpStatus.UNAUTHORIZED,
+            "Invalid or expired token");
+    }
+
+    private Map<String, Object> getAccessDeniedExample() {
+        return createProblemExample(HttpStatus.FORBIDDEN,
+            "Access is denied.");
+    }
+
+    private Map<String, Object> getDefaultErrorExample() {
+        return createProblemExample(HttpStatus.INTERNAL_SERVER_ERROR,
+            "An unexpected error occurred. Please try again later.");
+    }
+
+    private Map<String, Object> createProblemExample(HttpStatus status,
+                                                     String detail) {
+        Map<String, Object> example = new LinkedHashMap<>();
+        example.put("title", status.getReasonPhrase());
+        example.put("status", status.value());
+        example.put("detail", detail);
+        example.put("instance", "/api/notes");
+        return example;
     }
 }

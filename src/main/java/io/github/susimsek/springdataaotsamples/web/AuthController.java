@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -41,6 +42,8 @@ public class AuthController {
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
     @ApiResponse(responseCode = "200", description = "Token issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Invalid credentials",
+            content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginRequest request) {
         TokenDTO token = authService.login(request);
@@ -61,6 +64,7 @@ public class AuthController {
     }
 
     @Operation(summary = "Logout", description = "Clears auth cookie.")
+    @ApiResponse(responseCode = "204", description = "Logged out")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
@@ -83,6 +87,8 @@ public class AuthController {
     @Operation(summary = "Refresh access token", description = "Rotates refresh token and issues a new access token.")
     @ApiResponse(responseCode = "200", description = "New tokens issued",
             content = @Content(schema = @Schema(implementation = TokenDTO.class)))
+    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
+        content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/refresh")
     public ResponseEntity<TokenDTO> refresh(
             HttpServletRequest request,
