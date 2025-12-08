@@ -4,7 +4,6 @@ import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.BulkAction;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
-import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
@@ -12,13 +11,12 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
-import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
-import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.UserNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
+import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -50,52 +48,35 @@ public class NoteService {
         var username = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
         note.setOwner(username);
-        note.setTags(tagService.resolveTags(request.tags()));
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
+        applyTags(note, request.tags());
+        return save(note);
     }
 
     @Transactional
     public NoteDTO update(Long id, NoteUpdateRequest request) {
         var note = findActiveNote(id);
-        noteMapper.updateEntity(request, note);
-        note.setTags(tagService.resolveTags(request.tags()));
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
+        return applyUpdate(note, request);
     }
 
     @Transactional
     public NoteDTO updateForCurrentUser(Long id, NoteUpdateRequest request) {
         var note = findActiveNote(id);
         noteAuthorizationService.ensureOwner(note);
-        noteMapper.updateEntity(request, note);
-        note.setTags(tagService.resolveTags(request.tags()));
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
+        return applyUpdate(note, request);
     }
 
     @Transactional
     public NoteDTO patch(Long id, NotePatchRequest request) {
         var note = findActiveNote(id);
-        noteMapper.patchEntity(request, note);
-        if (request.tags() != null) {
-            note.setTags(tagService.resolveTags(request.tags()));
-        }
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
+        return applyPatch(note, request);
     }
 
     @Transactional
     public NoteDTO patchForCurrentUser(Long id, NotePatchRequest request) {
         var note = findActiveNote(id);
         noteAuthorizationService.ensureOwner(note);
-        noteMapper.patchEntity(request, note);
-        if (request.tags() != null) {
-            note.setTags(tagService.resolveTags(request.tags()));
-        }
         // owner change ignored for non-admin path
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
+        return applyPatch(note, request);
     }
 
     @Transactional
@@ -105,34 +86,6 @@ public class NoteService {
         }
         var note = findActiveNote(id);
         note.setOwner(owner);
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
-    }
-
-    @Transactional
-    public NoteDTO restoreRevision(Long id, Long revisionNumber) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        var snapshot = revision.getEntity();
-        noteMapper.applyRevision(snapshot, note);
-
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
-    }
-
-    @Transactional
-    public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        var snapshot = revision.getEntity();
-        noteAuthorizationService.ensureOwner(note);
-
-        noteMapper.applyRevision(snapshot, note);
-
         var saved = noteRepository.save(note);
         return noteMapper.toDto(saved);
     }
@@ -219,43 +172,6 @@ public class NoteService {
     }
 
     @Transactional
-    public void emptyTrash() {
-        noteRepository.purgeDeleted();
-        tagService.cleanupOrphanTagsAsync();
-    }
-
-    @Transactional
-    public void emptyTrashForCurrentUser() {
-        var username = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        noteRepository.purgeDeletedByOwner(username);
-        tagService.cleanupOrphanTagsAsync();
-    }
-
-    @Transactional
-    public void deletePermanently(Long id) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        if (!note.isDeleted()) {
-            throw new InvalidPermanentDeleteException(id);
-        }
-        noteRepository.deleteById(id);
-        tagService.cleanupOrphanTagsAsync();
-    }
-
-    @Transactional
-    public void deletePermanentlyForCurrentUser(Long id) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureOwner(note);
-        if (!note.isDeleted()) {
-            throw new InvalidPermanentDeleteException(id);
-        }
-        noteRepository.deleteById(id);
-        tagService.cleanupOrphanTagsAsync();
-    }
-
-    @Transactional
     public BulkActionResult bulk(BulkActionRequest request) {
         Set<Long> ids = request.ids();
         if (ids.isEmpty()) {
@@ -293,9 +209,27 @@ public class NoteService {
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
-    private Note findNote(Long id) {
-        return noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
+    private void applyTags(Note note, Set<String> tags) {
+        note.setTags(tagService.resolveTags(tags));
+    }
+
+    private NoteDTO applyUpdate(Note note, NoteUpdateRequest request) {
+        noteMapper.updateEntity(request, note);
+        applyTags(note, request.tags());
+        return save(note);
+    }
+
+    private NoteDTO applyPatch(Note note, NotePatchRequest request) {
+        noteMapper.patchEntity(request, note);
+        if (request.tags() != null) {
+            applyTags(note, request.tags());
+        }
+        return save(note);
+    }
+
+    private NoteDTO save(Note note) {
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
     }
 
     private BulkActionResult executeBulk(BulkAction action, Map<Long, Note> notesById, List<Long> failed) {

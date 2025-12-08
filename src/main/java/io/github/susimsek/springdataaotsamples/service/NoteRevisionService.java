@@ -2,9 +2,11 @@ package io.github.susimsek.springdataaotsamples.service;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ public class NoteRevisionService {
     private final NoteRepository noteRepository;
     private final NoteRevisionMapper noteRevisionMapper;
     private final NoteAuthorizationService noteAuthorizationService;
+    private final NoteMapper noteMapper;
 
     @Transactional(readOnly = true)
     public Page<NoteRevisionDTO> findRevisions(Long id, Pageable pageable) {
@@ -33,6 +36,21 @@ public class NoteRevisionService {
         var revision = noteRepository.findRevision(id, revisionNumber)
                 .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
         return noteRevisionMapper.toRevisionDto(revision);
+    }
+
+    @Transactional
+    public NoteDTO restoreRevision(Long id, Long revisionNumber) {
+        var note = noteRepository.findById(id)
+                .orElseThrow(() -> new NoteNotFoundException(id));
+        return restoreRevisionInternal(note, id, revisionNumber);
+    }
+
+    @Transactional
+    public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
+        var note = noteRepository.findById(id)
+                .orElseThrow(() -> new NoteNotFoundException(id));
+        noteAuthorizationService.ensureOwner(note);
+        return restoreRevisionInternal(note, id, revisionNumber);
     }
 
     @Transactional(readOnly = true)
@@ -63,6 +81,15 @@ public class NoteRevisionService {
                 RevisionSort.desc());
         var revisions = noteRepository.findRevisions(noteId, pageRequest);
         return noteRevisionMapper.toRevisionDtoPage(revisions);
+    }
+
+    private NoteDTO restoreRevisionInternal(Note note, Long id, Long revisionNumber) {
+        var revision = noteRepository.findRevision(id, revisionNumber)
+                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+        var snapshot = revision.getEntity();
+        noteMapper.applyRevision(snapshot, note);
+        var saved = noteRepository.save(note);
+        return noteMapper.toDto(saved);
     }
 
 }

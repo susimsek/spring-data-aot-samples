@@ -1,7 +1,8 @@
 package io.github.susimsek.springdataaotsamples.web.admin;
 
-import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.NoteService;
+import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
+import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
@@ -46,6 +47,7 @@ public class AdminNoteController {
 
     private final NoteService noteService;
     private final NoteRevisionService noteRevisionService;
+    private final NoteTrashService noteTrashService;
 
     @Operation(
             summary = "Create note (admin)",
@@ -118,7 +120,7 @@ public class AdminNoteController {
     @DeleteMapping("/deleted")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void emptyTrash() {
-        noteService.emptyTrash();
+        noteTrashService.emptyTrash();
     }
 
     @Operation(
@@ -230,7 +232,7 @@ public class AdminNoteController {
     @DeleteMapping("/{id}/permanent")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePermanently(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.deletePermanently(id);
+        noteTrashService.deletePermanently(id);
     }
 
     @Operation(
@@ -297,6 +299,6 @@ public class AdminNoteController {
     @PostMapping("/{id}/revisions/{revisionId}/restore")
     public NoteDTO restoreRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                    @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.restoreRevision(id, revisionId);
+        return noteRevisionService.restoreRevision(id, revisionId);
     }
 }

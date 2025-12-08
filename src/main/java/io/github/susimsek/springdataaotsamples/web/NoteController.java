@@ -1,7 +1,8 @@
 package io.github.susimsek.springdataaotsamples.web;
 
-import io.github.susimsek.springdataaotsamples.service.NoteService;
 import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
+import io.github.susimsek.springdataaotsamples.service.NoteService;
+import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
@@ -45,6 +46,7 @@ public class NoteController {
 
     private final NoteService noteService;
     private final NoteRevisionService noteRevisionService;
+    private final NoteTrashService noteTrashService;
 
     @Operation(
             summary = "Create note",
@@ -113,7 +115,7 @@ public class NoteController {
     @DeleteMapping("/deleted")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void emptyTrash() {
-        noteService.emptyTrashForCurrentUser();
+        noteTrashService.emptyTrashForCurrentUser();
     }
 
     @Operation(
@@ -206,7 +208,7 @@ public class NoteController {
     @DeleteMapping("/{id}/permanent")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePermanently(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.deletePermanentlyForCurrentUser(id);
+        noteTrashService.deletePermanentlyForCurrentUser(id);
     }
 
     @Operation(
@@ -273,6 +275,6 @@ public class NoteController {
     @PostMapping("/{id}/revisions/{revisionId}/restore")
     public NoteDTO restoreRevision(@Parameter(description = "Note identifier") @PathVariable Long id,
                                    @Parameter(description = "Revision number") @PathVariable Long revisionId) {
-        return noteService.restoreRevisionForCurrentUser(id, revisionId);
+        return noteRevisionService.restoreRevisionForCurrentUser(id, revisionId);
     }
 }
