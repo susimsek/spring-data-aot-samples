@@ -120,6 +120,8 @@ async function handleSubmit(event) {
     setLoading(false);
 
     if (!response || response.error) {
+        clearValidation();
+        form?.classList.remove('was-validated');
         const message = response?.error?.message || 'Login failed. Check credentials.';
         if (alertBox) {
             alertBox.textContent = message;
@@ -127,8 +129,6 @@ async function handleSubmit(event) {
         } else {
             showToast(message, 'danger');
         }
-        markInvalid(usernameInput);
-        markInvalid(passwordInput);
         return;
     }
 

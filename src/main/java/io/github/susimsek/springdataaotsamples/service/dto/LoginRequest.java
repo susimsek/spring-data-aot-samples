@@ -1,6 +1,5 @@
 package io.github.susimsek.springdataaotsamples.service.dto;
 
-import io.github.susimsek.springdataaotsamples.service.validation.constraints.Username;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import jakarta.validation.constraints.Size;
 public record LoginRequest(
         @Schema(description = "Username", example = "admin")
         @NotBlank
-        @Username
         @Size(min = 3, max = 100)
         String username,
 
