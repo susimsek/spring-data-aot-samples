@@ -5,7 +5,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
-import io.github.susimsek.springdataaotsamples.security.AuthService;
+import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,9 +35,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "auth", description = "Authentication APIs")
-public class AuthController {
+public class AuthenticationController {
 
-    private final AuthService authService;
+    private final AuthenticationService authenticationService;
 
     @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
@@ -47,7 +47,7 @@ public class AuthController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginRequest request) {
-        TokenDTO token = authService.login(request);
+        TokenDTO token = authenticationService.login(request);
         ResponseCookie cookie = CookieUtils.authCookie(token.token(), token.expiresAt());
         ResponseCookie refreshCookie = CookieUtils.refreshCookie(token.refreshToken(), token.refreshTokenExpiresAt());
         return ResponseEntity.ok()
@@ -63,7 +63,7 @@ public class AuthController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/me")
     public UserDTO me() {
-        return authService.getCurrentUser();
+        return authenticationService.getCurrentUser();
     }
 
     @Operation(summary = "Logout", description = "Clears auth cookie.")
@@ -77,7 +77,7 @@ public class AuthController {
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }
-        authService.logout(refreshToken);
+        authenticationService.logout(refreshToken);
         ResponseCookie clearCookie = CookieUtils.clearAuthCookie();
         ResponseCookie clearRefresh = CookieUtils.clearRefreshCookie();
         return ResponseEntity.noContent()
@@ -101,7 +101,7 @@ public class AuthController {
         if (!StringUtils.hasText(refreshToken)) {
             refreshToken = CookieUtils.getCookieValue(request, SecurityUtils.REFRESH_COOKIE);
         }
-        TokenDTO token = authService.refresh(refreshToken);
+        TokenDTO token = authenticationService.refresh(refreshToken);
         ResponseCookie accessCookie = CookieUtils.authCookie(token.token(), token.expiresAt());
         ResponseCookie refreshCookie = CookieUtils.refreshCookie(token.refreshToken(), token.refreshTokenExpiresAt());
         return ResponseEntity.ok()

@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
