@@ -1,7 +1,8 @@
 package io.github.susimsek.springdataaotsamples.web;
 
+import io.github.susimsek.springdataaotsamples.service.NoteCommandService;
+import io.github.susimsek.springdataaotsamples.service.NoteQueryService;
 import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
-import io.github.susimsek.springdataaotsamples.service.NoteService;
 import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
@@ -44,7 +45,8 @@ import java.util.Set;
 @Tag(name = "notes", description = "Note CRUD APIs")
 public class NoteController {
 
-    private final NoteService noteService;
+    private final NoteCommandService noteCommandService;
+    private final NoteQueryService noteQueryService;
     private final NoteRevisionService noteRevisionService;
     private final NoteTrashService noteTrashService;
 
@@ -60,7 +62,7 @@ public class NoteController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public NoteDTO create(@Valid @RequestBody NoteCreateRequest request) {
-        return noteService.create(request);
+        return noteCommandService.create(request);
     }
 
     @Operation(
@@ -82,7 +84,7 @@ public class NoteController {
                                  @Parameter(description = "Exact color hex filter") String color,
                                  @RequestParam(value = "pinned", required = false)
                                  @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findAllForCurrentUser(pageable, q, tags, color, pinned);
+        return noteQueryService.findAllForCurrentUser(pageable, q, tags, color, pinned);
     }
 
     @Operation(
@@ -104,7 +106,7 @@ public class NoteController {
                                      @Parameter(description = "Exact color hex filter") String color,
                                      @RequestParam(value = "pinned", required = false)
                                      @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findDeletedForCurrentUser(pageable, q, tags, color, pinned);
+        return noteQueryService.findDeletedForCurrentUser(pageable, q, tags, color, pinned);
     }
 
     @Operation(
@@ -134,7 +136,7 @@ public class NoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NoteUpdateRequest request
     ) {
-        return noteService.updateForCurrentUser(id, request);
+        return noteCommandService.updateForCurrentUser(id, request);
     }
 
     @Operation(
@@ -153,7 +155,7 @@ public class NoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NotePatchRequest request
     ) {
-        return noteService.patchForCurrentUser(id, request);
+        return noteCommandService.patchForCurrentUser(id, request);
     }
 
     @Operation(
@@ -166,7 +168,7 @@ public class NoteController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.deleteForCurrentUser(id);
+        noteCommandService.deleteForCurrentUser(id);
     }
 
     @Operation(
@@ -182,7 +184,7 @@ public class NoteController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/bulk")
     public BulkActionResult bulk(@Valid @RequestBody BulkActionRequest request) {
-        return noteService.bulkForCurrentUser(request);
+        return noteCommandService.bulkForCurrentUser(request);
     }
 
     @Operation(
@@ -195,7 +197,7 @@ public class NoteController {
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void restore(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.restoreForCurrentUser(id);
+        noteTrashService.restoreForCurrentUser(id);
     }
 
     @Operation(
@@ -224,7 +226,7 @@ public class NoteController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/{id}")
     public NoteDTO findById(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        return noteService.findByIdForCurrentUser(id);
+        return noteQueryService.findByIdForCurrentUser(id);
     }
 
     @Operation(

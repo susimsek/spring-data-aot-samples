@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.web.admin;
 
-import io.github.susimsek.springdataaotsamples.service.NoteService;
+import io.github.susimsek.springdataaotsamples.service.NoteCommandService;
+import io.github.susimsek.springdataaotsamples.service.NoteQueryService;
 import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
@@ -45,7 +46,8 @@ import java.util.Set;
 @Tag(name = "admin-notes", description = "Admin-only note APIs")
 public class AdminNoteController {
 
-    private final NoteService noteService;
+    private final NoteCommandService noteCommandService;
+    private final NoteQueryService noteQueryService;
     private final NoteRevisionService noteRevisionService;
     private final NoteTrashService noteTrashService;
 
@@ -61,7 +63,7 @@ public class AdminNoteController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public NoteDTO create(@Valid @RequestBody NoteCreateRequest request) {
-        return noteService.create(request);
+        return noteCommandService.create(request);
     }
 
     @Operation(
@@ -85,7 +87,7 @@ public class AdminNoteController {
                                  @Parameter(description = "Exact color hex filter") String color,
                                  @RequestParam(value = "pinned", required = false)
                                  @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findAll(pageable, q, tags, color, pinned);
+        return noteQueryService.findAll(pageable, q, tags, color, pinned);
     }
 
     @Operation(
@@ -109,7 +111,7 @@ public class AdminNoteController {
                                      @Parameter(description = "Exact color hex filter") String color,
                                      @RequestParam(value = "pinned", required = false)
                                      @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteService.findDeleted(pageable, q, tags, color, pinned);
+        return noteQueryService.findDeleted(pageable, q, tags, color, pinned);
     }
 
     @Operation(
@@ -139,7 +141,7 @@ public class AdminNoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NoteUpdateRequest request
     ) {
-        return noteService.update(id, request);
+        return noteCommandService.update(id, request);
     }
 
     @Operation(
@@ -158,7 +160,7 @@ public class AdminNoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NotePatchRequest request
     ) {
-        return noteService.patch(id, request);
+        return noteCommandService.patch(id, request);
     }
 
     @Operation(
@@ -177,7 +179,7 @@ public class AdminNoteController {
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody OwnerChangeRequest request
     ) {
-        return noteService.changeOwner(id, request.owner());
+        return noteCommandService.changeOwner(id, request.owner());
     }
 
     @Operation(
@@ -190,7 +192,7 @@ public class AdminNoteController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.delete(id);
+        noteCommandService.delete(id);
     }
 
     @Operation(
@@ -206,7 +208,7 @@ public class AdminNoteController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping("/bulk")
     public BulkActionResult bulk(@Valid @RequestBody BulkActionRequest request) {
-        return noteService.bulk(request);
+        return noteCommandService.bulk(request);
     }
 
     @Operation(
@@ -219,7 +221,7 @@ public class AdminNoteController {
     @PostMapping("/{id}/restore")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void restore(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        noteService.restore(id);
+        noteTrashService.restore(id);
     }
 
     @Operation(
@@ -248,7 +250,7 @@ public class AdminNoteController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/{id}")
     public NoteDTO findById(@Parameter(description = "Note identifier") @PathVariable Long id) {
-        return noteService.findById(id);
+        return noteQueryService.findById(id);
     }
 
     @Operation(

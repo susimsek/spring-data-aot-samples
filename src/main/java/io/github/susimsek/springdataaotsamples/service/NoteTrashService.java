@@ -18,6 +18,28 @@ public class NoteTrashService {
     private final NoteAuthorizationService noteAuthorizationService;
 
     @Transactional
+    public void restore(Long id) {
+        int updated = noteRepository.restoreById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+    }
+
+    @Transactional
+    public void restoreForCurrentUser(Long id) {
+        var note = noteRepository.findById(id)
+                .orElseThrow(() -> new NoteNotFoundException(id));
+        noteAuthorizationService.ensureOwner(note);
+        if (!note.isDeleted()) {
+            throw new NoteNotFoundException(id);
+        }
+        int updated = noteRepository.restoreById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+    }
+
+    @Transactional
     public void emptyTrash() {
         noteRepository.purgeDeleted();
         tagService.cleanupOrphanTagsAsync();

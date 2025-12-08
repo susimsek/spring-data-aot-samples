@@ -7,7 +7,6 @@ import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
@@ -17,8 +16,6 @@ import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -33,10 +30,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class NoteService {
+public class NoteCommandService {
 
     private final NoteRepository noteRepository;
-    private final NoteQueryService noteQueryService;
     private final TagService tagService;
     private final NoteMapper noteMapper;
     private final UserRepository userRepository;
@@ -90,47 +86,6 @@ public class NoteService {
         return noteMapper.toDto(saved);
     }
 
-    @Transactional(readOnly = true)
-    public Page<NoteDTO> findAll(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-        return noteQueryService.find(new NoteCriteria(query, false, tags, color, pinned, null), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<NoteDTO> findDeleted(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-        return noteQueryService.find(new NoteCriteria(query, true, tags, color, pinned, null), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<NoteDTO> findAllForCurrentUser(Pageable pageable,
-                                               String query, Set<String> tags,
-                                               String color, Boolean pinned) {
-        var username = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        return noteQueryService.find(new NoteCriteria(query, false, tags, color, pinned, username), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<NoteDTO> findDeletedForCurrentUser(Pageable pageable,
-                                                   String query, Set<String> tags,
-                                                   String color, Boolean pinned) {
-        var username = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-        return noteQueryService.find(new NoteCriteria(query, true, tags, color, pinned, username), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public NoteDTO findById(Long id) {
-        var note = findActiveNote(id);
-        return noteMapper.toDto(note);
-    }
-
-    @Transactional(readOnly = true)
-    public NoteDTO findByIdForCurrentUser(Long id) {
-        var note = findActiveNote(id);
-        noteAuthorizationService.ensureOwner(note);
-        return noteMapper.toDto(note);
-    }
-
     @Transactional
     public void delete(Long id) {
         int updated = noteRepository.softDeleteById(id);
@@ -144,28 +99,6 @@ public class NoteService {
         var note = findActiveNote(id);
         noteAuthorizationService.ensureOwner(note);
         int updated = noteRepository.softDeleteById(id);
-        if (updated == 0) {
-            throw new NoteNotFoundException(id);
-        }
-    }
-
-    @Transactional
-    public void restore(Long id) {
-        int updated = noteRepository.restoreById(id);
-        if (updated == 0) {
-            throw new NoteNotFoundException(id);
-        }
-    }
-
-    @Transactional
-    public void restoreForCurrentUser(Long id) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureOwner(note);
-        if (!note.isDeleted()) {
-            throw new NoteNotFoundException(id);
-        }
-        int updated = noteRepository.restoreById(id);
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
