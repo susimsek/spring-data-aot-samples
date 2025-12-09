@@ -101,6 +101,7 @@ public class SecurityConfig {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey(properties))
                 .macAlgorithm(JWT_ALGORITHM)
                 .build();
+
         var audienceValidator = new AudienceValidator(properties.getAudience());
         var withIssuer = JwtValidators.createDefaultWithIssuer(properties.getIssuer());
         var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
