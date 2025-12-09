@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.service.command;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
+import io.github.susimsek.springdataaotsamples.service.CacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -25,6 +26,7 @@ public class TagCommandService {
 
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
+    private final CacheService cacheService;
 
     @Transactional
     public Set<Tag> resolveTags(Set<String> names) {
@@ -67,6 +69,7 @@ public class TagCommandService {
         }
         tagRepository.deleteAllByIdInBatch(orphanIds);
         log.debug("Deleted {} orphan tags", orphanIds.size());
+        cacheService.clearCache(Tag.class.getName());
     }
 
     private Set<String> normalizeNames(Set<String> names) {

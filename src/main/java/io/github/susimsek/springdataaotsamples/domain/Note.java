@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 
 import java.util.LinkedHashSet;
@@ -29,6 +31,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Note extends SoftDeletableEntity {
 
     @Id
@@ -56,5 +59,6 @@ public class Note extends SoftDeletableEntity {
     @JoinTable(name = "note_tag",
             joinColumns = @JoinColumn(name = "note_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Tag> tags = new LinkedHashSet<>();
 }

@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.envers.Audited;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.util.Objects;
 
@@ -23,6 +25,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Tag extends AuditableEntity {
 
     @Id

@@ -16,6 +16,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +29,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class User extends AuditableEntity {
 
     @Id
@@ -49,5 +52,6 @@ public class User extends AuditableEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "authority_id")
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Authority> authorities = new HashSet<>();
 }

@@ -11,6 +11,8 @@ import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.time.Instant;
 
@@ -19,6 +21,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RefreshToken {
 
     @Id

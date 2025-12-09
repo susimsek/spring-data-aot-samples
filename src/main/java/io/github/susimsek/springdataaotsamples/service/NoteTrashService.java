@@ -1,5 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service;
 
+import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
@@ -25,6 +27,7 @@ public class NoteTrashService {
     private final TagCommandService tagCommandService;
     private final NoteAuthorizationService noteAuthorizationService;
     private final NoteQueryService noteQueryService;
+    private final CacheService cacheService;
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findDeleted(Pageable pageable,
@@ -56,6 +59,7 @@ public class NoteTrashService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
+        evictNoteCaches();
     }
 
     @Transactional
@@ -70,12 +74,14 @@ public class NoteTrashService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
+        evictNoteCaches();
     }
 
     @Transactional
     public void emptyTrash() {
         noteRepository.purgeDeleted();
         tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
     }
 
     @Transactional
@@ -84,6 +90,7 @@ public class NoteTrashService {
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
         noteRepository.purgeDeletedByOwner(username);
         tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
     }
 
     @Transactional
@@ -95,6 +102,7 @@ public class NoteTrashService {
         }
         noteRepository.deleteById(id);
         tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
     }
 
     @Transactional
@@ -107,10 +115,19 @@ public class NoteTrashService {
         }
         noteRepository.deleteById(id);
         tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
     }
 
     private String getCurrentUsername() {
         return SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+    }
+
+    private void evictNoteCaches() {
+        cacheService.clearCaches(
+            Note.class.getName(),
+            Note.class.getName() + ".tags",
+            Tag.class.getName()
+        );
     }
 }

@@ -1,0 +1,102 @@
+package io.github.susimsek.springdataaotsamples.config.cache;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.jcache.configuration.CaffeineConfiguration;
+import com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.cache.jcache.ConfigSettings;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.cache.autoconfigure.JCacheManagerCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.domain.Authority;
+import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
+import io.github.susimsek.springdataaotsamples.repository.UserRepository;
+
+import javax.cache.Caching;
+import java.util.OptionalLong;
+
+@Configuration(proxyBeanMethods = false)
+@EnableCaching
+@EnableConfigurationProperties(CacheProperties.class)
+@RequiredArgsConstructor
+public class CacheConfig {
+
+    private final CacheProperties cacheProperties;
+
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        cacheManager.setCaffeine(buildCaffeineConfig(cacheProperties.getCaffeine()));
+        return cacheManager;
+    }
+
+    private Caffeine<Object, Object> buildCaffeineConfig(CacheProperties.Caffeine config) {
+        return Caffeine.newBuilder()
+            .expireAfterWrite(config.getTtl())
+            .initialCapacity(config.getInitialCapacity())
+            .maximumSize(config.getMaximumSize())
+            .recordStats();
+    }
+
+    @ConditionalOnProperty(
+        name = "spring.jpa.properties.hibernate.cache.use_second_level_cache",
+        havingValue = "true"
+    )
+    @RequiredArgsConstructor
+    static class HibernateSecondLevelCacheConfiguration {
+
+        private final CacheProperties cacheProperties;
+
+        @Bean
+        public javax.cache.CacheManager jcacheManager(JCacheManagerCustomizer customizer) {
+            var provider = Caching.getCachingProvider(CaffeineCachingProvider.class.getName());
+            var manager = provider.getCacheManager();
+            customizer.customize(manager);
+            return manager;
+        }
+
+        @Bean
+        public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(javax.cache.CacheManager jcacheManager) {
+            return props -> props.put(ConfigSettings.CACHE_MANAGER, jcacheManager);
+        }
+
+        @Bean
+        public JCacheManagerCustomizer cacheManagerCustomizer() {
+            return cm -> {
+                createCache(cm, "default-update-timestamps-region");
+                createCache(cm, "default-query-results-region");
+                createCache(cm, User.class.getName());
+                createCache(cm, User.class.getName() + ".authorities");
+                createCache(cm, Authority.class.getName());
+                createCache(cm, Note.class.getName());
+                createCache(cm, Note.class.getName() + ".tags");
+                createCache(cm, Tag.class.getName());
+                createCache(cm, RefreshToken.class.getName());
+                createCache(cm, UserRepository.USERS_BY_USERNAME_CACHE);
+            };
+        }
+
+        private void createCache(javax.cache.CacheManager cm, String cacheName) {
+            var existing = cm.getCache(cacheName);
+            if (existing != null) {
+                existing.clear();
+                return;
+            }
+            var config = cacheProperties.getCaffeine();
+            var caffeineConfig = new CaffeineConfiguration<>();
+            caffeineConfig.setMaximumSize(OptionalLong.of(config.getMaximumSize()));
+            caffeineConfig.setExpireAfterWrite(OptionalLong.of(config.getTtl().toNanos()));
+            caffeineConfig.setStatisticsEnabled(true);
+            cm.createCache(cacheName, caffeineConfig);
+        }
+    }
+}
