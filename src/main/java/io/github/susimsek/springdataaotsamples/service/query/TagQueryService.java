@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.service;
+package io.github.susimsek.springdataaotsamples.service.query;
 
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;

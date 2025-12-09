@@ -1,8 +1,9 @@
-package io.github.susimsek.springdataaotsamples.service;
+package io.github.susimsek.springdataaotsamples.service.query;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.service.NoteAuthorizationService;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
@@ -32,18 +33,8 @@ public class NoteQueryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteDTO> findDeleted(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-        return find(new NoteCriteria(query, true, tags, color, pinned, null), pageable);
-    }
-
-    @Transactional(readOnly = true)
     public Page<NoteDTO> findAllForCurrentUser(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
         return find(new NoteCriteria(query, false, tags, color, pinned, getCurrentUsername()), pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<NoteDTO> findDeletedForCurrentUser(Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-        return find(new NoteCriteria(query, true, tags, color, pinned, getCurrentUsername()), pageable);
     }
 
     @Transactional(readOnly = true)
@@ -57,6 +48,11 @@ public class NoteQueryService {
         var note = findActiveNote(id);
         noteAuthorizationService.ensureOwner(note);
         return noteMapper.toDto(note);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findByCriteria(NoteCriteria criteria, Pageable pageable) {
+        return find(criteria, pageable);
     }
 
     private Specification<Note> createSpecification(NoteCriteria criteria) {

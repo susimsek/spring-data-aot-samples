@@ -1,6 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web;
 
-import io.github.susimsek.springdataaotsamples.service.TagQueryService;
+import io.github.susimsek.springdataaotsamples.service.query.TagQueryService;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

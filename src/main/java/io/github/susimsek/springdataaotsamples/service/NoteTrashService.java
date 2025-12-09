@@ -2,20 +2,53 @@ package io.github.susimsek.springdataaotsamples.service;
 
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class NoteTrashService {
 
     private final NoteRepository noteRepository;
-    private final TagService tagService;
+    private final TagCommandService tagCommandService;
     private final NoteAuthorizationService noteAuthorizationService;
+    private final NoteQueryService noteQueryService;
+
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findDeleted(Pageable pageable,
+                                     String query,
+                                     Set<String> tags,
+                                     String color,
+                                     Boolean pinned) {
+        return noteQueryService.findByCriteria(
+                new NoteCriteria(query, true, tags, color, pinned, null),
+                pageable
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findDeletedForCurrentUser(Pageable pageable,
+                                                   String query,
+                                                   Set<String> tags,
+                                                   String color,
+                                                   Boolean pinned) {
+        return noteQueryService.findByCriteria(
+                new NoteCriteria(query, true, tags, color, pinned, getCurrentUsername()),
+                pageable
+        );
+    }
 
     @Transactional
     public void restore(Long id) {
@@ -42,7 +75,7 @@ public class NoteTrashService {
     @Transactional
     public void emptyTrash() {
         noteRepository.purgeDeleted();
-        tagService.cleanupOrphanTagsAsync();
+        tagCommandService.cleanupOrphanTagsAsync();
     }
 
     @Transactional
@@ -50,7 +83,7 @@ public class NoteTrashService {
         var username = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
         noteRepository.purgeDeletedByOwner(username);
-        tagService.cleanupOrphanTagsAsync();
+        tagCommandService.cleanupOrphanTagsAsync();
     }
 
     @Transactional
@@ -61,7 +94,7 @@ public class NoteTrashService {
             throw new InvalidPermanentDeleteException(id);
         }
         noteRepository.deleteById(id);
-        tagService.cleanupOrphanTagsAsync();
+        tagCommandService.cleanupOrphanTagsAsync();
     }
 
     @Transactional
@@ -73,6 +106,11 @@ public class NoteTrashService {
             throw new InvalidPermanentDeleteException(id);
         }
         noteRepository.deleteById(id);
-        tagService.cleanupOrphanTagsAsync();
+        tagCommandService.cleanupOrphanTagsAsync();
+    }
+
+    private String getCurrentUsername() {
+        return SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
     }
 }

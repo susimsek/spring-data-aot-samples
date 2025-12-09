@@ -1,9 +1,10 @@
-package io.github.susimsek.springdataaotsamples.service;
+package io.github.susimsek.springdataaotsamples.service.command;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.BulkAction;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
+import io.github.susimsek.springdataaotsamples.service.NoteAuthorizationService;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 public class NoteCommandService {
 
     private final NoteRepository noteRepository;
-    private final TagService tagService;
+    private final TagCommandService tagCommandService;
     private final NoteMapper noteMapper;
     private final UserRepository userRepository;
     private final NoteAuthorizationService noteAuthorizationService;
@@ -143,7 +144,7 @@ public class NoteCommandService {
     }
 
     private void applyTags(Note note, Set<String> tags) {
-        note.setTags(tagService.resolveTags(tags));
+        note.setTags(tagCommandService.resolveTags(tags));
     }
 
     private NoteDTO applyUpdate(Note note, NoteUpdateRequest request) {

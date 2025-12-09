@@ -1,7 +1,7 @@
 package io.github.susimsek.springdataaotsamples.web.admin;
 
-import io.github.susimsek.springdataaotsamples.service.NoteCommandService;
-import io.github.susimsek.springdataaotsamples.service.NoteQueryService;
+import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
+import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
 import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
@@ -111,7 +111,7 @@ public class AdminNoteController {
                                      @Parameter(description = "Exact color hex filter") String color,
                                      @RequestParam(value = "pinned", required = false)
                                      @Parameter(description = "Filter by pinned state") Boolean pinned) {
-        return noteQueryService.findDeleted(pageable, q, tags, color, pinned);
+        return noteTrashService.findDeleted(pageable, q, tags, color, pinned);
     }
 
     @Operation(

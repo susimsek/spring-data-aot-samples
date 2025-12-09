@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.service;
+package io.github.susimsek.springdataaotsamples.service.command;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TagService {
+public class TagCommandService {
 
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
