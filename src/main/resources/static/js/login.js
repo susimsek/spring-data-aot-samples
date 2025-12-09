@@ -17,26 +17,13 @@ const spinner = document.getElementById('loginSpinner');
 const usernameInput = document.getElementById('loginUsername');
 const passwordInput = document.getElementById('loginPassword');
 const rememberMeInput = document.getElementById('loginRememberMe');
-const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
-const usernameSizeMsg = document.querySelector('[data-error-type="loginUsername-size"]');
-const usernamePatternMsg = document.querySelector('[data-error-type="loginUsername-pattern"]');
-const passwordRequiredMsg = document.querySelector('[data-error-type="loginPassword-required"]');
-const passwordSizeMsg = document.querySelector('[data-error-type="loginPassword-size"]');
 const { toggleInlineMessages } = Validation;
+const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
 
-function validateUsernamePattern() {
-    if (!usernameInput) return true;
-    usernameInput.setCustomValidity('');
-    usernamePatternMsg?.classList.add('d-none');
-    const val = usernameInput.value?.trim() || '';
-    const patternMismatch = usernameInput.validity?.patternMismatch;
-    if (val && patternMismatch) {
-        usernameInput.setCustomValidity('pattern');
-        usernameInput.classList.add('is-invalid');
-        usernamePatternMsg?.classList.remove('d-none');
-        return false;
-    }
-    return true;
+function disablePasswordSizeValidation() {
+    if (!passwordInput) return;
+    passwordInput.removeAttribute('minlength');
+    passwordInput.removeAttribute('maxlength');
 }
 
 function hideAlert() {
@@ -56,36 +43,26 @@ function setLoading(loading) {
     }
 }
 
-function markInvalid(input, message) {
-    if (!input) return;
-    input.classList.add('is-invalid');
-    const feedback = input.parentElement?.querySelector('.invalid-feedback');
-    if (feedback && message) {
-        feedback.textContent = message;
-    }
-}
-
 function clearValidation() {
-    [usernameInput, passwordInput].forEach(el => {
+    [usernameInput, passwordInput, rememberMeInput].forEach(el => {
         if (!el) return;
         el.classList.remove('is-invalid', 'is-valid');
     });
+    form?.classList.remove('was-validated');
     hideAlert();
 }
 
 function bindLiveValidation() {
-    const inputs = [usernameInput, passwordInput];
     if (usernameInput) {
         usernameInput.addEventListener('input', () => {
             hideAlert();
-            toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg);
-            validateUsernamePattern();
+            toggleInlineMessages(usernameInput, usernameRequiredMsg, null, false);
         });
     }
     if (passwordInput) {
         passwordInput.addEventListener('input', () => {
             hideAlert();
-            toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg);
+            toggleInlineMessages(passwordInput, null, null, false);
         });
     }
 }
@@ -94,12 +71,8 @@ async function handleSubmit(event) {
     event.preventDefault();
     if (!form) return;
     clearValidation();
-    form.classList.add('was-validated');
-    toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg);
-    if (!validateUsernamePattern()) {
-        return;
-    }
-    toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg);
+    toggleInlineMessages(usernameInput, usernameRequiredMsg, null, false);
+    toggleInlineMessages(passwordInput, null, null, false);
     if (!form.checkValidity()) {
         [usernameInput, passwordInput].forEach(input => {
             if (input && !input.checkValidity()) {
@@ -139,7 +112,7 @@ async function handleSubmit(event) {
         setCurrentUser({ username });
     }
     form.reset();
-    form.classList.remove('was-validated');
+    clearValidation();
     showToast('Signed in', 'success');
     window.location.replace(redirectTarget);
 }
@@ -152,6 +125,7 @@ function init() {
     if (usernameInput) {
         usernameInput.focus();
     }
+    disablePasswordSizeValidation();
     Theme.init({ button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel' });
     bindLiveValidation();
 }
