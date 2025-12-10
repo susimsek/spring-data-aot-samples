@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public interface NoteRepository extends
         JpaRepository<Note, Long>,
         JpaSpecificationExecutor<Note>,
-       NoteRepositoryCustom,
+        NoteRepositoryCustom,
         SoftDeleteRepository<Note, Long>,
         RevisionRepository<Note, Long, Long> {
 
