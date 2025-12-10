@@ -1,11 +1,13 @@
-package io.github.susimsek.springdataaotsamples.config;
+package io.github.susimsek.springdataaotsamples.config.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.security.AudienceValidator;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.security.CookieAwareBearerTokenResolver;
 import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,9 +44,12 @@ import static io.github.susimsek.springdataaotsamples.security.SecurityUtils.JWT
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties(ApplicationProperties.class)
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final ApplicationProperties applicationProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -110,13 +115,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(JwtProperties properties) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey(properties))
+    public JwtDecoder jwtDecoder() {
+        var jwt = applicationProperties.getSecurity().getJwt();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKey(jwt))
                 .macAlgorithm(JWT_ALGORITHM)
                 .build();
 
-        var audienceValidator = new AudienceValidator(properties.getAudience());
-        var withIssuer = JwtValidators.createDefaultWithIssuer(properties.getIssuer());
+        var audienceValidator = new AudienceValidator(jwt.getAudience());
+        var withIssuer = JwtValidators.createDefaultWithIssuer(jwt.getIssuer());
         var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
 
         decoder.setJwtValidator(withAudience);
@@ -124,12 +130,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtEncoder jwtEncoder(JwtProperties properties) {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(properties)));
+    public JwtEncoder jwtEncoder() {
+        var jwt = applicationProperties.getSecurity().getJwt();
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(jwt)));
     }
 
-    private SecretKey secretKey(JwtProperties properties) {
-        byte[] keyBytes = properties.getSecret().getBytes(StandardCharsets.UTF_8);
+    private SecretKey secretKey(ApplicationProperties.Jwt jwt) {
+        byte[] keyBytes = jwt.getSecret().getBytes(StandardCharsets.UTF_8);
         return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
     }
 

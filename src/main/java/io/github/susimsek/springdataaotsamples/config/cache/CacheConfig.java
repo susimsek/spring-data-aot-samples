@@ -3,43 +3,46 @@ package io.github.susimsek.springdataaotsamples.config.cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.jcache.configuration.CaffeineConfiguration;
 import com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider;
+import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
+import io.github.susimsek.springdataaotsamples.domain.Authority;
+import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
+import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.cache.jcache.ConfigSettings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.cache.autoconfigure.JCacheManagerCustomizer;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import io.github.susimsek.springdataaotsamples.domain.User;
-import io.github.susimsek.springdataaotsamples.domain.Authority;
-import io.github.susimsek.springdataaotsamples.domain.Note;
-import io.github.susimsek.springdataaotsamples.domain.Tag;
-import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
-import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 
 import javax.cache.Caching;
 import java.util.OptionalLong;
 
 @Configuration(proxyBeanMethods = false)
 @EnableCaching
-@EnableConfigurationProperties(CacheProperties.class)
 @RequiredArgsConstructor
 public class CacheConfig {
 
-    private final CacheProperties cacheProperties;
+    private final ApplicationProperties applicationProperties;
 
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.setCaffeine(buildCaffeineConfig(cacheProperties.getCaffeine()));
+        cacheManager.setCaffeine(buildCaffeineConfig(cacheProperties()));
         return cacheManager;
     }
 
-    private Caffeine<Object, Object> buildCaffeineConfig(CacheProperties.Caffeine config) {
+    private ApplicationProperties.Caffeine cacheProperties() {
+        return applicationProperties.getCache().getCaffeine();
+    }
+
+    private Caffeine<Object, Object> buildCaffeineConfig(ApplicationProperties.Caffeine config) {
         return Caffeine.newBuilder()
             .expireAfterWrite(config.getTtl())
             .initialCapacity(config.getInitialCapacity())
@@ -54,7 +57,7 @@ public class CacheConfig {
     @RequiredArgsConstructor
     static class HibernateSecondLevelCacheConfiguration {
 
-        private final CacheProperties cacheProperties;
+        private final ApplicationProperties applicationProperties;
 
         @Bean
         public javax.cache.CacheManager jcacheManager(JCacheManagerCustomizer customizer) {
@@ -91,12 +94,16 @@ public class CacheConfig {
                 existing.clear();
                 return;
             }
-            var config = cacheProperties.getCaffeine();
+            var config = cacheProperties();
             var caffeineConfig = new CaffeineConfiguration<>();
             caffeineConfig.setMaximumSize(OptionalLong.of(config.getMaximumSize()));
             caffeineConfig.setExpireAfterWrite(OptionalLong.of(config.getTtl().toNanos()));
             caffeineConfig.setStatisticsEnabled(true);
             cm.createCache(cacheName, caffeineConfig);
+        }
+
+        private ApplicationProperties.Caffeine cacheProperties() {
+            return applicationProperties.getCache().getCaffeine();
         }
     }
 }

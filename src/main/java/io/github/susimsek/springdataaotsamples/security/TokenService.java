@@ -1,6 +1,6 @@
 package io.github.susimsek.springdataaotsamples.security;
 
-import io.github.susimsek.springdataaotsamples.config.JwtProperties;
+import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class TokenService {
 
     private final JwtEncoder jwtEncoder;
-    private final JwtProperties jwtProperties;
+    private final ApplicationProperties applicationProperties;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
@@ -71,8 +71,8 @@ public class TokenService {
                                      Instant issuedAt,
                                      Instant expiresAt) {
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(jwtProperties.getIssuer())
-                .audience(jwtProperties.getAudience())
+                .issuer(jwtProperties().getIssuer())
+                .audience(jwtProperties().getAudience())
                 .subject(principal.getUsername())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
@@ -94,8 +94,8 @@ public class TokenService {
         refreshToken.setUserId(userId);
         refreshToken.setIssuedAt(issuedAt);
         var ttl = rememberMe
-                ? jwtProperties.getRefreshTokenTtlForRememberMe()
-                : jwtProperties.getRefreshTokenTtl();
+                ? jwtProperties().getRefreshTokenTtlForRememberMe()
+                : jwtProperties().getRefreshTokenTtl();
         refreshToken.setExpiresAt(issuedAt.plus(ttl));
         refreshToken.setRememberMe(rememberMe);
         String rawToken = RandomUtils.hexRefreshToken();
@@ -110,7 +110,7 @@ public class TokenService {
                 .collect(Collectors.toSet());
 
         Instant now = Instant.now();
-        Instant accessExpiresAt = now.plus(jwtProperties.getAccessTokenTtl());
+        Instant accessExpiresAt = now.plus(jwtProperties().getAccessTokenTtl());
         String accessToken = encodeAccessToken(principal, authorities, now, accessExpiresAt);
 
         RefreshToken refreshToken = createRefreshToken(principal, now, rememberMe);
@@ -130,6 +130,10 @@ public class TokenService {
             return principal;
         }
         throw new BadCredentialsException("Unsupported authentication principal");
+    }
+
+    private ApplicationProperties.Jwt jwtProperties() {
+        return applicationProperties.getSecurity().getJwt();
     }
 
 }
