@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.config.apidoc;
 
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
+import io.github.susimsek.springdataaotsamples.web.error.ProblemDetail;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -14,13 +15,14 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.method.HandlerMethod;
 
 import java.util.Arrays;
@@ -33,6 +35,15 @@ import java.util.Map;
 public class OpenApiConfig {
 
     private final ApplicationProperties applicationProperties;
+
+    @PostConstruct
+    public void customizeProblemDetail() {
+        SpringDocUtils.getConfig()
+            .replaceWithClass(
+                org.springframework.http.ProblemDetail.class,
+                ProblemDetail.class
+            );
+    }
 
     @Bean
     public OpenAPI notesOpenApi() {
