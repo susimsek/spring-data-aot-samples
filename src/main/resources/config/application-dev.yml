@@ -41,6 +41,18 @@ application:
       initial-capacity: 50
       maximum-size: 100
 
+springdoc:
+  swagger-ui:
+    tags-sorter: alpha
+    operationsSorter: method
+    default-model-expand-depth: 1
+    display-request-duration: true
+    default-model-rendering: schema
+    filter: true
+    show-extensions: true
+    try-it-out-enabled: true
+  show-actuator: false
+
 logging:
   level:
     root: debug
