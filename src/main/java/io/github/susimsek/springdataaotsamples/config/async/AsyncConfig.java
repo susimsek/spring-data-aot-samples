@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.config;
+package io.github.susimsek.springdataaotsamples.config.async;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;

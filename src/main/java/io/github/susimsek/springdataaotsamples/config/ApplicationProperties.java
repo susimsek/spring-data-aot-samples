@@ -17,39 +17,18 @@ public class ApplicationProperties {
 
     @Data
     public static class Security {
+        private String contentSecurityPolicy = ApplicationDefaults.Security.contentSecurityPolicy;
+
         private final Jwt jwt = new Jwt();
     }
 
     @Data
     public static class Jwt {
-        /**
-         * Secret used for HMAC signing.
-         */
         private String secret;
-
-        /**
-         * Token issuer value.
-         */
         private String issuer;
-
-        /**
-         * Expected audiences for issued tokens.
-         */
         private List<String> audience = ApplicationDefaults.Security.Jwt.audience;
-
-        /**
-         * Access token lifetime.
-         */
         private Duration accessTokenTtl = ApplicationDefaults.Security.Jwt.accessTokenTtl;
-
-        /**
-         * Refresh token lifetime.
-         */
         private Duration refreshTokenTtl = ApplicationDefaults.Security.Jwt.refreshTokenTtl;
-
-        /**
-         * Refresh token lifetime when remember-me is enabled.
-         */
         private Duration refreshTokenTtlForRememberMe = ApplicationDefaults.Security.Jwt.refreshTokenTtlForRememberMe;
     }
 
@@ -60,19 +39,8 @@ public class ApplicationProperties {
 
     @Data
     public static class Caffeine {
-        /**
-         * Time-to-live for cache entries.
-         */
-        private Duration ttl = Duration.ofHours(1);
-
-        /**
-         * Initial capacity for cache maps.
-         */
-        private int initialCapacity = 500;
-
-        /**
-         * Maximum cache size before evictions.
-         */
-        private long maximumSize = 1_000;
+        private Duration ttl = ApplicationDefaults.Cache.Caffeine.ttl;
+        private int initialCapacity = ApplicationDefaults.Cache.Caffeine.initialCapacity;
+        private long maximumSize = ApplicationDefaults.Cache.Caffeine.maximumSize;
     }
 }

@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.config;
+package io.github.susimsek.springdataaotsamples.config.apidoc;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Components;
