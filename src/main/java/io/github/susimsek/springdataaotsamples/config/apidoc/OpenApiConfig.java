@@ -15,10 +15,9 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OperationCustomizer;
-import org.springdoc.core.utils.SpringDocUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -32,18 +31,11 @@ import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "springdoc.api-docs", name = "enabled",
+    havingValue = "true", matchIfMissing = true)
 public class OpenApiConfig {
 
     private final ApplicationProperties applicationProperties;
-
-    @PostConstruct
-    public void customizeProblemDetail() {
-        SpringDocUtils.getConfig()
-            .replaceWithClass(
-                org.springframework.http.ProblemDetail.class,
-                ProblemDetail.class
-            );
-    }
 
     @Bean
     public OpenAPI notesOpenApi() {
