@@ -25,4 +25,16 @@ public interface ApplicationDefaults {
             List<String> audience = List.of();
         }
     }
+
+    interface ApiDocs {
+        String title = "Application API";
+        String description = "API documentation";
+        String version = "0.0.1";
+        String termsOfServiceUrl = null;
+        String contactName = "Şuayb Şimşek";
+        String contactUrl = "https://github.com/susimsek";
+        String contactEmail = "contact@susimsek.dev";
+        String license = "Apache 2.0";
+        String licenseUrl = "http://springdoc.org";
+    }
 }

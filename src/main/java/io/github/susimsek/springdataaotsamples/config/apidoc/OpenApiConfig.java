@@ -1,40 +1,44 @@
 package io.github.susimsek.springdataaotsamples.config.apidoc;
 
-import io.swagger.v3.oas.models.OpenAPI;
+import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import lombok.RequiredArgsConstructor;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
-import org.springdoc.core.customizers.OperationCustomizer;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
+@RequiredArgsConstructor
 public class OpenApiConfig {
+
+    private final ApplicationProperties applicationProperties;
 
     @Bean
     public OpenAPI notesOpenApi() {
+        ApplicationProperties.ApiDocs apiDocs = applicationProperties.getApiDocs();
         return new OpenAPI()
-                .info(new Info()
-                        .title("Note API")
-                        .version("v1")
-                        .description("Note endpoints with CRUD operations.")
-                        .contact(new Contact().name("codex")))
+                .info(buildInfo(apiDocs))
                 .components(new Components()
                         .addSecuritySchemes("bearer-jwt",
                                 new SecurityScheme()
@@ -42,7 +46,7 @@ public class OpenApiConfig {
                                         .scheme("bearer")
                                         .bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"))
-                .servers(List.of(new Server().url("/").description("Default server")));
+                .servers(buildServers(apiDocs.getServers()));
     }
 
     @Bean
@@ -109,5 +113,34 @@ public class OpenApiConfig {
         example.put("detail", detail);
         example.put("instance", "/api/notes");
         return example;
+    }
+
+    private Info buildInfo(ApplicationProperties.ApiDocs apiDocs) {
+        Contact contact = new Contact()
+                .name(apiDocs.getContactName())
+                .url(apiDocs.getContactUrl())
+                .email(apiDocs.getContactEmail());
+
+        License license = new License()
+                .name(apiDocs.getLicense())
+                .url(apiDocs.getLicenseUrl());
+
+        Info info = new Info()
+                .title(apiDocs.getTitle())
+                .description(apiDocs.getDescription())
+                .version(apiDocs.getVersion())
+                .contact(contact)
+                .license(license);
+
+        info.setTermsOfService(apiDocs.getTermsOfServiceUrl());
+        return info;
+    }
+
+    private List<Server> buildServers(ApplicationProperties.ApiDocs.Server[] servers) {
+        return Arrays.stream(servers)
+                .map(server -> new Server()
+                        .url(server.getUrl())
+                        .description(server.getDescription()))
+                .toList();
     }
 }

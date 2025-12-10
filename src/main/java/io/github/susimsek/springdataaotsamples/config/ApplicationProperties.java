@@ -1,6 +1,8 @@
 package io.github.susimsek.springdataaotsamples.config;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,7 @@ import java.util.List;
 @Data
 public class ApplicationProperties {
 
+    private final ApiDocs apiDocs = new ApiDocs();
     private final Security security = new Security();
     private final Cache cache = new Cache();
 
@@ -30,6 +33,28 @@ public class ApplicationProperties {
         private Duration accessTokenTtl = ApplicationDefaults.Security.Jwt.accessTokenTtl;
         private Duration refreshTokenTtl = ApplicationDefaults.Security.Jwt.refreshTokenTtl;
         private Duration refreshTokenTtlForRememberMe = ApplicationDefaults.Security.Jwt.refreshTokenTtlForRememberMe;
+    }
+
+    @Getter
+    @Setter
+    public static class ApiDocs {
+        private String title = ApplicationDefaults.ApiDocs.title;
+        private String description = ApplicationDefaults.ApiDocs.description;
+        private String version = ApplicationDefaults.ApiDocs.version;
+        private String termsOfServiceUrl = ApplicationDefaults.ApiDocs.termsOfServiceUrl;
+        private String contactName = ApplicationDefaults.ApiDocs.contactName;
+        private String contactUrl = ApplicationDefaults.ApiDocs.contactUrl;
+        private String contactEmail = ApplicationDefaults.ApiDocs.contactEmail;
+        private String license = ApplicationDefaults.ApiDocs.license;
+        private String licenseUrl = ApplicationDefaults.ApiDocs.licenseUrl;
+        private Server[] servers = {};
+
+        @Getter
+        @Setter
+        public static class Server {
+            private String url;
+            private String description;
+        }
     }
 
     @Data

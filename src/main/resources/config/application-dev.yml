@@ -22,6 +22,10 @@ spring:
           cache-public: false
 
 application:
+  api-docs:
+    title: Note API
+    description: Note endpoints with CRUD operations.
+    version: 0.0.1
   security:
     jwt:
       # Generate at least a 256-bit secret, e.g. openssl rand -base64 32
