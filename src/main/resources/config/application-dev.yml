@@ -43,6 +43,7 @@ application:
 
 springdoc:
   swagger-ui:
+    groups-order: desc
     tags-sorter: alpha
     operationsSorter: method
     default-model-expand-depth: 1

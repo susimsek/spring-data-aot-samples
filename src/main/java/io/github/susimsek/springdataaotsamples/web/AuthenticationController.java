@@ -32,9 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
-@Tag(name = "auth", description = "Authentication APIs")
+@Tag(name = "authentication", description = "Authentication APIs")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -42,10 +42,10 @@ public class AuthenticationController {
     @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
     @ApiResponse(responseCode = "200", description = "Token issued",
-            content = @Content(schema = @Schema(implementation = TokenDTO.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = TokenDTO.class)))
     @ApiResponse(responseCode = "401", description = "Invalid credentials",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginRequest request) {
         TokenDTO token = authenticationService.login(request);
         ResponseCookie cookie = CookieUtils.authCookie(token.token(), token.expiresAt());
@@ -58,7 +58,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Current user", description = "Returns details for the authenticated principal.")
     @ApiResponse(responseCode = "200", description = "Current principal info",
-            content = @Content(schema = @Schema(implementation = UserDTO.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UserDTO.class)))
     @ApiResponse(responseCode = "401", description = "Unauthorized",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping("/me")
@@ -68,7 +68,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Logout", description = "Clears auth cookie.")
     @ApiResponse(responseCode = "204", description = "Logged out")
-    @PostMapping("/logout")
+    @PostMapping(value = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> logout(
             HttpServletRequest request,
             @Nullable @Valid @RequestBody(required = false) LogoutRequest body
@@ -89,10 +89,10 @@ public class AuthenticationController {
     @SecurityRequirements
     @Operation(summary = "Refresh access token", description = "Rotates refresh token and issues a new access token.")
     @ApiResponse(responseCode = "200", description = "New tokens issued",
-            content = @Content(schema = @Schema(implementation = TokenDTO.class)))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = TokenDTO.class)))
     @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
         content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PostMapping("/refresh")
+    @PostMapping(value = "/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TokenDTO> refresh(
             HttpServletRequest request,
             @Nullable @Valid @RequestBody(required = false) RefreshTokenRequest body

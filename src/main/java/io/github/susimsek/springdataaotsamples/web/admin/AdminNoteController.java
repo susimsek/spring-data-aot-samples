@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/admin/notes")
+@RequestMapping(value = "/api/admin/notes", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Tag(name = "admin-notes", description = "Admin-only note APIs")
 public class AdminNoteController {
@@ -58,9 +58,9 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "201",
             description = "Note created",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public NoteDTO create(@Valid @RequestBody NoteCreateRequest request) {
         return noteCommandService.create(request);
@@ -73,7 +73,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Paged notes",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Notes not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -97,7 +97,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Paged deleted notes",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Notes not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -132,11 +132,11 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Note updated",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public NoteDTO update(
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NoteUpdateRequest request
@@ -151,11 +151,11 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Note patched",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PatchMapping("/{id}")
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public NoteDTO patch(
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody NotePatchRequest request
@@ -170,11 +170,11 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Owner updated",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note or user not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PostMapping("/{id}/owner")
+    @PostMapping(value = "/{id}/owner", consumes = MediaType.APPLICATION_JSON_VALUE)
     public NoteDTO changeOwner(
             @Parameter(description = "Note identifier") @PathVariable Long id,
             @Valid @RequestBody OwnerChangeRequest request
@@ -202,11 +202,11 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Bulk action result",
-            content = @Content(schema = @Schema(implementation = BulkActionResult.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = BulkActionResult.class))
     )
     @ApiResponse(responseCode = "404", description = "Notes not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
-    @PostMapping("/bulk")
+    @PostMapping(value = "/bulk", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BulkActionResult bulk(@Valid @RequestBody BulkActionRequest request) {
         return noteCommandService.bulk(request);
     }
@@ -244,7 +244,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Note found",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -260,7 +260,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Revisions returned",
-            content = @Content(schema = @Schema(implementation = NoteRevisionDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteRevisionDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Note not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -277,7 +277,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Revision found",
-            content = @Content(schema = @Schema(implementation = NoteRevisionDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteRevisionDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Revision not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
@@ -294,7 +294,7 @@ public class AdminNoteController {
     @ApiResponse(
             responseCode = "200",
             description = "Note restored",
-            content = @Content(schema = @Schema(implementation = NoteDTO.class))
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteDTO.class))
     )
     @ApiResponse(responseCode = "404", description = "Revision not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))

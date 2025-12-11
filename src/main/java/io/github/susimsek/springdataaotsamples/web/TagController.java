@@ -32,7 +32,7 @@ public class TagController {
         description = "Returns paged tag names that start with the provided prefix."
     )
     @ApiResponse(responseCode = "200", description = "Suggested tag names",
-        content = @Content(schema = @Schema(implementation = TagDTO.class)))
+        content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = TagDTO.class)))
     @GetMapping("/suggest")
     public Page<TagDTO> suggest(
         @ParameterObject Pageable pageable,
