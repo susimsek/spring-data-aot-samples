@@ -56,6 +56,9 @@
             <column name="owner" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_by" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
@@ -102,6 +105,7 @@
             <column header="pinned" type="boolean"/>
             <column header="color" type="string"/>
             <column header="owner" type="string"/>
+            <column header="version" type="numeric"/>
             <column header="created_by" type="string"/>
             <column header="last_modified_by" type="string"/>
             <column header="deleted" type="boolean"/>

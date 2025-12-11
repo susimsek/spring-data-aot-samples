@@ -8,9 +8,6 @@ public record NoteRevisionDTO(
         @Schema(description = "Revision number", example = "3")
         Long revision,
 
-        @Schema(description = "Version number", example = "v1")
-        String versionNumber,
-
         @Schema(description = "Revision type", example = "MOD")
         String revisionType,
 

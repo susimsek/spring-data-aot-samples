@@ -33,12 +33,14 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     void patchEntity(NotePatchRequest request, @MappingTarget Note note);
 
     @Override
+    @Mapping(target = "version", ignore = true)
     @Mapping(target = "tags", ignore = true)
     Note toEntity(NoteDTO dto);
 
     @Override
     @Mapping(target = "tags", source = "tags")
     @Mapping(target = "owner", source = "owner")
+    @Mapping(target = "version", source = "version")
     NoteDTO toDto(Note note);
 
     @Mapping(target = "id", ignore = true)
@@ -46,6 +48,7 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     @Mapping(target = "deleted", constant = "false")
     @Mapping(target = "deletedBy", expression = "java(null)")
     @Mapping(target = "deletedDate", expression = "java(null)")
+    @Mapping(target = "version", ignore = true)
     void applyRevision(Note source, @MappingTarget Note target);
 
     @Named("cloneTags")

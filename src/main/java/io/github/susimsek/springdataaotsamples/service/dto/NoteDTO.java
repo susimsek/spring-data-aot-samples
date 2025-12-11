@@ -27,6 +27,9 @@ public record NoteDTO(
         @Schema(description = "Tags attached to the note", example = "[\"audit\",\"liquibase\"]")
         Set<String> tags,
 
+        @Schema(description = "Optimistic lock version", example = "1")
+        Long version,
+
         @Schema(description = "Created by auditor", example = "alice")
         String createdBy,
 

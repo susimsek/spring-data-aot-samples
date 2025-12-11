@@ -79,8 +79,8 @@ public class NoteRevisionService {
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
                 RevisionSort.desc());
-        var revisions = noteRepository.findRevisions(noteId, pageRequest);
-        return noteRevisionMapper.toRevisionDtoPage(revisions);
+        return noteRepository.findRevisions(noteId, pageRequest)
+                .map(noteRevisionMapper::toRevisionDto);
     }
 
     private NoteDTO restoreRevisionInternal(Note note, Long id, Long revisionNumber) {

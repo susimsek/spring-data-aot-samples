@@ -729,6 +729,11 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         return globalIndex + 1;
     }
 
+    function revisionVersionLabel(revision) {
+        const v = revision?.note?.version;
+        return (typeof v === 'number') ? (v + 1) : null;
+    }
+
     function renderRevisionItem(rev, noteId, index, localNumber) {
         const note = rev.note || {};
         const tags = note.tags && note.tags.length
@@ -740,7 +745,8 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         const colorDot = note.color ? `<span class="badge bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
         const revTypeClass = revisionTypeBadge(rev.revisionType);
         const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
-        const displayLocal = revisionLocalNumber(index, localNumber ?? rev.versionNumber);
+        const versionFromNote = revisionVersionLabel(rev);
+        const displayLocal = revisionLocalNumber(index, localNumber ?? versionFromNote);
         return `
         <div class="list-group-item">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -931,8 +937,8 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         const current = revisionCache[index];
         if (!current) return;
         const prev = revisionCache[index + 1] || null;
-        const currentLocal = revisionLocalNumber(index, current?.versionNumber);
-        const prevLocal = prev ? revisionLocalNumber(index + 1, prev.versionNumber) : null;
+        const currentLocal = revisionLocalNumber(index, revisionVersionLabel(current));
+        const prevLocal = prev ? revisionLocalNumber(index + 1, revisionVersionLabel(prev)) : null;
         const initialOnly = !prev; // first revision, show only additions
         const currentNote = current.note || {};
         const prevNote = prev?.note || {};
@@ -987,7 +993,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         }
         const html = (items || []).map((rev, idx) => {
             const globalIndex = startIndex + idx;
-            const localNumber = revisionLocalNumber(globalIndex, rev.versionNumber);
+            const localNumber = revisionLocalNumber(globalIndex, revisionVersionLabel(rev));
             return renderRevisionItem(rev, noteId, globalIndex, localNumber);
         }).join('');
         revisionList.insertAdjacentHTML('beforeend', html);
