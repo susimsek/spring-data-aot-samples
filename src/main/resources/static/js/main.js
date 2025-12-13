@@ -58,6 +58,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const authBtnLabel = document.getElementById('authBtnLabel');
     const authUserLabel = document.getElementById('authUserLabel');
     const authMenu = document.getElementById('authMenu');
+    const navbarSharedLinks = document.getElementById('navbarSharedLinks');
     const signOutBtn = document.getElementById('signOutBtn');
     const signOutDivider = document.getElementById('signOutDivider');
     const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
@@ -266,13 +267,13 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                         <span><i class="fa-solid fa-chart-column me-1"></i>Used ${link.useCount || 0}</span>
                     </div>
                     <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
-                        <span><i class="fa-regular fa-calendar me-1"></i>Last used: ${lastUsedLabel || '—'}</span>
+                        <span><i class="fa-solid fa-clock-rotate-left me-1"></i>Last used: ${lastUsedLabel || '—'}</span>
                     </div>
                     <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
                         <span><i class="fa-regular fa-calendar me-1"></i>Created: ${createdLabel || '—'}</span>
                     </div>
                     <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
-                        <span><i class="fa-regular fa-calendar me-1"></i>Expires: ${expiresLabel}</span>
+                        <span><i class="fa-regular fa-calendar-xmark me-1"></i>Expires: ${expiresLabel}</span>
                     </div>
                 </div>
                 <div class="d-flex flex-column align-items-end gap-2">
@@ -446,6 +447,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         }
         if (signOutDivider) {
             signOutDivider.classList.toggle('d-none', !signedIn);
+        }
+        if (navbarSharedLinks) {
+            navbarSharedLinks.classList.toggle('d-none', !signedIn);
         }
     }
 
@@ -929,9 +933,13 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                 : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
             totalLabel.hidden = true;
             noteGrid.innerHTML = `
-                <div class="col-12 text-center text-muted py-4 d-flex flex-column align-items-center gap-2">
-                    <i class="fa-solid ${emptyIcon}" style="font-size: 2rem;"></i>
-                    <div>${emptyMsg}</div>
+                <div class="col-12">
+                    <div class="list-group w-100">
+                        <div class="list-group-item text-muted small d-flex align-items-center gap-2">
+                            <i class="fa-solid ${emptyIcon}"></i>
+                            <span>${emptyMsg}</span>
+                        </div>
+                    </div>
                 </div>`;
             bulkRow?.classList.add('d-none');
             controlsRow?.classList.add('d-none');

@@ -21,4 +21,7 @@ public interface NoteShareTokenRepository extends JpaRepository<NoteShareToken, 
 
     @EntityGraph(attributePaths = {"note"})
     Page<NoteShareToken> findAllBy(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"note"})
+    Page<NoteShareToken> findAllByNoteOwner(String owner, Pageable pageable);
 }

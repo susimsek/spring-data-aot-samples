@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/webjars/font-awesome/css/all.min.css">
 </head>
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg bg-body border-bottom shadow-sm">
     <div class="container d-flex align-items-center gap-3 flex-wrap justify-content-between">
         <div class="d-flex align-items-center gap-2">
@@ -40,6 +40,12 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/index.html">
+                <i class="fa-solid fa-house"></i><span>Home</span>
+            </a>
+            <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/shared-links.html" id="navbarSharedLinks">
+                <i class="fa-solid fa-link"></i><span>Shared links</span>
+            </a>
             <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" type="button" id="themeToggle">
                 <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
                 <span id="themeToggleLabel">Dark</span>
@@ -74,7 +80,7 @@
     </div>
 </header>
 
-<main class="bg-body-tertiary">
+<main class="bg-body-tertiary flex-grow-1">
 <div class="container pb-5">
     <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
@@ -509,7 +515,7 @@
 </div>
 
 
-<footer class="bg-body border-top py-3 mt-5">
+<footer class="bg-body border-top py-3 mt-5 mt-auto w-100">
     <div class="container d-flex justify-content-center gap-3 text-muted small">
         <span>&copy; 2025 Notes</span>
         <span>Spring Boot</span>

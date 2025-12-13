@@ -68,6 +68,19 @@ public class NoteShareController {
     }
 
     @Operation(
+            summary = "List all share links of current user",
+            description = "Lists all share tokens created by the current user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Share tokens fetched",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteShareDTO.class)))
+            }
+    )
+    @GetMapping("/share")
+    public Page<NoteShareDTO> listMine(@ParameterObject Pageable pageable) {
+        return noteShareService.listAllForCurrentUser(pageable);
+    }
+
+    @Operation(
             summary = "Revoke share link",
             description = "Revokes an existing share token. Requires ownership.",
             responses = {

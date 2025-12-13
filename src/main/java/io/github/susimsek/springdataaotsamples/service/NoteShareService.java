@@ -7,6 +7,7 @@ import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
 import io.github.susimsek.springdataaotsamples.security.HashingUtils;
 import io.github.susimsek.springdataaotsamples.security.RandomUtils;
+import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
@@ -67,6 +68,16 @@ public class NoteShareService {
     public Page<NoteShareDTO> listAllForAdmin(Pageable pageable) {
         Pageable effective = resolvePageable(pageable);
         var page = noteShareTokenRepository.findAllBy(effective);
+        List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
+        return new PageImpl<>(content, effective, page.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable) {
+        Pageable effective = resolvePageable(pageable);
+        String login = SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new InvalidBearerTokenException("Current user not found"));
+        var page = noteShareTokenRepository.findAllByNoteOwner(login, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
