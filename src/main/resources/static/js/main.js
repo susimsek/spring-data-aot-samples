@@ -127,7 +127,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     let revisionNoteId = null;
     let revisionTotal = 0;
     const shareModalEl = document.getElementById('shareModal');
-    const shareModal = shareModalEl ? bootstrap.Modal.getOrCreateInstance(shareModalEl) : null;
+    let shareModal = null;
     const shareNoteTitle = document.getElementById('shareNoteTitle');
     const shareForm = document.getElementById('shareForm');
     const shareExpirySelect = document.getElementById('shareExpirySelect');
@@ -143,9 +143,23 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     const sharePermissionBadge = document.getElementById('sharePermissionBadge');
     const shareExpiryLabel = document.getElementById('shareExpiryLabel');
     const shareOneTimeBadge = document.getElementById('shareOneTimeBadge');
+    const shareLinksList = document.getElementById('shareLinksList');
+    const shareLinksEmpty = document.getElementById('shareLinksEmpty');
+    const shareLinksSpinner = document.getElementById('shareLinksSpinner');
+    const refreshShareLinksBtn = document.getElementById('refreshShareLinks');
+    const shareLinksLoadMoreBtn = document.getElementById('shareLinksLoadMore');
+    const shareLinksLoadMoreSpinner = document.getElementById('shareLinksLoadMoreSpinner');
+    const shareLinksLoadMoreLabel = document.getElementById('shareLinksLoadMoreLabel');
+    const shareLinksSection = document.getElementById('shareLinksSection');
     const copyShareLabelDefault = 'Copy';
     const copyShareLabelCopied = 'Copied';
     let shareNoteId = null;
+    let shareLinksCache = [];
+    let shareLinksPage = 0;
+    let shareLinksHasMore = false;
+    let shareLinksLoading = false;
+    const SHARE_LINKS_PAGE_SIZE = 3;
+    const shareLinksHeading = document.getElementById('shareLinksHeading');
 
     function resetRevisionState() {
         revisionCache = [];
@@ -158,14 +172,35 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
 
     function resetShareModal() {
         if (shareAlert) shareAlert.classList.add('d-none');
-        if (shareForm) shareForm.reset();
+        if (shareForm) {
+            shareForm.reset();
+            shareForm.classList.remove('d-none');
+        }
         if (shareExpirySelect) shareExpirySelect.value = '24h';
         if (shareExpiresAt) shareExpiresAt.value = '';
         if (shareExpiresAt) shareExpiresAt.classList.add('d-none');
         if (shareOneTime) shareOneTime.checked = false;
         if (shareResult) shareResult.classList.add('d-none');
         if (shareLink) shareLink.value = '';
+        shareLinksCache = [];
+        if (shareLinksList) shareLinksList.innerHTML = '';
+        if (shareLinksEmpty) shareLinksEmpty.classList.remove('d-none');
+        if (shareLinksSpinner) shareLinksSpinner.classList.add('d-none');
+        if (refreshShareLinksBtn) refreshShareLinksBtn.disabled = false;
+        if (shareLinksLoadMoreBtn) {
+            shareLinksLoadMoreBtn.classList.add('d-none');
+            shareLinksLoadMoreBtn.disabled = false;
+        }
+        if (shareLinksLoadMoreSpinner) {
+            shareLinksLoadMoreSpinner.classList.add('d-none');
+        }
+        shareLinksPage = 0;
+        shareLinksHasMore = false;
+        shareLinksLoading = false;
         shareNoteId = null;
+        if (shareLinksSection) {
+            shareLinksSection.classList.add('d-none');
+        }
     }
 
     function setShareLoading(loading) {
@@ -179,6 +214,166 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         }
     }
 
+    function setShareLinksLoading(loading) {
+        shareLinksLoading = loading;
+        if (shareLinksSpinner) {
+            shareLinksSpinner.classList.toggle('d-none', !loading);
+        }
+        if (refreshShareLinksBtn) {
+            refreshShareLinksBtn.disabled = loading;
+        }
+        if (!loading && shareLinksLoadMoreBtn) {
+            shareLinksLoadMoreBtn.disabled = false;
+        }
+        if (shareLinksLoadMoreSpinner) {
+            shareLinksLoadMoreSpinner.classList.add('d-none');
+        }
+    }
+
+    function buildShareLinkCard(link) {
+        const status = link.revoked
+            ? '<span class="badge bg-secondary-subtle text-secondary border">Revoked</span>'
+            : link.expired
+                ? '<span class="badge bg-warning-subtle text-warning border">Expired</span>'
+                : '<span class="badge bg-success-subtle text-success border">Active</span>';
+        const expiresLabel = link.expiresAt
+            ? escapeHtml(formatDate(link.expiresAt) || '')
+            : 'No expiry';
+        const createdLabel = escapeHtml(formatDate(link.createdDate) || '');
+        const lastUsedLabel = link.lastUsedAt ? escapeHtml(formatDate(link.lastUsedAt) || '') : 'Not used yet';
+        const tokenDisplay = link.token
+            ? `${escapeHtml(link.token.substring(0, 6))}…${escapeHtml(link.token.slice(-4))}`
+            : `#${link.id}`;
+        const oneTimeBadge = link.oneTime
+            ? '<span class="badge bg-secondary-subtle text-secondary border">One-time</span>'
+            : '';
+        const linkUrl = link.token ? `${window.location.origin}/share/${encodeURIComponent(link.token)}` : '';
+        const copyDisabled = !linkUrl || link.revoked;
+        const revokeDisabled = link.revoked;
+
+        return `
+        <div class="list-group-item py-3" id="share-item-${link.id}">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">${tokenDisplay}</span>
+                        ${status}
+                        ${oneTimeBadge}
+                    </div>
+                    <div class="fw-semibold">${escapeHtml(link.noteTitle || '')}</div>
+                    <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
+                        <span><i class="fa-solid fa-user me-1"></i>${escapeHtml(link.noteOwner || '—')}</span>
+                        <span><i class="fa-solid fa-chart-column me-1"></i>Used ${link.useCount || 0}</span>
+                    </div>
+                    <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
+                        <span><i class="fa-regular fa-calendar me-1"></i>Last used: ${lastUsedLabel || '—'}</span>
+                    </div>
+                    <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
+                        <span><i class="fa-regular fa-calendar me-1"></i>Created: ${createdLabel || '—'}</span>
+                    </div>
+                    <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
+                        <span><i class="fa-regular fa-calendar me-1"></i>Expires: ${expiresLabel}</span>
+                    </div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-2">
+                    <button class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-share-action="copy" data-token="${escapeHtml(link.token || '')}" ${copyDisabled ? 'disabled' : ''}>
+                        <i class="fa-solid fa-copy"></i> Copy
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-2"
+                            data-share-action="revoke" data-id="${link.id}" ${revokeDisabled ? 'disabled' : ''}>
+                        <i class="fa-solid fa-trash"></i> Revoke
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    function renderShareLinks(links, append = false) {
+        if (!shareLinksList) return;
+        const data = Array.isArray(links) ? links : [];
+        if (!append) {
+            shareLinksList.innerHTML = '';
+        }
+        if (shareLinksEmpty) {
+            const existing = shareLinksList.children.length;
+            shareLinksEmpty.classList.toggle('d-none', existing + data.length > 0);
+        }
+        data.forEach(link => {
+            shareLinksList.insertAdjacentHTML('beforeend', buildShareLinkCard(link));
+        });
+    }
+
+    async function loadShareLinks(append = false) {
+        if (!shareNoteId || shareLinksLoading) return;
+        const page = append ? shareLinksPage + 1 : 0;
+        setShareLinksLoading(true);
+        if (append && shareLinksLoadMoreSpinner) {
+            shareLinksLoadMoreSpinner.classList.remove('d-none');
+            if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Loading...';
+        }
+        const res = await handleApi(Api.fetchShareLinks(shareNoteId, page, SHARE_LINKS_PAGE_SIZE), {
+            fallback: 'Could not load share links',
+            silent: true,
+            onFinally: () => setShareLinksLoading(false)
+        });
+        if (!res) {
+            if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Load more';
+            return;
+        }
+        const content = Array.isArray(res) ? res : (res.content ?? []);
+        const meta = res.page ?? res;
+        shareLinksPage = page;
+        shareLinksHasMore = !!meta && typeof meta.totalPages === 'number'
+            ? shareLinksPage + 1 < meta.totalPages
+            : content.length === SHARE_LINKS_PAGE_SIZE;
+        if (!append) {
+            shareLinksCache = content;
+        } else {
+            shareLinksCache = [...shareLinksCache, ...content];
+        }
+        renderShareLinks(content, append);
+        if (shareLinksLoadMoreBtn) {
+            shareLinksLoadMoreBtn.classList.toggle('d-none', !shareLinksHasMore);
+            shareLinksLoadMoreBtn.disabled = !shareLinksHasMore;
+            if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Load more';
+        }
+    }
+
+    async function handleShareLinksClick(event) {
+        const btn = event.target.closest('[data-share-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-share-action');
+        if (action === 'copy') {
+            const token = btn.getAttribute('data-token');
+            if (!token) return;
+            const link = `${window.location.origin}/share/${encodeURIComponent(token)}`;
+            try {
+                await navigator.clipboard.writeText(link);
+                showInlineCopied(btn);
+            } catch (err) {
+                fallbackCopyText(link);
+                showInlineCopied(btn);
+            }
+            return;
+        }
+        if (action === 'revoke') {
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            btn.disabled = true;
+            const success = await handleApi(Api.revokeShareLink(id), {
+                fallback: 'Could not revoke link',
+                onFinally: () => {
+                    btn.disabled = false;
+                }
+            });
+            if (success !== null) {
+                showToast('Share link revoked', 'success');
+                loadShareLinks();
+            }
+        }
+    }
     const noteCache = new Map();
     const defaultSort = 'createdDate,desc';
     state.sort = defaultSort;
@@ -432,20 +627,53 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     }
 
     function openShareModal(noteId) {
-        if (!shareModal) return;
-        const note = noteCache.get(noteId);
+        const modalInstance = shareModal || (shareModalEl && window.bootstrap?.Modal ? window.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
+        const useFallback = !modalInstance;
+        const id = Number(noteId);
+        const note = noteCache.get(id);
         if (!note) {
             showToast('Note not loaded yet, try again.', 'warning');
             return;
         }
         resetShareModal();
-        shareNoteId = noteId;
+        shareNoteId = id;
         if (shareNoteTitle) {
             shareNoteTitle.textContent = note.title
                 ? `Sharing "${escapeHtml(note.title)}"`
                 : 'Sharing note';
         }
-        shareModal.show();
+        if (useFallback) {
+            showShareModalFallback();
+        } else {
+            modalInstance.show();
+        }
+    }
+
+    function openShareLinksOnly(noteId) {
+        const modalInstance = shareModal || (shareModalEl && window.bootstrap?.Modal ? window.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
+        const useFallback = !modalInstance;
+        const id = Number(noteId);
+        const note = noteCache.get(id);
+        if (!note) {
+            showToast('Note not loaded yet, try again.', 'warning');
+            return;
+        }
+        resetShareModal();
+        shareNoteId = id;
+        if (shareNoteTitle) shareNoteTitle.textContent = '';
+        if (shareLinksHeading) {
+            shareLinksHeading.textContent = note.title
+                ? `Links for "${escapeHtml(note.title)}"`
+                : 'Links';
+        }
+        if (shareForm) shareForm.classList.add('d-none');
+        shareLinksSection?.classList.remove('d-none');
+        if (useFallback) {
+            showShareModalFallback();
+        } else {
+            modalInstance.show();
+        }
+        loadShareLinks();
     }
 
     function validateShareForm() {
@@ -454,7 +682,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
 
     async function submitShare(event) {
         event.preventDefault();
-        if (!shareModal || !shareNoteId) return;
+        if (!shareModalEl || !shareNoteId) return;
         if (!validateShareForm()) return;
         shareAlert?.classList.add('d-none');
         setShareLoading(true);
@@ -499,6 +727,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         shareResult?.classList.remove('d-none');
         setShareLoading(false);
         showToast('Share link created. Copy and send it.', 'success');
+        loadShareLinks();
     }
 
     async function copyShareLink() {
@@ -518,6 +747,33 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         setTimeout(() => {
             copyShareLinkBtn.innerHTML = originalHtml || `<i class="fa-solid fa-copy"></i> Copy`;
         }, 1500);
+    }
+
+    function showInlineCopied(btn) {
+        if (!btn) return;
+        const original = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied`;
+        btn.classList.add('disabled');
+        setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('disabled');
+        }, 1200);
+    }
+
+    function fallbackCopyText(text) {
+        try {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            tempInput.setAttribute('readonly', '');
+            tempInput.style.position = 'absolute';
+            tempInput.style.left = '-9999px';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        } catch (e) {
+            // ignore
+        }
     }
 
     function handleShareExpiryChange() {
@@ -801,6 +1057,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     </button>
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="share-links" data-id="${note.id}" title="Existing links">
+                                        <i class="fa-solid fa-link"></i>
                                     </button>
                                     <button class="btn btn-outline-secondary btn-sm" data-action="share" data-id="${note.id}" title="Create share link">
                                         <i class="fa-solid fa-share-from-square"></i>
@@ -1283,8 +1542,12 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         revisionNoteId = noteId;
         const cached = noteCache.get(noteId);
         if (revisionModalTitle) {
-            const title = cached?.title ? `${cached.title} · #${noteId}` : `Revisions · #${noteId}`;
-            revisionModalTitle.textContent = title;
+        const versionRaw = (cached?.version ?? cached?.note?.version);
+        const versionLabel = typeof versionRaw === 'number' ? versionRaw + 1 : versionRaw;
+            const titleText = cached?.title
+                ? `${cached.title} · ${versionLabel ? `v${versionLabel}` : `#${noteId}`}`
+                : `Revisions · ${versionLabel ? `v${versionLabel}` : `#${noteId}`}`;
+            revisionModalTitle.textContent = titleText;
         }
         clearRevisionError();
         if (revisionList) revisionList.innerHTML = '';
@@ -2480,10 +2743,24 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         copyShareLinkBtn.addEventListener('click', copyShareLink);
     }
     if (shareModalEl) {
-        shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);
+        if (window.bootstrap?.Modal) {
+            shareModal = window.bootstrap.Modal.getOrCreateInstance(shareModalEl);
+            shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);
+        } else {
+            shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);
+        }
     }
     if (shareExpirySelect) {
         shareExpirySelect.addEventListener('change', handleShareExpiryChange);
+    }
+    if (refreshShareLinksBtn) {
+        refreshShareLinksBtn.addEventListener('click', () => loadShareLinks(false));
+    }
+    if (shareLinksLoadMoreBtn) {
+        shareLinksLoadMoreBtn.addEventListener('click', () => loadShareLinks(true));
+    }
+    if (shareLinksList) {
+        shareLinksList.addEventListener('click', handleShareLinksClick);
     }
 
     Ui.bindNoteGridActions(noteGrid, {
@@ -2495,6 +2772,7 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         'inline-edit': startInlineEdit,
         'delete': openDelete,
         'revisions': openRevisionModal,
+        'share-links': openShareLinksOnly,
         'inline-cancel': cancelInlineEdit,
         'inline-save': saveInlineEdit,
         'change-owner': openOwnerModal,

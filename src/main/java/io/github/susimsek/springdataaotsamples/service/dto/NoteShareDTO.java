@@ -22,6 +22,27 @@ public record NoteShareDTO(
         Instant expiresAt,
 
         @Schema(description = "Whether the token is one-time use", example = "false")
-        boolean oneTime
+        boolean oneTime,
+
+        @Schema(description = "Whether the token is revoked", example = "false")
+        boolean revoked,
+
+        @Schema(description = "How many times the link has been used", example = "1")
+        int useCount,
+
+        @Schema(description = "Creation timestamp of the share link", example = "2024-12-12T18:58:42Z")
+        Instant createdDate,
+
+        @Schema(description = "Last use or update timestamp", example = "2024-12-12T19:10:00Z")
+        Instant lastUsedAt,
+
+        @Schema(description = "Whether the link is expired at the time of the response", example = "true")
+        boolean expired,
+
+        @Schema(description = "Title of the note", example = "Welcome note")
+        String noteTitle,
+
+        @Schema(description = "Owner of the note", example = "system")
+        String noteOwner
 ) {
 }

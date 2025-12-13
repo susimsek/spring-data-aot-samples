@@ -10,10 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +47,34 @@ public class NoteAdminShareController {
     @ResponseStatus(HttpStatus.CREATED)
     public NoteShareDTO create(@PathVariable Long id, @Valid @RequestBody CreateShareTokenRequest request) {
         return noteShareService.create(id, request);
+    }
+
+    @Operation(
+            summary = "List share links (admin)",
+            description = "Lists all share tokens for a note.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Share tokens fetched",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteShareDTO.class))),
+                    @ApiResponse(responseCode = "404", description = "Note not found",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+            }
+    )
+    @GetMapping("/{id}/share")
+    public Page<NoteShareDTO> list(@PathVariable Long id, @ParameterObject Pageable pageable) {
+        return noteShareService.listForAdmin(id, pageable);
+    }
+
+    @Operation(
+            summary = "List all share links (admin)",
+            description = "Lists all share tokens across notes.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Share tokens fetched",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteShareDTO.class)))
+            }
+    )
+    @GetMapping("/share")
+    public Page<NoteShareDTO> listAll(@ParameterObject Pageable pageable) {
+        return noteShareService.listAllForAdmin(pageable);
     }
 
     @Operation(

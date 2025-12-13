@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shared Links</title>
+    <script src="/js/prefers-theme.js"></script>
+    <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/font-awesome/css/all.min.css">
+</head>
+<body class="bg-body-tertiary">
+<nav class="navbar navbar-expand-lg bg-body border-bottom shadow-sm">
+    <div class="container d-flex align-items-center gap-3 flex-wrap justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="/">
+                <img src="/favicon.svg" alt="Notes logo" width="28" height="28">
+                <span>Notes</span>
+            </a>
+            <span class="badge bg-secondary-subtle text-secondary">Admin</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto flex-nowrap" style="max-width: 540px;">
+            <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" type="button" id="themeToggle">
+                <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
+                <span id="themeToggleLabel">Dark</span>
+            </button>
+            <div class="dropdown">
+                <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0 dropdown-toggle d-none" type="button" id="authBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-user"></i>
+                    <span id="authBtnLabel"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
+                    <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
+                    <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
+                    <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h1 class="h4 mb-1 text-body">Shared Links</h1>
+            <p class="mb-0 text-muted small">Admin view of all share links.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm text-secondary d-none" id="sharedLinksRefreshSpinner" role="status" aria-hidden="true"></div>
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="sharedLinksRefresh">
+                <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+        </div>
+    </div>
+    <div id="sharedLinksAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div id="sharedLinksEmpty" class="text-muted small">No share links found.</div>
+    <div class="list-group" id="sharedLinksList"></div>
+    <div class="d-flex justify-content-center mt-3">
+        <button class="btn btn-outline-secondary btn-sm d-none" type="button" id="sharedLinksLoadMore">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="sharedLinksLoadMoreSpinner"></span>
+            <span id="sharedLinksLoadMoreLabel">Load more</span>
+        </button>
+    </div>
+</main>
+<script type="module" src="/js/admin-shared-links.js"></script>
+<script src="/webjars/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

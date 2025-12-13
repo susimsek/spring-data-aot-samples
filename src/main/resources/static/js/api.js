@@ -257,6 +257,15 @@ const Api = (() => {
         });
     };
 
+    const fetchShareLinks = async (id, page = 0, size = 3) => {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('size', size);
+        return request(`${noteBase()}/${id}/share?${params.toString()}`, {
+            headers: jsonHeaders()
+        });
+    };
+
     const revokeShareLink = async (tokenId) => {
         const base = State.isAdmin?.() ? '/api/admin/notes' : '/api/notes';
         return request(`${base}/share/${tokenId}`, {
@@ -285,6 +294,15 @@ const Api = (() => {
         return parseResponse(res);
     };
 
+    const fetchAllShareLinksAdmin = async (page = 0, size = 10) => {
+        const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('size', size);
+        return request(`/api/admin/notes/share?${params.toString()}`, {
+            headers: jsonHeaders()
+        });
+    };
+
     return {
         ApiError,
         login,
@@ -308,9 +326,11 @@ const Api = (() => {
         searchUsers,
         changeOwner,
         createShareLink,
+        fetchShareLinks,
         revokeShareLink,
         fetchNoteWithShareToken,
-        fetchNoteWithShareTokenViaShareApi
+        fetchNoteWithShareTokenViaShareApi,
+        fetchAllShareLinksAdmin
     };
 })();
 

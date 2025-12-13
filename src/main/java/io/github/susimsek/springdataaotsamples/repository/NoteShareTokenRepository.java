@@ -1,6 +1,8 @@
 package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,4 +15,10 @@ public interface NoteShareTokenRepository extends JpaRepository<NoteShareToken, 
 
     @EntityGraph(attributePaths = {"note"})
     Optional<NoteShareToken> findOneWithNoteById(Long id);
+
+    @EntityGraph(attributePaths = {"note"})
+    Page<NoteShareToken> findAllByNoteId(Long noteId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"note"})
+    Page<NoteShareToken> findAllBy(Pageable pageable);
 }

@@ -51,6 +51,7 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
                     <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2 d-none" href="/shared-links.html" id="adminSharedLinksItem"><i class="fa-solid fa-link"></i><span>Shared links</span></a></li>
                     <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
                     <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
                 </ul>
@@ -271,10 +272,13 @@
 
 <!-- Share Modal -->
 <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="shareModalLabel">Share Note</h5>
+                <h5 class="modal-title d-flex align-items-center gap-2" id="shareModalLabel">
+                    <i class="fa-solid fa-link text-primary"></i>
+                    <span id="shareModalTitle">Share Note</span>
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -320,6 +324,17 @@
                         <span class="badge bg-success-subtle text-success" id="sharePermissionBadge"></span>
                         <span class="text-muted small" id="shareExpiryLabel"></span>
                         <span class="badge bg-secondary-subtle text-secondary d-none" id="shareOneTimeBadge">One-time</span>
+                    </div>
+                </div>
+                <div class="mt-4 d-none" id="shareLinksSection">
+                    <div class="spinner-border spinner-border-sm text-secondary d-none" id="shareLinksSpinner" role="status" aria-hidden="true"></div>
+                    <div id="shareLinksEmpty" class="text-muted small">No share links yet.</div>
+                    <div class="list-group" id="shareLinksList" style="max-height: 36rem; min-height: 32rem; overflow-y: auto; overflow-x: hidden;"></div>
+                    <div class="d-flex justify-content-center mt-2">
+                        <button class="btn btn-outline-secondary btn-sm d-none" type="button" id="shareLinksLoadMore">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="shareLinksLoadMoreSpinner"></span>
+                            <span id="shareLinksLoadMoreLabel">Load more</span>
+                        </button>
                     </div>
                 </div>
             </div>
