@@ -126,6 +126,26 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
     let isLoadingRevisions = false;
     let revisionNoteId = null;
     let revisionTotal = 0;
+    const shareModalEl = document.getElementById('shareModal');
+    const shareModal = shareModalEl ? bootstrap.Modal.getOrCreateInstance(shareModalEl) : null;
+    const shareNoteTitle = document.getElementById('shareNoteTitle');
+    const shareForm = document.getElementById('shareForm');
+    const shareExpirySelect = document.getElementById('shareExpirySelect');
+    const shareExpiresAt = document.getElementById('shareExpiresAt');
+    const shareOneTime = document.getElementById('shareOneTime');
+    const shareAlert = document.getElementById('shareAlert');
+    const shareSubmitBtn = document.getElementById('shareSubmitBtn');
+    const shareSubmitSpinner = document.getElementById('shareSubmitSpinner');
+    const shareSubmitLabel = document.getElementById('shareSubmitLabel');
+    const shareResult = document.getElementById('shareResult');
+    const shareLink = document.getElementById('shareLink');
+    const copyShareLinkBtn = document.getElementById('copyShareLink');
+    const sharePermissionBadge = document.getElementById('sharePermissionBadge');
+    const shareExpiryLabel = document.getElementById('shareExpiryLabel');
+    const shareOneTimeBadge = document.getElementById('shareOneTimeBadge');
+    const copyShareLabelDefault = 'Copy';
+    const copyShareLabelCopied = 'Copied';
+    let shareNoteId = null;
 
     function resetRevisionState() {
         revisionCache = [];
@@ -134,6 +154,29 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         revisionTotal = 0;
         isLoadingRevisions = false;
         revisionNoteId = null;
+    }
+
+    function resetShareModal() {
+        if (shareAlert) shareAlert.classList.add('d-none');
+        if (shareForm) shareForm.reset();
+        if (shareExpirySelect) shareExpirySelect.value = '24h';
+        if (shareExpiresAt) shareExpiresAt.value = '';
+        if (shareExpiresAt) shareExpiresAt.classList.add('d-none');
+        if (shareOneTime) shareOneTime.checked = false;
+        if (shareResult) shareResult.classList.add('d-none');
+        if (shareLink) shareLink.value = '';
+        shareNoteId = null;
+    }
+
+    function setShareLoading(loading) {
+        if (!shareSubmitBtn) return;
+        shareSubmitBtn.disabled = loading;
+        if (shareSubmitSpinner) {
+            shareSubmitSpinner.classList.toggle('d-none', !loading);
+        }
+        if (shareSubmitLabel) {
+            shareSubmitLabel.textContent = loading ? 'Creating...' : 'Create link';
+        }
     }
 
     const noteCache = new Map();
@@ -388,6 +431,154 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         }
     }
 
+    function openShareModal(noteId) {
+        if (!shareModal) return;
+        const note = noteCache.get(noteId);
+        if (!note) {
+            showToast('Note not loaded yet, try again.', 'warning');
+            return;
+        }
+        resetShareModal();
+        shareNoteId = noteId;
+        if (shareNoteTitle) {
+            shareNoteTitle.textContent = note.title
+                ? `Sharing "${escapeHtml(note.title)}"`
+                : 'Sharing note';
+        }
+        shareModal.show();
+    }
+
+    function validateShareForm() {
+        return !!shareForm;
+    }
+
+    async function submitShare(event) {
+        event.preventDefault();
+        if (!shareModal || !shareNoteId) return;
+        if (!validateShareForm()) return;
+        shareAlert?.classList.add('d-none');
+        setShareLoading(true);
+        const expiresAtValue = resolveShareExpiry();
+        const noExpiry = shareExpirySelect?.value === 'never';
+        if (expiresAtValue === undefined) {
+            if (shareAlert) {
+                shareAlert.textContent = 'Invalid expiry date.';
+                shareAlert.classList.remove('d-none');
+            }
+            setShareLoading(false);
+            return;
+        }
+        const payload = {
+            expiresAt: expiresAtValue,
+            noExpiry,
+            oneTime: !!shareOneTime?.checked
+        };
+        const result = await handleApi(Api.createShareLink(shareNoteId, payload), {
+            fallback: 'Could not create share link',
+            silent: true
+        });
+        if (!result) {
+            setShareLoading(false);
+            return;
+        }
+        const link = `${window.location.origin}/share/${encodeURIComponent(result.token)}`;
+        if (shareLink) shareLink.value = link;
+        if (sharePermissionBadge) sharePermissionBadge.textContent = `${result.permission || 'READ'} access`;
+        if (shareExpiryLabel) {
+            if (result.expiresAt) {
+                shareExpiryLabel.textContent = `Expires ${formatDate(result.expiresAt)}`;
+            } else if (noExpiry) {
+                shareExpiryLabel.textContent = 'No expiry';
+            } else {
+                shareExpiryLabel.textContent = 'Expires in 24h by default';
+            }
+        }
+        if (shareOneTimeBadge) {
+            shareOneTimeBadge.classList.toggle('d-none', !result.oneTime);
+        }
+        shareResult?.classList.remove('d-none');
+        setShareLoading(false);
+        showToast('Share link created. Copy and send it.', 'success');
+    }
+
+    async function copyShareLink() {
+        if (!shareLink || !shareLink.value) return;
+        try {
+            await navigator.clipboard.writeText(shareLink.value);
+            showCopiedFeedback();
+        } catch (err) {
+            showToast('Could not copy link. Copy manually.', 'warning');
+        }
+    }
+
+    function showCopiedFeedback() {
+        if (!copyShareLinkBtn) return;
+        const originalHtml = copyShareLinkBtn.innerHTML;
+        copyShareLinkBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copied`;
+        setTimeout(() => {
+            copyShareLinkBtn.innerHTML = originalHtml || `<i class="fa-solid fa-copy"></i> Copy`;
+        }, 1500);
+    }
+
+    function handleShareExpiryChange() {
+        if (!shareExpirySelect || !shareExpiresAt) return;
+        const val = shareExpirySelect.value;
+        if (val === 'custom') {
+            shareExpiresAt.classList.remove('d-none');
+            setCustomExpiryBounds();
+        } else {
+            shareExpiresAt.classList.add('d-none');
+            shareExpiresAt.value = '';
+            if (val === 'never' && shareExpiresAt) {
+                shareExpiresAt.removeAttribute('min');
+                shareExpiresAt.removeAttribute('max');
+            }
+        }
+    }
+
+    function resolveShareExpiry() {
+        const val = shareExpirySelect ? shareExpirySelect.value : '24h';
+        if (val === 'custom') {
+            const raw = shareExpiresAt?.value?.trim();
+            if (!raw) {
+                return undefined;
+            }
+            const parsed = new Date(raw);
+            if (Number.isNaN(parsed.getTime())) {
+                return undefined;
+            }
+            return parsed.toISOString();
+        }
+        if (val === 'never') {
+            return null;
+        }
+        const hours = parseInt(val, 10);
+        if (Number.isNaN(hours)) {
+            return null;
+        }
+        const expires = new Date(Date.now() + hours * 60 * 60 * 1000);
+        return expires.toISOString();
+    }
+
+    function setCustomExpiryBounds() {
+        if (!shareExpiresAt) return;
+        const now = new Date();
+        const min = new Date(now.getTime() + 5 * 60 * 1000); // at least 5 minutes from now
+        const max = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // max 30 days
+        const toLocal = (date) => {
+            const pad = (n) => String(n).padStart(2, '0');
+            const yyyy = date.getFullYear();
+            const MM = pad(date.getMonth() + 1);
+            const dd = pad(date.getDate());
+            const hh = pad(date.getHours());
+            const mm = pad(date.getMinutes());
+            return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+        };
+        shareExpiresAt.setAttribute('min', toLocal(min));
+        shareExpiresAt.setAttribute('max', toLocal(max));
+        shareExpiresAt.value = toLocal(min);
+    }
+
     async function submitOwnerChange(event) {
         event?.preventDefault();
         if (!ownerInput || !ownerNoteId) return;
@@ -610,6 +801,9 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     </button>
                                     <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-action="share" data-id="${note.id}" title="Create share link">
+                                        <i class="fa-solid fa-share-from-square"></i>
                                     </button>
                                     ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
                                         <i class="fa-solid fa-user-gear"></i>
@@ -2279,6 +2473,18 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
             clearOwnerModal();
         });
     }
+    if (shareForm) {
+        shareForm.addEventListener('submit', submitShare);
+    }
+    if (copyShareLinkBtn) {
+        copyShareLinkBtn.addEventListener('click', copyShareLink);
+    }
+    if (shareModalEl) {
+        shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);
+    }
+    if (shareExpirySelect) {
+        shareExpirySelect.addEventListener('change', handleShareExpiryChange);
+    }
 
     Ui.bindNoteGridActions(noteGrid, {
         'restore': restoreNote,
@@ -2291,7 +2497,8 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
         'revisions': openRevisionModal,
         'inline-cancel': cancelInlineEdit,
         'inline-save': saveInlineEdit,
-        'change-owner': openOwnerModal
+        'change-owner': openOwnerModal,
+        'share': openShareModal
     });
 
     Ui.bindRevisionActions(revisionList, (noteId, revId) => restoreRevision(noteId, revId));

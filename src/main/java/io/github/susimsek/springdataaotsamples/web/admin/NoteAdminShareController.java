@@ -1,0 +1,62 @@
+package io.github.susimsek.springdataaotsamples.web.admin;
+
+import io.github.susimsek.springdataaotsamples.service.NoteShareService;
+import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(value = "/api/admin/notes", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequiredArgsConstructor
+@Tag(name = "admin-note-share", description = "Admin share links for notes")
+public class NoteAdminShareController {
+
+    private final NoteShareService noteShareService;
+
+    @Operation(
+            summary = "Create share link (admin)",
+            description = "Creates a share token for a note without requiring ownership.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Share token created",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = NoteShareDTO.class))),
+                    @ApiResponse(responseCode = "404", description = "Note not found",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+            }
+    )
+    @PostMapping(value = "/{id}/share", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public NoteShareDTO create(@PathVariable Long id, @Valid @RequestBody CreateShareTokenRequest request) {
+        return noteShareService.create(id, request);
+    }
+
+    @Operation(
+            summary = "Revoke share link (admin)",
+            description = "Revokes an existing share token without ownership requirement.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Share token revoked"),
+                    @ApiResponse(responseCode = "404", description = "Share token not found",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)))
+            }
+    )
+    @DeleteMapping("/share/{tokenId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void revoke(@PathVariable Long tokenId) {
+        noteShareService.revoke(tokenId);
+    }
+}

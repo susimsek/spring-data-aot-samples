@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/logout", "/api/auth/me").authenticated()
+                        .requestMatchers("/api/share/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
@@ -68,6 +69,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/",
                                 "/index.html",
+                                "/share.html",
+                                "/share/**",
                                 "/login.html",
                                 "/403.html",
                                 "/404.html",

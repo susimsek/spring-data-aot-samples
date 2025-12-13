@@ -66,7 +66,7 @@ public class NoteTrashService {
     public void restoreForCurrentUser(Long id) {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         if (!note.isDeleted()) {
             throw new NoteNotFoundException(id);
         }
@@ -109,7 +109,7 @@ public class NoteTrashService {
     public void deletePermanentlyForCurrentUser(Long id) {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         if (!note.isDeleted()) {
             throw new InvalidPermanentDeleteException(id);
         }

@@ -26,7 +26,14 @@ const Api = (() => {
             return;
         }
         State.clearToken();
-        window.location.replace('/login.html');
+        const redirect = encodeURIComponent(`${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`);
+        try {
+            document.body.style.transition = 'opacity 120ms ease-in';
+            document.body.style.opacity = '0';
+            setTimeout(() => window.location.replace(`/login.html?redirect=${redirect}`), 130);
+        } catch (e) {
+            window.location.replace(`/login.html?redirect=${redirect}`);
+        }
     };
 
     const parseResponse = async (res) => {
@@ -44,12 +51,12 @@ const Api = (() => {
         return body ?? {};
     };
 
-    const request = async (url, options = {}, { retry = true } = {}) => {
+    const request = async (url, options = {}) => {
         try {
             const res = await fetch(url, options);
             return await parseResponse(res);
         } catch (err) {
-            if (err instanceof ApiError && err.status === 401 && retry) {
+            if (err instanceof ApiError && err.status === 401) {
                 try {
                     await refresh();
                     const res = await fetch(url, options);
@@ -58,9 +65,6 @@ const Api = (() => {
                     redirectToLogin();
                     throw refreshErr;
                 }
-            }
-            if (err instanceof ApiError && err.status === 401) {
-                redirectToLogin();
             }
             throw err;
         }
@@ -245,6 +249,42 @@ const Api = (() => {
         });
     };
 
+    const createShareLink = async (id, payload) => {
+        return request(`${noteBase()}/${id}/share`, {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify(payload)
+        });
+    };
+
+    const revokeShareLink = async (tokenId) => {
+        const base = State.isAdmin?.() ? '/api/admin/notes' : '/api/notes';
+        return request(`${base}/share/${tokenId}`, {
+            method: 'DELETE',
+            headers: jsonHeaders()
+        });
+    };
+
+    const fetchNoteWithShareToken = async (id, token) => {
+        if (!id || !token) {
+            throw new ApiError('Share token is missing', 401);
+        }
+        const res = await fetch(`/api/notes/${id}?share_token=${encodeURIComponent(token)}`, {
+            headers: jsonHeaders()
+        });
+        return parseResponse(res);
+    };
+
+    const fetchNoteWithShareTokenViaShareApi = async (token) => {
+        if (!token) {
+            throw new ApiError('Share token is missing', 401);
+        }
+        const res = await fetch(`/api/share/${encodeURIComponent(token)}`, {
+            headers: jsonHeaders()
+        });
+        return parseResponse(res);
+    };
+
     return {
         ApiError,
         login,
@@ -266,7 +306,11 @@ const Api = (() => {
         restoreRevision,
         fetchTags,
         searchUsers,
-        changeOwner
+        changeOwner,
+        createShareLink,
+        revokeShareLink,
+        fetchNoteWithShareToken,
+        fetchNoteWithShareTokenViaShareApi
     };
 })();
 

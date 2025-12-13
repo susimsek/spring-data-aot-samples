@@ -1,15 +1,19 @@
 package io.github.susimsek.springdataaotsamples.security;
 
 import lombok.experimental.UtilityClass;
+import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class SecurityUtils {
@@ -32,6 +36,16 @@ public class SecurityUtils {
             .map(principal -> principal.getClaim(USER_ID_CLAIM));
     }
 
+    public boolean hasCurrentUserThisAuthority(String authority) {
+        return hasCurrentUserAnyOfAuthorities(authority);
+    }
+
+    public boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && getAuthorities(authentication)
+                .anyMatch(auth -> Arrays.asList(authorities).contains(auth));
+    }
+
     private String extractPrincipal(Authentication authentication) {
         if (authentication == null) {
             return null;
@@ -45,5 +59,13 @@ public class SecurityUtils {
             return username;
         }
         return null;
+    }
+
+    private Stream<String> getAuthorities(Authentication authentication) {
+        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
+    }
+
+    public boolean isCurrentUserAdmin() {
+        return hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
     }
 }

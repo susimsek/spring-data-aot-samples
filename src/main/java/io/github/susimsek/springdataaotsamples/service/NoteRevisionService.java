@@ -49,21 +49,21 @@ public class NoteRevisionService {
     public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
         var note = noteRepository.findById(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         return restoreRevisionInternal(note, id, revisionNumber);
     }
 
     @Transactional(readOnly = true)
     public Page<NoteRevisionDTO> findRevisionsForCurrentUser(Long id, Pageable pageable) {
         var note = findNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureReadAccess(note);
         return findRevisionsInternal(note.getId(), pageable);
     }
 
     @Transactional(readOnly = true)
     public NoteRevisionDTO findRevisionForCurrentUser(Long id, Long revisionNumber) {
         var note = findNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureReadAccess(note);
         var revision = noteRepository.findRevision(id, revisionNumber)
                 .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
         return noteRevisionMapper.toRevisionDto(revision);

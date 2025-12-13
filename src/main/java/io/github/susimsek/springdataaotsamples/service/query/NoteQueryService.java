@@ -46,7 +46,7 @@ public class NoteQueryService {
     @Transactional(readOnly = true)
     public NoteDTO findByIdForCurrentUser(Long id) {
         var note = findActiveNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureReadAccess(note);
         return noteMapper.toDto(note);
     }
 

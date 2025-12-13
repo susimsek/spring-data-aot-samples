@@ -60,7 +60,7 @@ public class NoteCommandService {
     @Transactional
     public NoteDTO updateForCurrentUser(Long id, NoteUpdateRequest request) {
         var note = findActiveNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         return applyUpdate(note, request);
     }
 
@@ -73,7 +73,7 @@ public class NoteCommandService {
     @Transactional
     public NoteDTO patchForCurrentUser(Long id, NotePatchRequest request) {
         var note = findActiveNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         // owner change ignored for non-admin path
         return applyPatch(note, request);
     }
@@ -101,7 +101,7 @@ public class NoteCommandService {
     @Transactional
     public void deleteForCurrentUser(Long id) {
         var note = findActiveNote(id);
-        noteAuthorizationService.ensureOwner(note);
+        noteAuthorizationService.ensureEditAccess(note);
         int updated = noteRepository.softDeleteById(id);
         if (updated == 0) {
             throw new NoteNotFoundException(id);
