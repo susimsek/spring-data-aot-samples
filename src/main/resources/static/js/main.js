@@ -1053,32 +1053,32 @@ const { toggleSizeMessages, toggleInlineMessages } = Validation;
                                     <div class="text-muted small">${escapeHtml(note.content)}</div>
                                     ${renderTags(note)}
                                 </div>
-                                <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <button class="btn btn-outline-warning btn-sm" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                                <div class="d-grid gap-1" style="grid-template-columns: repeat(3, 32px); justify-content: end; justify-items: end;">
+                                    <button class="btn btn-outline-warning btn-sm" style="width: 32px; height: 32px;" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
                                         <i class="fa-solid fa-thumbtack ${note.pinned ? '' : 'opacity-50'}"></i>
                                     </button>
-                                    <button class="btn btn-outline-primary btn-sm" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
+                                    <button class="btn btn-outline-primary btn-sm" style="width: 32px; height: 32px;" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
+                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
+                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="copy" data-id="${note.id}" title="Copy content">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" data-action="share-links" data-id="${note.id}" title="Existing links">
+                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share-links" data-id="${note.id}" title="Existing links">
                                         <i class="fa-solid fa-link"></i>
                                     </button>
-                                    <button class="btn btn-outline-secondary btn-sm" data-action="share" data-id="${note.id}" title="Create share link">
+                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share" data-id="${note.id}" title="Create share link">
                                         <i class="fa-solid fa-share-from-square"></i>
                                     </button>
-                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="change-owner" data-id="${note.id}" title="Change owner">
                                         <i class="fa-solid fa-user-gear"></i>
                                     </button>` : ''}
-                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
+                                    <button class="btn btn-outline-info btn-sm" style="width: 32px; height: 32px;" data-action="revisions" data-id="${note.id}" title="Revision history">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger btn-sm" data-action="delete" data-id="${note.id}" title="Delete">
+                                    <button class="btn btn-outline-danger btn-sm" style="width: 32px; height: 32px;" data-action="delete" data-id="${note.id}" title="Delete">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
