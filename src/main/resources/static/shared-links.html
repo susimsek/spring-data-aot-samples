@@ -54,13 +54,18 @@
         </div>
     </div>
     </nav>
-<main class="container py-4 flex-grow-1">
-    <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
-        <div>
-            <h1 class="h4 mb-1 text-body" id="sharedLinksTitle">Shared Links</h1>
-            <p class="mb-0 text-muted small" id="sharedLinksSubtitle">See every link you’ve issued, check status, and revoke when needed.</p>
-        </div>
+<header class="py-4 mb-4 shadow-sm bg-body-tertiary">
+  <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+    <div>
+      <h1 class="h4 mb-1 text-body" id="sharedLinksTitle">Shared Links</h1>
+      <p class="mb-0 text-muted" id="sharedLinksSubtitle">See every link you’ve issued, check status, and revoke when needed.</p>
     </div>
+  </div>
+
+</header>
+<main class="bg-body-tertiary flex-grow-1">
+  <div class="container pb-5">
+   <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
     <div class="d-flex justify-content-end align-items-center gap-3 mb-3 flex-wrap">
         <div class="d-flex flex-column align-items-end text-end gap-1">
             <span class="text-muted small" id="sharedLinksTotal">Total: 0</span>
@@ -77,10 +82,11 @@
         <div class="text-center text-muted py-3" id="sharedLinksLoading">Loading...</div>
     </div>
     <div class="d-flex justify-content-center mt-3" id="sharedLinksPager" hidden>
-        <div class="d-flex align-items-center gap-3">
-            <ul class="pagination mb-0" id="sharedLinksPagination"></ul>
-        </div>
+    <div class="d-flex align-items-center gap-3">
+        <ul class="pagination mb-0" id="sharedLinksPagination"></ul>
     </div>
+    </div>
+</div>
 </main>
 <footer class="bg-body border-top py-3 mt-5 mt-auto w-100">
     <div class="container d-flex justify-content-center gap-3 text-muted small">
