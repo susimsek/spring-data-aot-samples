@@ -22,20 +22,22 @@
 </head>
 <body class="bg-body-tertiary d-flex flex-column min-vh-100">
 <nav class="navbar navbar-expand-lg bg-body border-bottom shadow-sm">
-    <div class="container d-flex align-items-center gap-3 flex-wrap justify-content-between">
-        <div class="d-flex align-items-center gap-2">
-            <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="/">
-                <img src="/favicon.svg" alt="Notes logo" width="28" height="28">
-                <span>Notes</span>
-            </a>
-        </div>
-            <div class="d-flex align-items-center gap-2 ms-auto flex-nowrap" style="max-width: 540px;">
-            <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/index.html">
-                <i class="fa-solid fa-house"></i><span>Home</span>
-            </a>
-            <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/shared-links.html">
-                <i class="fa-solid fa-link"></i><span>Shared links</span>
-            </a>
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="/">
+            <img src="/favicon.svg" alt="Notes logo" width="28" height="28">
+            <span>Notes</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sharedLinksNavbar" aria-controls="sharedLinksNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="sharedLinksNavbar">
+            <div class="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
+                <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/index.html">
+                    <i class="fa-solid fa-house"></i><span>Home</span>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/shared-links.html">
+                    <i class="fa-solid fa-link"></i><span>Shared links</span>
+                </a>
                 <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" type="button" id="themeToggle">
                     <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
                     <span id="themeToggleLabel">Dark</span>
@@ -45,15 +47,16 @@
                         <i class="fa-solid fa-user"></i>
                         <span id="authBtnLabel"></span>
                     </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
-                    <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
-                    <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
-                    <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
-                </ul>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
+                        <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
+                        <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
+                        <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-    </nav>
+</nav>
 <header class="py-4 mb-4 shadow-sm bg-body-tertiary">
   <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between">
     <div>
