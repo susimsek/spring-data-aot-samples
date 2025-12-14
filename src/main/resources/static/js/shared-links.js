@@ -3,7 +3,7 @@ import Theme from '/js/theme.js';
 import State from '/js/state.js';
 import Helpers from '/js/helpers.js';
 
-const { escapeHtml, formatDate, showToast } = Helpers;
+const { escapeHtml, formatDate, showToast, debounce } = Helpers;
 
 const listEl = document.getElementById('sharedLinksList');
 const emptyEl = document.getElementById('sharedLinksEmpty');
@@ -28,6 +28,8 @@ const pager = document.getElementById('sharedLinksPager');
 const pageInfo = document.getElementById('sharedLinksPageInfo');
 const refreshSpinner = document.getElementById('sharedLinksRefreshSpinner');
 const loadingRow = document.getElementById('sharedLinksLoading');
+const searchInput = document.getElementById('sharedLinksSearch');
+const searchClear = document.getElementById('sharedLinksSearchClear');
 
 totalLabel?.classList.add('d-none');
 pageInfo?.classList.add('d-none');
@@ -37,14 +39,8 @@ let totalPages = 1;
 let loading = false;
 let pageSize = 10;
 let sort = 'createdDate,desc';
+let search = '';
 let isAdmin = false;
-const LOADING_ROWS = `
-    <div class="list-group-item text-center py-4 border-0">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>`;
-
 function getErrorMessage(error, fallback = 'Request failed') {
     if (error?.body?.detail) return error.body.detail;
     if (error?.body?.title) return error.body.title;
@@ -99,6 +95,21 @@ function bindEvents() {
         const target = parseInt(link.getAttribute('data-page'), 10);
         if (Number.isNaN(target) || target === page || target < 0 || target >= totalPages || loading) return;
         loadLinks(target);
+    });
+    if (searchInput) {
+        const debounced = debounce((val) => {
+            search = (val || '').trim();
+            page = 0;
+            loadLinks(0);
+        }, 300);
+        searchInput.addEventListener('input', (e) => debounced(e.target.value || ''));
+    }
+    searchClear?.addEventListener('click', () => {
+        if (!searchInput) return;
+        searchInput.value = '';
+        search = '';
+        page = 0;
+        loadLinks(0);
     });
     pageSizeSelect?.addEventListener('change', () => {
         const val = parseInt(pageSizeSelect.value, 10);
@@ -251,7 +262,7 @@ async function loadLinks(targetPage = 0) {
     setLoading(true);
     totalLabel?.classList.add('d-none');
     pageInfo?.classList.add('d-none');
-    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort), {
+    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort, search), {
         fallback: 'Could not load shared links.',
         onFinally: () => setLoading(false)
     });
@@ -266,16 +277,17 @@ async function loadLinks(targetPage = 0) {
     const totalElements = typeof meta?.totalElements === 'number' ? meta.totalElements : content.length;
 
     if (listEl) {
-        listEl.innerHTML = LOADING_ROWS;
-    }
-    const hasItems = content.length > 0;
-    emptyEl?.classList.toggle('d-none', hasItems);
-    if (listEl) {
         listEl.innerHTML = '';
         if (emptyEl) {
             listEl.appendChild(emptyEl);
         }
+        if (loadingRow) {
+            listEl.appendChild(loadingRow);
+        }
     }
+    const hasItems = content.length > 0;
+    emptyEl?.classList.toggle('d-none', hasItems);
+    loadingRow?.classList.add('d-none');
     content.forEach(link => {
         listEl?.insertAdjacentHTML('beforeend', buildRow(link));
     });

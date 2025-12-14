@@ -11,6 +11,7 @@ import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
+import io.github.susimsek.springdataaotsamples.service.spec.NoteShareTokenSpecifications;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -52,32 +54,32 @@ public class NoteShareService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForCurrentUser(Long noteId, Pageable pageable) {
+    public Page<NoteShareDTO> listForCurrentUser(Long noteId, Pageable pageable, String q) {
         var note = loadNote(noteId);
         noteAuthorizationService.ensureEditAccess(note);
-        return fetchPage(noteId, pageable);
+        return fetchPage(noteId, pageable, q);
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForAdmin(Long noteId, Pageable pageable) {
+    public Page<NoteShareDTO> listForAdmin(Long noteId, Pageable pageable, String q) {
         loadNote(noteId);
-        return fetchPage(noteId, pageable);
+        return fetchPage(noteId, pageable, q);
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForAdmin(Pageable pageable) {
+    public Page<NoteShareDTO> listAllForAdmin(Pageable pageable, String q) {
         Pageable effective = resolvePageable(pageable);
-        var page = noteShareTokenRepository.findAllBy(effective);
+        var page = searchAll(q, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable) {
+    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable, String q) {
         Pageable effective = resolvePageable(pageable);
         String login = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new InvalidBearerTokenException("Current user not found"));
-        var page = noteShareTokenRepository.findAllByNoteOwner(login, effective);
+        var page = searchForOwner(login, q, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
@@ -185,19 +187,32 @@ public class NoteShareService {
         );
     }
 
-    private Page<NoteShareDTO> fetchPage(Long noteId, Pageable pageable) {
+    private Page<NoteShareDTO> fetchPage(Long noteId, Pageable pageable, String q) {
         Pageable effective = resolvePageable(pageable);
-        var page = noteShareTokenRepository.findAllByNoteId(noteId, effective);
+        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.forNote(noteId))
+                .and(NoteShareTokenSpecifications.search(q));
+        var page = noteShareTokenRepository.findAll(spec, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
 
+    private Page<NoteShareToken> searchForOwner(String owner, String q, Pageable pageable) {
+        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.ownedBy(owner))
+                .and(NoteShareTokenSpecifications.search(q));
+        return noteShareTokenRepository.findAll(spec, pageable);
+    }
+
+    private Page<NoteShareToken> searchAll(String q, Pageable pageable) {
+        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.search(q));
+        return noteShareTokenRepository.findAll(spec, pageable);
+    }
+
     private Pageable resolvePageable(Pageable pageable) {
-        if (pageable == null || pageable.isUnpaged() || pageable.getSort().isUnsorted()) {
+        if (pageable.getSort().isUnsorted()) {
             return PageRequest.of(
-                    pageable != null ? pageable.getPageNumber() : 0,
-                    pageable != null && pageable.isPaged() ? pageable.getPageSize() : 5,
-                    Sort.by(Sort.Direction.DESC, "createdDate")
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdDate")
             );
         }
         return pageable;

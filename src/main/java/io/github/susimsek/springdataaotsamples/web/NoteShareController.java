@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -63,8 +64,9 @@ public class NoteShareController {
     )
     @GetMapping("/{id}/share")
     public Page<NoteShareDTO> list(@Parameter(description = "Note identifier") @PathVariable Long id,
-                                   @ParameterObject Pageable pageable) {
-        return noteShareService.listForCurrentUser(id, pageable);
+                                   @ParameterObject Pageable pageable,
+                                   @RequestParam(name = "q", required = false) String q) {
+        return noteShareService.listForCurrentUser(id, pageable, q);
     }
 
     @Operation(
@@ -76,8 +78,9 @@ public class NoteShareController {
             }
     )
     @GetMapping("/share")
-    public Page<NoteShareDTO> listMine(@ParameterObject Pageable pageable) {
-        return noteShareService.listAllForCurrentUser(pageable);
+    public Page<NoteShareDTO> listMine(@ParameterObject Pageable pageable,
+                                       @RequestParam(name = "q", required = false) String q) {
+        return noteShareService.listAllForCurrentUser(pageable, q);
     }
 
     @Operation(

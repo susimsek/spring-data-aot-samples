@@ -294,11 +294,12 @@ const Api = (() => {
         return parseResponse(res);
     };
 
-    const fetchMyShareLinks = async (page = 0, size = 10, sort) => {
+    const fetchMyShareLinks = async (page = 0, size = 10, sort, query) => {
         const params = new URLSearchParams();
         params.set('page', page);
         params.set('size', size);
         if (sort) params.set('sort', sort);
+        if (query) params.set('q', query);
         return request(`${noteBase('/share')}?${params.toString()}`, {
             headers: jsonHeaders()
         });

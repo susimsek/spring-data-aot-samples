@@ -5,10 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface NoteShareTokenRepository extends JpaRepository<NoteShareToken, Long> {
+public interface NoteShareTokenRepository extends JpaRepository<NoteShareToken, Long>, JpaSpecificationExecutor<NoteShareToken> {
 
     @EntityGraph(attributePaths = {"note", "note.tags"})
     Optional<NoteShareToken> findOneWithNoteByTokenHashAndRevokedFalse(String tokenHash);
