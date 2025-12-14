@@ -14,6 +14,8 @@ const scopeGroup = document.getElementById('sharedLinksScope'); // kept for comp
 const themeToggle = document.getElementById('themeToggle');
 const themeToggleIcon = document.getElementById('themeToggleIcon');
 const themeToggleLabel = document.getElementById('themeToggleLabel');
+const pageSizeSelect = document.getElementById('sharedLinksPageSize');
+const sortSelect = document.getElementById('sharedLinksSort');
 const authBtn = document.getElementById('authBtn');
 const authBtnLabel = document.getElementById('authBtnLabel');
 const authUserLabel = document.getElementById('authUserLabel');
@@ -27,11 +29,21 @@ const pageInfo = document.getElementById('sharedLinksPageInfo');
 const refreshSpinner = document.getElementById('sharedLinksRefreshSpinner');
 const loadingRow = document.getElementById('sharedLinksLoading');
 
+totalLabel?.classList.add('d-none');
+pageInfo?.classList.add('d-none');
+
 let page = 0;
 let totalPages = 1;
 let loading = false;
-const PAGE_SIZE = 10;
+let pageSize = 10;
+let sort = 'createdDate,desc';
 let isAdmin = false;
+const LOADING_ROWS = `
+    <div class="list-group-item text-center py-4 border-0">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>`;
 
 function getErrorMessage(error, fallback = 'Request failed') {
     if (error?.body?.detail) return error.body.detail;
@@ -66,6 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sharedLinksSubtitle) sharedLinksSubtitle.textContent = admin
             ? 'See every link you’ve issued, check status, and revoke when needed.'
             : 'See every link you’ve issued, check status, and revoke when needed.';
+        if (pageSizeSelect) {
+            const val = parseInt(pageSizeSelect.value, 10);
+            pageSize = Number.isNaN(val) ? pageSize : val;
+        }
+        if (sortSelect) {
+            sort = sortSelect.value || sort;
+        }
         loadLinks();
     });
     bindEvents();
@@ -80,6 +99,17 @@ function bindEvents() {
         const target = parseInt(link.getAttribute('data-page'), 10);
         if (Number.isNaN(target) || target === page || target < 0 || target >= totalPages || loading) return;
         loadLinks(target);
+    });
+    pageSizeSelect?.addEventListener('change', () => {
+        const val = parseInt(pageSizeSelect.value, 10);
+        pageSize = Number.isNaN(val) ? 10 : val;
+        page = 0;
+        loadLinks(0);
+    });
+    sortSelect?.addEventListener('change', () => {
+        sort = sortSelect.value || 'createdDate,desc';
+        page = 0;
+        loadLinks(0);
     });
     signOutBtn?.addEventListener('click', async () => {
         try {
@@ -219,7 +249,9 @@ function buildRow(link) {
 async function loadLinks(targetPage = 0) {
     if (loading) return;
     setLoading(true);
-    const res = await handleApi(Api.fetchMyShareLinks(targetPage, PAGE_SIZE), {
+    totalLabel?.classList.add('d-none');
+    pageInfo?.classList.add('d-none');
+    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort), {
         fallback: 'Could not load shared links.',
         onFinally: () => setLoading(false)
     });
@@ -234,17 +266,16 @@ async function loadLinks(targetPage = 0) {
     const totalElements = typeof meta?.totalElements === 'number' ? meta.totalElements : content.length;
 
     if (listEl) {
+        listEl.innerHTML = LOADING_ROWS;
+    }
+    const hasItems = content.length > 0;
+    emptyEl?.classList.toggle('d-none', hasItems);
+    if (listEl) {
         listEl.innerHTML = '';
         if (emptyEl) {
             listEl.appendChild(emptyEl);
         }
-        if (loadingRow) {
-            listEl.appendChild(loadingRow);
-        }
     }
-    loadingRow?.classList.add('d-none');
-    const hasItems = content.length > 0;
-    emptyEl?.classList.toggle('d-none', hasItems);
     content.forEach(link => {
         listEl?.insertAdjacentHTML('beforeend', buildRow(link));
     });
@@ -275,7 +306,7 @@ async function loadLinks(targetPage = 0) {
     if (pageInfo) {
         const humanPage = totalPages > 0 ? page + 1 : 0;
         pageInfo.textContent = hasItems ? `Page ${humanPage} of ${totalPages}` : '';
-        pageInfo.hidden = !hasItems;
+        pageInfo.classList.toggle('d-none', !hasItems);
     }
     if (pager) {
         pager.hidden = totalPages < 1 || !hasItems;
