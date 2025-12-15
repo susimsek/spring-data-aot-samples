@@ -6,6 +6,7 @@ import com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider;
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.domain.User;
@@ -82,6 +83,7 @@ public class CacheConfig {
                 createCache(cm, Authority.class.getName());
                 createCache(cm, Note.class.getName());
                 createCache(cm, Note.class.getName() + ".tags");
+                createCache(cm, NoteShareToken.class.getName());
                 createCache(cm, Tag.class.getName());
                 createCache(cm, RefreshToken.class.getName());
                 createCache(cm, UserRepository.USERS_BY_USERNAME_CACHE);

@@ -75,33 +75,85 @@
             <span class="text-muted small d-none" id="sharedLinksPageInfo">Page 1 of 1</span>
         </div>
     </div>
-    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
-      <div class="flex-grow-1" style="min-width: 220px; max-width: 360px;">
-        <div class="input-group input-group-sm w-100">
-          <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
-          <input type="text" class="form-control" id="sharedLinksSearch" placeholder="Search links or titles" autocomplete="off">
-          <button class="btn btn-outline-secondary" type="button" id="sharedLinksSearchClear" aria-label="Clear search">
-            <span aria-hidden="true">&times;</span>
-          </button>
+    <div class="d-flex flex-column gap-2 mb-3">
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <div class="flex-grow-1" style="min-width: 220px; max-width: 360px;">
+          <div class="input-group input-group-sm w-100">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" class="form-control" id="sharedLinksSearch" placeholder="Search links or titles" autocomplete="off">
+            <button class="btn btn-outline-secondary" type="button" id="sharedLinksSearchClear" aria-label="Clear search">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3 ms-md-auto">
+          <div class="d-flex align-items-center gap-2">
+            <label for="sharedLinksPageSize" class="small mb-0 text-muted">Page size</label>
+            <select id="sharedLinksPageSize" class="form-select form-select-sm w-auto">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+            </select>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <label for="sharedLinksSort" class="small mb-0 text-muted">Sort</label>
+            <select id="sharedLinksSort" class="form-select form-select-sm w-auto">
+              <option value="createdDate,desc" selected>Created (newest)</option>
+              <option value="createdDate,asc">Created (oldest)</option>
+              <option value="useCount,desc">Used (most)</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="d-flex flex-wrap align-items-center gap-3 justify-content-end ms-auto">
+      <div class="d-flex flex-wrap align-items-center gap-3 w-100">
         <div class="d-flex align-items-center gap-2">
-          <label for="sharedLinksPageSize" class="small mb-0 text-muted">Page size</label>
-          <select id="sharedLinksPageSize" class="form-select form-select-sm w-auto">
-            <option value="5">5</option>
-            <option value="10" selected>10</option>
-            <option value="25">25</option>
+          <label for="sharedLinksStatus" class="small mb-0 text-muted">Status</label>
+          <select id="sharedLinksStatus" class="form-select form-select-sm w-auto">
+            <option value="all" selected>All</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+            <option value="revoked">Revoked</option>
           </select>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <label for="sharedLinksSort" class="small mb-0 text-muted">Sort</label>
-          <select id="sharedLinksSort" class="form-select form-select-sm w-auto">
-            <option value="createdDate,desc" selected>Created (newest)</option>
-            <option value="createdDate,asc">Created (oldest)</option>
-            <option value="expiresAt,asc">Expires (soonest)</option>
-            <option value="useCount,desc">Used (most)</option>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <label for="sharedLinksDateFilter" class="small mb-0 text-muted">Created date</label>
+          <select id="sharedLinksDateFilter" class="form-select form-select-sm w-auto">
+            <option value="none" selected>Any time</option>
+            <option value="created_last_24h">Last 24h</option>
+            <option value="created_last_7d">Last 7 days</option>
+            <option value="created_last_month">Last month</option>
+            <option value="custom">Custom range</option>
           </select>
+        <div class="d-none" id="sharedLinksCustomRange"></div>
+      </div>
+    </div>
+    </div>
+    <!-- Custom date modal -->
+    <div class="modal fade" id="customDateModal" tabindex="-1" aria-labelledby="customDateModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="customDateModalLabel">Custom date range</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="customDateForm" novalidate>
+              <div class="mb-3">
+                <label for="sharedLinksCreatedFrom" class="form-label small mb-1">From</label>
+                <input type="datetime-local" class="form-control" id="sharedLinksCreatedFrom">
+              </div>
+              <div class="mb-2">
+                <label for="sharedLinksCreatedTo" class="form-label small mb-1">To</label>
+                <input type="datetime-local" class="form-control" id="sharedLinksCreatedTo">
+              </div>
+              <div class="text-muted small">Both dates are required. Start date must not be after end date.</div>
+              <div class="invalid-feedback d-block d-none" id="customDateError"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" id="customDateCancel">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" id="customDateSave">Apply</button>
+          </div>
         </div>
       </div>
     </div>

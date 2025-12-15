@@ -294,12 +294,15 @@ const Api = (() => {
         return parseResponse(res);
     };
 
-    const fetchMyShareLinks = async (page = 0, size = 10, sort, query) => {
+    const fetchMyShareLinks = async (page = 0, size = 10, sort, query, status, createdFrom, createdTo) => {
         const params = new URLSearchParams();
         params.set('page', page);
         params.set('size', size);
         if (sort) params.set('sort', sort);
         if (query) params.set('q', query);
+        if (status && status !== 'all') params.set('status', status);
+        if (createdFrom) params.set('createdFrom', createdFrom);
+        if (createdTo) params.set('createdTo', createdTo);
         return request(`${noteBase('/share')}?${params.toString()}`, {
             headers: jsonHeaders()
         });

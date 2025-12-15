@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+
 @RestController
 @RequestMapping(value = "/api/admin/notes", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
@@ -63,8 +65,11 @@ public class NoteAdminShareController {
     @GetMapping("/{id}/share")
     public Page<NoteShareDTO> list(@PathVariable Long id,
                                    @ParameterObject Pageable pageable,
-                                   @RequestParam(name = "q", required = false) String q) {
-        return noteShareService.listForAdmin(id, pageable, q);
+                                   @RequestParam(name = "q", required = false) String q,
+                                   @RequestParam(name = "status", required = false) String status,
+                                   @RequestParam(name = "createdFrom", required = false) Instant createdFrom,
+                                   @RequestParam(name = "createdTo", required = false) Instant createdTo) {
+        return noteShareService.listForAdmin(id, pageable, q, status, createdFrom, createdTo);
     }
 
     @Operation(
@@ -77,8 +82,11 @@ public class NoteAdminShareController {
     )
     @GetMapping("/share")
     public Page<NoteShareDTO> listAll(@ParameterObject Pageable pageable,
-                                      @RequestParam(name = "q", required = false) String q) {
-        return noteShareService.listAllForAdmin(pageable, q);
+                                      @RequestParam(name = "q", required = false) String q,
+                                      @RequestParam(name = "status", required = false) String status,
+                                      @RequestParam(name = "createdFrom", required = false) Instant createdFrom,
+                                      @RequestParam(name = "createdTo", required = false) Instant createdTo) {
+        return noteShareService.listAllForAdmin(pageable, q, status, createdFrom, createdTo);
     }
 
     @Operation(

@@ -54,32 +54,36 @@ public class NoteShareService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForCurrentUser(Long noteId, Pageable pageable, String q) {
+    public Page<NoteShareDTO> listForCurrentUser(Long noteId, Pageable pageable, String q, String status,
+                                                 Instant createdFrom, Instant createdTo) {
         var note = loadNote(noteId);
         noteAuthorizationService.ensureEditAccess(note);
-        return fetchPage(noteId, pageable, q);
+        return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForAdmin(Long noteId, Pageable pageable, String q) {
+    public Page<NoteShareDTO> listForAdmin(Long noteId, Pageable pageable, String q, String status,
+                                           Instant createdFrom, Instant createdTo) {
         loadNote(noteId);
-        return fetchPage(noteId, pageable, q);
+        return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForAdmin(Pageable pageable, String q) {
+    public Page<NoteShareDTO> listAllForAdmin(Pageable pageable, String q, String status,
+                                              Instant createdFrom, Instant createdTo) {
         Pageable effective = resolvePageable(pageable);
-        var page = searchAll(q, effective);
+        var page = searchAll(q, status, createdFrom, createdTo, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable, String q) {
+    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable, String q, String status,
+                                                    Instant createdFrom, Instant createdTo) {
         Pageable effective = resolvePageable(pageable);
         String login = SecurityUtils.getCurrentUserLogin()
                 .orElseThrow(() -> new InvalidBearerTokenException("Current user not found"));
-        var page = searchForOwner(login, q, effective);
+        var page = searchForOwner(login, q, status, createdFrom, createdTo, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
@@ -187,23 +191,34 @@ public class NoteShareService {
         );
     }
 
-    private Page<NoteShareDTO> fetchPage(Long noteId, Pageable pageable, String q) {
+    private Page<NoteShareDTO> fetchPage(Long noteId, Pageable pageable, String q, String status,
+                                         Instant createdFrom, Instant createdTo) {
         Pageable effective = resolvePageable(pageable);
         Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.forNote(noteId))
-                .and(NoteShareTokenSpecifications.search(q));
+                .and(NoteShareTokenSpecifications.search(q))
+                .and(NoteShareTokenSpecifications.status(status))
+                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
         var page = noteShareTokenRepository.findAll(spec, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
 
-    private Page<NoteShareToken> searchForOwner(String owner, String q, Pageable pageable) {
+    private Page<NoteShareToken> searchForOwner(String owner, String q, String status,
+                                                Instant createdFrom, Instant createdTo,
+                                                Pageable pageable) {
         Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.ownedBy(owner))
-                .and(NoteShareTokenSpecifications.search(q));
+                .and(NoteShareTokenSpecifications.search(q))
+                .and(NoteShareTokenSpecifications.status(status))
+                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
         return noteShareTokenRepository.findAll(spec, pageable);
     }
 
-    private Page<NoteShareToken> searchAll(String q, Pageable pageable) {
-        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.search(q));
+    private Page<NoteShareToken> searchAll(String q, String status,
+                                           Instant createdFrom, Instant createdTo,
+                                           Pageable pageable) {
+        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.search(q))
+                .and(NoteShareTokenSpecifications.status(status))
+                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
         return noteShareTokenRepository.findAll(spec, pageable);
     }
 

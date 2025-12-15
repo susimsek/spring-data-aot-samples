@@ -16,6 +16,18 @@ const themeToggleIcon = document.getElementById('themeToggleIcon');
 const themeToggleLabel = document.getElementById('themeToggleLabel');
 const pageSizeSelect = document.getElementById('sharedLinksPageSize');
 const sortSelect = document.getElementById('sharedLinksSort');
+const statusSelect = document.getElementById('sharedLinksStatus');
+const dateFilterSelect = document.getElementById('sharedLinksDateFilter');
+const customRange = document.getElementById('sharedLinksCustomRange');
+const createdFromInput = document.getElementById('sharedLinksCreatedFrom');
+const createdToInput = document.getElementById('sharedLinksCreatedTo');
+const customDateModalEl = document.getElementById('customDateModal');
+const customDateSave = document.getElementById('customDateSave');
+const customDateCancel = document.getElementById('customDateCancel');
+const customDateError = document.getElementById('customDateError');
+const bootstrapModal = window.bootstrap?.Modal;
+const customDateModal = customDateModalEl && bootstrapModal ? new bootstrapModal(customDateModalEl) : null;
+let customModalOpen = false;
 const authBtn = document.getElementById('authBtn');
 const authBtnLabel = document.getElementById('authBtnLabel');
 const authUserLabel = document.getElementById('authUserLabel');
@@ -40,7 +52,12 @@ let loading = false;
 let pageSize = 10;
 let sort = 'createdDate,desc';
 let search = '';
+let status = 'all';
 let isAdmin = false;
+let dateFilter = 'none';
+let createdFrom = '';
+let createdTo = '';
+let lastDateFilter = 'none';
 function getErrorMessage(error, fallback = 'Request failed') {
     if (error?.body?.detail) return error.body.detail;
     if (error?.body?.title) return error.body.title;
@@ -74,15 +91,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sharedLinksSubtitle) sharedLinksSubtitle.textContent = admin
             ? 'See every link you’ve issued, check status, and revoke when needed.'
             : 'See every link you’ve issued, check status, and revoke when needed.';
-        if (pageSizeSelect) {
-            const val = parseInt(pageSizeSelect.value, 10);
-            pageSize = Number.isNaN(val) ? pageSize : val;
-        }
-        if (sortSelect) {
-            sort = sortSelect.value || sort;
-        }
-        loadLinks();
-    });
+    if (pageSizeSelect) {
+        const val = parseInt(pageSizeSelect.value, 10);
+        pageSize = Number.isNaN(val) ? pageSize : val;
+    }
+    if (sortSelect) {
+        sort = sortSelect.value || sort;
+    }
+    if (statusSelect) {
+        status = statusSelect.value || status;
+    }
+    if (dateFilterSelect) {
+        dateFilter = dateFilterSelect.value || dateFilter;
+        lastDateFilter = dateFilter;
+    }
+    applyDatePreset(dateFilter);
+    loadLinks();
+});
     bindEvents();
 });
 
@@ -122,6 +147,55 @@ function bindEvents() {
         page = 0;
         loadLinks(0);
     });
+    statusSelect?.addEventListener('change', () => {
+        status = statusSelect.value || 'all';
+        page = 0;
+        loadLinks(0);
+    });
+    dateFilterSelect?.addEventListener('change', () => {
+        const newVal = dateFilterSelect.value || 'none';
+        if (newVal === 'custom') {
+            dateFilterSelect.value = lastDateFilter;
+            openCustomDateModal();
+            return;
+        }
+        dateFilter = newVal;
+        lastDateFilter = newVal;
+        applyDatePreset(newVal);
+        page = 0;
+        loadLinks(0);
+    });
+    customDateSave?.addEventListener('click', () => {
+        const { valid, fromVal, toVal } = validateCustomInputs(true);
+        if (!valid) return;
+        createdFrom = fromVal || '';
+        createdTo = toVal || '';
+        dateFilter = 'custom';
+        lastDateFilter = 'custom';
+        if (dateFilterSelect) dateFilterSelect.value = 'custom';
+        customDateModal?.hide();
+        page = 0;
+        loadLinks(0);
+    });
+    customDateCancel?.addEventListener('click', () => {
+        if (dateFilterSelect) {
+            dateFilterSelect.value = lastDateFilter;
+        }
+        hideCustomDateError();
+    });
+    const liveValidate = () => validateCustomInputs(dateFilter === 'custom' || customModalOpen);
+    createdFromInput?.addEventListener('input', liveValidate);
+    createdToInput?.addEventListener('input', liveValidate);
+    if (customDateModalEl) {
+        customDateModalEl.addEventListener('shown.bs.modal', () => {
+            customModalOpen = true;
+            hideCustomDateError();
+        });
+        customDateModalEl.addEventListener('hidden.bs.modal', () => {
+            customModalOpen = false;
+            hideCustomDateError();
+        });
+    }
     signOutBtn?.addEventListener('click', async () => {
         try {
             await Api.logout();
@@ -134,6 +208,105 @@ function bindEvents() {
 
 function hideAlert() {
     alertEl?.classList.add('d-none');
+}
+
+function toIsoString(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString();
+}
+
+function addDays(date, days) {
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + days);
+    return d;
+}
+
+function addHours(date, hours) {
+    const d = new Date(date.getTime());
+    d.setHours(d.getHours() + hours);
+    return d;
+}
+
+function openCustomDateModal() {
+    if (customDateModal) {
+        hideCustomDateError();
+        if (createdFromInput) createdFromInput.classList.remove('is-invalid');
+        if (createdToInput) createdToInput.classList.remove('is-invalid');
+        if (customDateError) customDateError.classList.add('d-none');
+        customDateModal.show();
+    } else if (customRange) {
+        customRange.classList.remove('d-none');
+    }
+}
+
+function showCustomDateError(msg) {
+    if (customDateError) {
+        customDateError.textContent = msg;
+        customDateError.classList.remove('d-none');
+    }
+    if (customModalOpen || dateFilter === 'custom') {
+        createdFromInput?.classList.add('is-invalid');
+        createdToInput?.classList.add('is-invalid');
+    }
+}
+
+function hideCustomDateError() {
+    if (customDateError) {
+        customDateError.classList.add('d-none');
+        customDateError.textContent = '';
+    }
+    createdFromInput?.classList.remove('is-invalid');
+    createdToInput?.classList.remove('is-invalid');
+}
+
+function validateCustomInputs(requireAny) {
+    const fromVal = toIsoString(createdFromInput?.value);
+    const toVal = toIsoString(createdToInput?.value);
+    const mustRequire = requireAny || customModalOpen;
+    if (mustRequire) {
+        if (!fromVal || !toVal) {
+            showCustomDateError('Start and end dates are both required.');
+            return { valid: false, fromVal, toVal };
+        }
+        if (new Date(fromVal) > new Date(toVal)) {
+            showCustomDateError('Start date cannot be after end date.');
+            return { valid: false, fromVal, toVal };
+        }
+    } else if (!fromVal && !toVal) {
+        hideCustomDateError();
+        return { valid: true, fromVal, toVal };
+    } else if (fromVal && toVal && new Date(fromVal) > new Date(toVal)) {
+        showCustomDateError('Start date cannot be after end date.');
+        return { valid: false, fromVal, toVal };
+    }
+    hideCustomDateError();
+    return { valid: true, fromVal, toVal };
+}
+
+function applyDatePreset(val) {
+    const now = new Date();
+    createdFrom = '';
+    createdTo = '';
+    if (createdFromInput) createdFromInput.value = '';
+    if (createdToInput) createdToInput.value = '';
+    switch (val) {
+        case 'created_last_24h':
+            createdFrom = toIsoString(addHours(now, -24));
+            createdTo = toIsoString(now);
+            break;
+        case 'created_last_7d':
+            createdFrom = toIsoString(addDays(now, -7));
+            createdTo = toIsoString(now);
+            break;
+        case 'created_last_month':
+            createdFrom = toIsoString(addDays(now, -30));
+            createdTo = toIsoString(now);
+            break;
+        default:
+            break;
+    }
 }
 
 async function initAuth() {
@@ -262,7 +435,7 @@ async function loadLinks(targetPage = 0) {
     setLoading(true);
     totalLabel?.classList.add('d-none');
     pageInfo?.classList.add('d-none');
-    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort, search), {
+    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort, search, status, createdFrom, createdTo), {
         fallback: 'Could not load shared links.',
         onFinally: () => setLoading(false)
     });
