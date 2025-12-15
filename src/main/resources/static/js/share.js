@@ -27,6 +27,8 @@ const authUserLabel = document.getElementById('authUserLabel');
 const authMenu = document.getElementById('authMenu');
 const signOutBtn = document.getElementById('signOutBtn');
 const signOutDivider = document.getElementById('signOutDivider');
+const homeLink = document.getElementById('homeLink');
+const sharedLinksNav = document.getElementById('sharedLinksNav');
 
 function showError(msg) {
     if (alertBox) {
@@ -153,6 +155,8 @@ function updateAuthUi(username, signedIn) {
     if (signOutBtn) {
         signOutBtn.classList.toggle('d-none', !signedIn);
     }
+    if (homeLink) homeLink.classList.toggle('d-none', !signedIn);
+    if (sharedLinksNav) sharedLinksNav.classList.toggle('d-none', !signedIn);
 }
 
 function splitDateTime(value) {
