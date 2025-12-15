@@ -150,8 +150,8 @@ public class NoteCommandService {
 
     private Note findActiveNote(Long id) {
         return noteRepository.findOne(
-                Specification.where(NoteSpecifications.isNotDeleted())
-                        .and((root, cq, cb) -> cb.equal(root.get("id"), id)))
+                        Specification.where(NoteSpecifications.isNotDeleted())
+                                .and((root, cq, cb) -> cb.equal(root.get(io.github.susimsek.springdataaotsamples.domain.Note_.id), id)))
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 

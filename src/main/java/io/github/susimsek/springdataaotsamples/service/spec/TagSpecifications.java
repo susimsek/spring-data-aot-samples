@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.spec;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,7 +15,7 @@ public class TagSpecifications {
             return (root, cq, cb) -> cb.conjunction();
         }
         var like = "%" + query.trim().toLowerCase() + "%";
-        return (root, cq, cb) -> cb.like(cb.lower(root.get("name")), like);
+        return (root, cq, cb) -> cb.like(cb.lower(root.get(Tag_.name)), like);
     }
 
     public Specification<Tag> startsWith(@Nullable String prefix) {
@@ -22,6 +23,6 @@ public class TagSpecifications {
             return (root, cq, cb) -> cb.disjunction();
         }
         var like = prefix.trim().toLowerCase() + "%";
-        return (root, cq, cb) -> cb.like(cb.lower(root.get("name")), like);
+        return (root, cq, cb) -> cb.like(cb.lower(root.get(Tag_.name)), like);
     }
 }

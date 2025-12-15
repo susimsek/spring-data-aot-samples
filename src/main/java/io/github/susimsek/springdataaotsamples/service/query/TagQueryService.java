@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.service.query;
 
+import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
@@ -29,7 +30,7 @@ public class TagQueryService {
 
     private Pageable ensureSorted(Pageable pageable) {
         if (pageable.getSort().isUnsorted()) {
-            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name").ascending());
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tag_.name.getName()).ascending());
         }
         return pageable;
     }

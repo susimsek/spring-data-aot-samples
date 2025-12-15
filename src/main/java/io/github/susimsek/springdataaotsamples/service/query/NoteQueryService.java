@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.query;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
+import io.github.susimsek.springdataaotsamples.domain.Note_;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.NoteAuthorizationService;
@@ -83,7 +84,7 @@ public class NoteQueryService {
     private Note findActiveNote(Long id) {
         return noteRepository.findOne(
                         Specification.where(NoteSpecifications.isNotDeleted())
-                                .and((root, cq, cb) -> cb.equal(root.get("id"), id)))
+                                .and((root, cq, cb) -> cb.equal(root.get(Note_.id), id)))
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 
