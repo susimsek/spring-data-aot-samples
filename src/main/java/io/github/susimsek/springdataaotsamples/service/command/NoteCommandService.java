@@ -17,7 +17,7 @@ import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import lombok.RequiredArgsConstructor;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
-import io.github.susimsek.springdataaotsamples.service.CacheService;
+import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class NoteCommandService {
     private final NoteMapper noteMapper;
     private final UserRepository userRepository;
     private final NoteAuthorizationService noteAuthorizationService;
-    private final CacheService cacheService;
+    private final CacheProvider cacheProvider;
 
     @Transactional
     public NoteDTO create(NoteCreateRequest request) {
@@ -179,10 +179,10 @@ public class NoteCommandService {
     }
 
     private void evictNoteCaches() {
-        cacheService.clearCaches(
-            Note.class.getName(),
-            Note.class.getName() + ".tags"
-        );
+            cacheProvider.clearCaches(
+                Note.class.getName(),
+                Note.class.getName() + ".tags"
+            );
     }
 
     private BulkActionResult executeBulk(BulkAction action, Map<Long, Note> notesById, List<Long> failed) {

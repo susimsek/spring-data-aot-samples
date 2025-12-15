@@ -2,7 +2,7 @@ package io.github.susimsek.springdataaotsamples.scheduler;
 
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
-import io.github.susimsek.springdataaotsamples.service.CacheService;
+import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,12 +14,12 @@ import java.time.Instant;
 public class RefreshTokenCleanupScheduler {
 
     private final RefreshTokenRepository refreshTokenRepository;
-    private final CacheService cacheService;
+    private final CacheProvider cacheProvider;
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void purgeExpiredAndRevoked() {
         refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
         refreshTokenRepository.deleteByRevokedTrue();
-        cacheService.clearCache(RefreshToken.class.getName());
+        cacheProvider.clearCache(RefreshToken.class.getName());
     }
 }

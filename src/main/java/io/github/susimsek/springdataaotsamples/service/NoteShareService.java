@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.service;
 
+import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
@@ -39,6 +40,7 @@ public class NoteShareService {
     private final NoteRepository noteRepository;
     private final NoteShareTokenRepository noteShareTokenRepository;
     private final NoteAuthorizationService noteAuthorizationService;
+    private final CacheProvider cacheProvider;
 
     @Transactional
     public NoteShareDTO createForCurrentUser(Long noteId, CreateShareTokenRequest request) {
@@ -98,6 +100,7 @@ public class NoteShareService {
         }
         token.setRevoked(true);
         noteShareTokenRepository.save(token);
+        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
     }
 
     @Transactional
@@ -109,6 +112,7 @@ public class NoteShareService {
         }
         token.setRevoked(true);
         noteShareTokenRepository.save(token);
+        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -131,6 +135,7 @@ public class NoteShareService {
             token.setRevoked(true);
         }
         noteShareTokenRepository.saveAndFlush(token);
+        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
         return token;
     }
 
@@ -159,6 +164,7 @@ public class NoteShareService {
         shareToken.setRevoked(false);
 
         NoteShareToken saved = noteShareTokenRepository.save(shareToken);
+        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
 
         return toDto(saved, rawToken);
     }

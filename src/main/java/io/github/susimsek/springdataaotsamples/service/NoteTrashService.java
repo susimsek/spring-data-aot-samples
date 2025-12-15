@@ -5,6 +5,7 @@ import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
+import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
@@ -27,7 +28,7 @@ public class NoteTrashService {
     private final TagCommandService tagCommandService;
     private final NoteAuthorizationService noteAuthorizationService;
     private final NoteQueryService noteQueryService;
-    private final CacheService cacheService;
+    private final CacheProvider cacheProvider;
 
     @Transactional(readOnly = true)
     public Page<NoteDTO> findDeleted(Pageable pageable,
@@ -124,7 +125,7 @@ public class NoteTrashService {
     }
 
     private void evictNoteCaches() {
-        cacheService.clearCaches(
+        cacheProvider.clearCaches(
             Note.class.getName(),
             Note.class.getName() + ".tags",
             Tag.class.getName()

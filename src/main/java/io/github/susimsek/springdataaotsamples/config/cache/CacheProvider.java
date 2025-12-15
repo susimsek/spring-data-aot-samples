@@ -1,4 +1,4 @@
-package io.github.susimsek.springdataaotsamples.service;
+package io.github.susimsek.springdataaotsamples.config.cache;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-public class CacheService {
+public class CacheProvider {
 
     private final CacheManager cacheManager;
 

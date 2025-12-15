@@ -12,10 +12,10 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-    String USERS_BY_USERNAME_CACHE = "usersByUsername";
+    String USER_BY_USERNAME_CACHE = "userByUsername";
 
     @EntityGraph(value = "User.withAuthorities")
-    @Cacheable(cacheNames = USERS_BY_USERNAME_CACHE, key = "#username", unless = "#result == null")
+    @Cacheable(cacheNames = USER_BY_USERNAME_CACHE, key = "#username", unless = "#result == null")
     Optional<User> findOneWithAuthoritiesByUsername(String username);
 
     @EntityGraph(value = "User.withAuthorities")
