@@ -180,26 +180,6 @@
           </excludes>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.hibernate.orm</groupId>
-        <artifactId>hibernate-maven-plugin</artifactId>
-        <version>7.1.9.Final</version>
-        <executions>
-          <execution>
-            <id>enhance</id>
-            <goals>
-              <goal>enhance</goal>
-            </goals>
-            <configuration>
-              <enableAssociationManagement>true</enableAssociationManagement>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.graalvm.buildtools</groupId>
-        <artifactId>native-maven-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
 
