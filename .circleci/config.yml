@@ -16,22 +16,40 @@ jobs:
             - m2-{{ checksum "pom.xml" }}
             - m2-
       - run:
+          name: Print Java Version
+          command: java -version
+      - run:
           name: Build and test
           command: mvn -ntp -Pprod verify
+      - save_cache:
+          key: m2-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2/repository
+
+  docker-push:
+    executor: jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
       - run:
-          name: Jib build & push
+          name: Jib build & push (latest)
           command: |
             mvn -ntp -Pprod -DskipTests \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
               -Djib.to.auth.password="${DOCKER_PASSWORD}" \
               jib:build
-      - save_cache:
-          key: m2-{{ checksum "pom.xml" }}
-          paths:
-            - ~/.m2/repository
 
 workflows:
-  build:
+  build-and-push:
     jobs:
       - build
+      - docker-push:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
