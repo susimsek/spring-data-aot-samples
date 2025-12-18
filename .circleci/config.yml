@@ -22,7 +22,7 @@ jobs:
           name: Jib build & push
           command: |
             mvn -ntp -Pprod -DskipTests \
-              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:${project.version} \
+              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
               -Djib.to.auth.password="${DOCKER_PASSWORD}" \
               jib:build
