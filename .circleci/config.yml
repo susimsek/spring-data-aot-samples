@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Jib build & push (latest)
           command: |
-            mvn -ntp -Pprod -DskipTests package jib:build \
+            mvn -ntp -Pprod -DskipTests verify jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
               -Djib.to.tags=latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
