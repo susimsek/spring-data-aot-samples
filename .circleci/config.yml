@@ -39,7 +39,7 @@ jobs:
           command: |
             mvn -ntp -Pprod -DskipTests package jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
-              -Djib.to.tags=${CIRCLE_TAG:+${CIRCLE_TAG},}latest \
+              -Djib.to.tags=latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
               -Djib.to.auth.password="${DOCKER_PASSWORD}"
 
@@ -53,5 +53,3 @@ workflows:
           filters:
             branches:
               only: main
-            tags:
-              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
