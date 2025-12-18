@@ -37,11 +37,11 @@ jobs:
       - run:
           name: Jib build & push (latest)
           command: |
-            mvn -ntp -Pprod -DskipTests \
-              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest \
+            mvn -ntp -Pprod -DskipTests package jib:build \
+              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
+              -Djib.to.tags=${CIRCLE_TAG:+${CIRCLE_TAG},}latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
-              -Djib.to.auth.password="${DOCKER_PASSWORD}" \
-              jib:build
+              -Djib.to.auth.password="${DOCKER_PASSWORD}"
 
 workflows:
   build-and-push:
@@ -53,3 +53,5 @@ workflows:
           filters:
             branches:
               only: main
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
