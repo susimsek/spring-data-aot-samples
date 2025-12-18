@@ -1,0 +1,37 @@
+version: 2.1
+
+executors:
+  jdk:
+    docker:
+      - image: cimg/openjdk:21.0
+    resource_class: medium
+
+jobs:
+  build:
+    executor: jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+      - run:
+          name: Build and test
+          command: mvn -ntp -Pprod verify
+      - run:
+          name: Jib build & push
+          command: |
+            mvn -ntp -Pprod -DskipTests \
+              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:${project.version} \
+              -Djib.to.auth.username="${DOCKER_USERNAME}" \
+              -Djib.to.auth.password="${DOCKER_PASSWORD}" \
+              jib:build
+      - save_cache:
+          key: m2-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2/repository
+
+workflows:
+  build:
+    jobs:
+      - build
