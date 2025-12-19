@@ -454,12 +454,6 @@ function updateAuthUi() {
     }
 }
 
-async function handleLoginSubmit(event) {
-    event.preventDefault();
-    if (!authForm)
-    // Not used; login handled on separate page
-}
-
 function handleLogout(event) {
     event?.preventDefault();
     handleApi(Api.logout(), {silent: true})
