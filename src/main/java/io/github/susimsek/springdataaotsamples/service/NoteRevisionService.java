@@ -20,76 +20,75 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NoteRevisionService {
 
-    private final NoteRepository noteRepository;
-    private final NoteRevisionMapper noteRevisionMapper;
-    private final NoteAuthorizationService noteAuthorizationService;
-    private final NoteMapper noteMapper;
+  private final NoteRepository noteRepository;
+  private final NoteRevisionMapper noteRevisionMapper;
+  private final NoteAuthorizationService noteAuthorizationService;
+  private final NoteMapper noteMapper;
 
-    @Transactional(readOnly = true)
-    public Page<NoteRevisionDTO> findRevisions(Long id, Pageable pageable) {
-        var note = findNote(id);
-        return findRevisionsInternal(note.getId(), pageable);
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteRevisionDTO> findRevisions(Long id, Pageable pageable) {
+    var note = findNote(id);
+    return findRevisionsInternal(note.getId(), pageable);
+  }
 
-    @Transactional(readOnly = true)
-    public NoteRevisionDTO findRevision(Long id, Long revisionNumber) {
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        return noteRevisionMapper.toRevisionDto(revision);
-    }
+  @Transactional(readOnly = true)
+  public NoteRevisionDTO findRevision(Long id, Long revisionNumber) {
+    var revision =
+        noteRepository
+            .findRevision(id, revisionNumber)
+            .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+    return noteRevisionMapper.toRevisionDto(revision);
+  }
 
-    @Transactional
-    public NoteDTO restoreRevision(Long id, Long revisionNumber) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        return restoreRevisionInternal(note, id, revisionNumber);
-    }
+  @Transactional
+  public NoteDTO restoreRevision(Long id, Long revisionNumber) {
+    var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+    return restoreRevisionInternal(note, id, revisionNumber);
+  }
 
-    @Transactional
-    public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
-        var note = noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureEditAccess(note);
-        return restoreRevisionInternal(note, id, revisionNumber);
-    }
+  @Transactional
+  public NoteDTO restoreRevisionForCurrentUser(Long id, Long revisionNumber) {
+    var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+    noteAuthorizationService.ensureEditAccess(note);
+    return restoreRevisionInternal(note, id, revisionNumber);
+  }
 
-    @Transactional(readOnly = true)
-    public Page<NoteRevisionDTO> findRevisionsForCurrentUser(Long id, Pageable pageable) {
-        var note = findNote(id);
-        noteAuthorizationService.ensureReadAccess(note);
-        return findRevisionsInternal(note.getId(), pageable);
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteRevisionDTO> findRevisionsForCurrentUser(Long id, Pageable pageable) {
+    var note = findNote(id);
+    noteAuthorizationService.ensureReadAccess(note);
+    return findRevisionsInternal(note.getId(), pageable);
+  }
 
-    @Transactional(readOnly = true)
-    public NoteRevisionDTO findRevisionForCurrentUser(Long id, Long revisionNumber) {
-        var note = findNote(id);
-        noteAuthorizationService.ensureReadAccess(note);
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        return noteRevisionMapper.toRevisionDto(revision);
-    }
+  @Transactional(readOnly = true)
+  public NoteRevisionDTO findRevisionForCurrentUser(Long id, Long revisionNumber) {
+    var note = findNote(id);
+    noteAuthorizationService.ensureReadAccess(note);
+    var revision =
+        noteRepository
+            .findRevision(id, revisionNumber)
+            .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+    return noteRevisionMapper.toRevisionDto(revision);
+  }
 
-    private Note findNote(Long id) {
-        return noteRepository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-    }
+  private Note findNote(Long id) {
+    return noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+  }
 
-    private Page<NoteRevisionDTO> findRevisionsInternal(Long noteId, Pageable pageable) {
-        var pageRequest = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                RevisionSort.desc());
-        return noteRepository.findRevisions(noteId, pageRequest)
-                .map(noteRevisionMapper::toRevisionDto);
-    }
+  private Page<NoteRevisionDTO> findRevisionsInternal(Long noteId, Pageable pageable) {
+    var pageRequest =
+        PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), RevisionSort.desc());
+    return noteRepository.findRevisions(noteId, pageRequest).map(noteRevisionMapper::toRevisionDto);
+  }
 
-    private NoteDTO restoreRevisionInternal(Note note, Long id, Long revisionNumber) {
-        var revision = noteRepository.findRevision(id, revisionNumber)
-                .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
-        var snapshot = revision.getEntity();
-        noteMapper.applyRevision(snapshot, note);
-        var saved = noteRepository.save(note);
-        return noteMapper.toDto(saved);
-    }
-
+  private NoteDTO restoreRevisionInternal(Note note, Long id, Long revisionNumber) {
+    var revision =
+        noteRepository
+            .findRevision(id, revisionNumber)
+            .orElseThrow(() -> new RevisionNotFoundException(id, revisionNumber));
+    var snapshot = revision.getEntity();
+    noteMapper.applyRevision(snapshot, note);
+    var saved = noteRepository.save(note);
+    return noteMapper.toDto(saved);
+  }
 }

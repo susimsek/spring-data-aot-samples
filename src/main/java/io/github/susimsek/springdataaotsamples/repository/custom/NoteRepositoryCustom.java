@@ -7,6 +7,5 @@ import org.springframework.data.jpa.domain.Specification;
 
 public interface NoteRepositoryCustom {
 
-    Page<Long> findIds(Specification<Note> specification,
-                       Pageable pageable);
+  Page<Long> findIds(Specification<Note> specification, Pageable pageable);
 }

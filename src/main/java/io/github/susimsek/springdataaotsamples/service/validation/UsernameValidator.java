@@ -3,19 +3,18 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.Username;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.util.StringUtils;
-
 import java.util.regex.Pattern;
+import org.springframework.util.StringUtils;
 
 public class UsernameValidator implements ConstraintValidator<Username, String> {
 
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._-]+$");
+  private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._-]+$");
 
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (!StringUtils.hasText(value)) {
-            return true; // optional field
-        }
-        return USERNAME_PATTERN.matcher(value).matches();
+  @Override
+  public boolean isValid(String value, ConstraintValidatorContext context) {
+    if (!StringUtils.hasText(value)) {
+      return true; // optional field
     }
+    return USERNAME_PATTERN.matcher(value).matches();
+  }
 }

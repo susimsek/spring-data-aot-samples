@@ -1,16 +1,15 @@
 package io.github.susimsek.springdataaotsamples.service.validation.constraints;
 
-import io.github.susimsek.springdataaotsamples.service.validation.EnumValueValidator;
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import io.github.susimsek.springdataaotsamples.service.validation.EnumValueValidator;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 @Documented
 @Constraint(validatedBy = EnumValueValidator.class)
@@ -18,13 +17,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface EnumValue {
 
-    String message() default "{app.validation.enumValue.message}";
+  String message() default "{app.validation.enumValue.message}";
 
-    Class<?>[] groups() default {};
+  Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+  Class<? extends Payload>[] payload() default {};
 
-    Class<? extends Enum<?>> enumClass();
+  Class<? extends Enum<?>> enumClass();
 
-    boolean ignoreCase() default true;
+  boolean ignoreCase() default true;
 }

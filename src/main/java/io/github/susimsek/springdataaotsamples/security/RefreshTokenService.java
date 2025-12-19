@@ -11,14 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void revoke(RefreshToken token) {
-        if (token.isRevoked()) {
-            return;
-        }
-        token.setRevoked(true);
-        refreshTokenRepository.saveAndFlush(token);
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void revoke(RefreshToken token) {
+    if (token.isRevoked()) {
+      return;
     }
+    token.setRevoked(true);
+    refreshTokenRepository.saveAndFlush(token);
+  }
 }

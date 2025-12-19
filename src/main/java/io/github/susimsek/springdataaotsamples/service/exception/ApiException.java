@@ -9,37 +9,37 @@ import org.springframework.web.ErrorResponse;
 @NullMarked
 public abstract class ApiException extends RuntimeException implements ErrorResponse {
 
-    private final HttpStatusCode status;
-    private final HttpHeaders headers;
-    private final ProblemDetail body;
-    private final Object[] args;
+  private final HttpStatusCode status;
+  private final HttpHeaders headers;
+  private final ProblemDetail body;
+  private final Object[] args;
 
-    protected ApiException(HttpStatusCode status, String title, String detail, Object... args) {
-        super(detail);
-        this.status = status;
-        this.headers = HttpHeaders.EMPTY;
-        this.body = ProblemDetail.forStatusAndDetail(status, detail);
-        this.body.setTitle(title);
-        this.args = args;
-    }
+  protected ApiException(HttpStatusCode status, String title, String detail, Object... args) {
+    super(detail);
+    this.status = status;
+    this.headers = HttpHeaders.EMPTY;
+    this.body = ProblemDetail.forStatusAndDetail(status, detail);
+    this.body.setTitle(title);
+    this.args = args;
+  }
 
-    @Override
-    public HttpStatusCode getStatusCode() {
-        return status;
-    }
+  @Override
+  public HttpStatusCode getStatusCode() {
+    return status;
+  }
 
-    @Override
-    public ProblemDetail getBody() {
-        return body;
-    }
+  @Override
+  public ProblemDetail getBody() {
+    return body;
+  }
 
-    @Override
-    public HttpHeaders getHeaders() {
-        return headers;
-    }
+  @Override
+  public HttpHeaders getHeaders() {
+    return headers;
+  }
 
-    @Override
-    public Object[] getDetailMessageArguments() {
-        return args;
-    }
+  @Override
+  public Object[] getDetailMessageArguments() {
+    return args;
+  }
 }

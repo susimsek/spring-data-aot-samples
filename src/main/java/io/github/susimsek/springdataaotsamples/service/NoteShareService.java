@@ -14,6 +14,9 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteShareTokenSpecifications;
 import jakarta.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,215 +30,239 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class NoteShareService {
 
-    private static final Duration DEFAULT_TTL = Duration.ofHours(24);
+  private static final Duration DEFAULT_TTL = Duration.ofHours(24);
 
-    private final NoteRepository noteRepository;
-    private final NoteShareTokenRepository noteShareTokenRepository;
-    private final NoteAuthorizationService noteAuthorizationService;
-    private final CacheProvider cacheProvider;
+  private final NoteRepository noteRepository;
+  private final NoteShareTokenRepository noteShareTokenRepository;
+  private final NoteAuthorizationService noteAuthorizationService;
+  private final CacheProvider cacheProvider;
 
-    @Transactional
-    public NoteShareDTO createForCurrentUser(Long noteId, CreateShareTokenRequest request) {
-        var note = loadNote(noteId);
-        noteAuthorizationService.ensureEditAccess(note);
-        return create(note, request);
-    }
+  @Transactional
+  public NoteShareDTO createForCurrentUser(Long noteId, CreateShareTokenRequest request) {
+    var note = loadNote(noteId);
+    noteAuthorizationService.ensureEditAccess(note);
+    return create(note, request);
+  }
 
-    @Transactional
-    public NoteShareDTO create(Long noteId, CreateShareTokenRequest request) {
-        var note = loadNote(noteId);
-        return create(note, request);
-    }
+  @Transactional
+  public NoteShareDTO create(Long noteId, CreateShareTokenRequest request) {
+    var note = loadNote(noteId);
+    return create(note, request);
+  }
 
-    @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForCurrentUser(Long noteId, Pageable pageable, String q, String status,
-                                                 Instant createdFrom, Instant createdTo) {
-        var note = loadNote(noteId);
-        noteAuthorizationService.ensureEditAccess(note);
-        return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteShareDTO> listForCurrentUser(
+      Long noteId,
+      Pageable pageable,
+      String q,
+      String status,
+      Instant createdFrom,
+      Instant createdTo) {
+    var note = loadNote(noteId);
+    noteAuthorizationService.ensureEditAccess(note);
+    return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
+  }
 
-    @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listForAdmin(Long noteId, Pageable pageable, String q, String status,
-                                           Instant createdFrom, Instant createdTo) {
-        loadNote(noteId);
-        return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteShareDTO> listForAdmin(
+      Long noteId,
+      Pageable pageable,
+      String q,
+      String status,
+      Instant createdFrom,
+      Instant createdTo) {
+    loadNote(noteId);
+    return fetchPage(noteId, pageable, q, status, createdFrom, createdTo);
+  }
 
-    @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForAdmin(Pageable pageable, String q, String status,
-                                              Instant createdFrom, Instant createdTo) {
-        Pageable effective = resolvePageable(pageable);
-        var page = searchAll(q, status, createdFrom, createdTo, effective);
-        List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
-        return new PageImpl<>(content, effective, page.getTotalElements());
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteShareDTO> listAllForAdmin(
+      Pageable pageable, String q, String status, Instant createdFrom, Instant createdTo) {
+    Pageable effective = resolvePageable(pageable);
+    var page = searchAll(q, status, createdFrom, createdTo, effective);
+    List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
+    return new PageImpl<>(content, effective, page.getTotalElements());
+  }
 
-    @Transactional(readOnly = true)
-    public Page<NoteShareDTO> listAllForCurrentUser(Pageable pageable, String q, String status,
-                                                    Instant createdFrom, Instant createdTo) {
-        Pageable effective = resolvePageable(pageable);
-        String login = SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new InvalidBearerTokenException("Current user not found"));
-        var page = searchForOwner(login, q, status, createdFrom, createdTo, effective);
-        List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
-        return new PageImpl<>(content, effective, page.getTotalElements());
-    }
+  @Transactional(readOnly = true)
+  public Page<NoteShareDTO> listAllForCurrentUser(
+      Pageable pageable, String q, String status, Instant createdFrom, Instant createdTo) {
+    Pageable effective = resolvePageable(pageable);
+    String login =
+        SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new InvalidBearerTokenException("Current user not found"));
+    var page = searchForOwner(login, q, status, createdFrom, createdTo, effective);
+    List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
+    return new PageImpl<>(content, effective, page.getTotalElements());
+  }
 
-    @Transactional
-    public void revokeForCurrentUser(Long tokenId) {
-        var token = noteShareTokenRepository.findOneWithNoteById(tokenId)
+  @Transactional
+  public void revokeForCurrentUser(Long tokenId) {
+    var token =
+        noteShareTokenRepository
+            .findOneWithNoteById(tokenId)
             .orElseThrow(() -> new InvalidBearerTokenException("Share token not found"));
-        noteAuthorizationService.ensureEditAccess(token.getNote());
-        if (token.isRevoked()) {
-            return;
-        }
-        token.setRevoked(true);
-        noteShareTokenRepository.save(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+    noteAuthorizationService.ensureEditAccess(token.getNote());
+    if (token.isRevoked()) {
+      return;
     }
+    token.setRevoked(true);
+    noteShareTokenRepository.save(token);
+    cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+  }
 
-    @Transactional
-    public void revoke(Long tokenId) {
-        var token = noteShareTokenRepository.findOneWithNoteById(tokenId)
+  @Transactional
+  public void revoke(Long tokenId) {
+    var token =
+        noteShareTokenRepository
+            .findOneWithNoteById(tokenId)
             .orElseThrow(() -> new InvalidBearerTokenException("Share token not found"));
-        if (token.isRevoked()) {
-            return;
-        }
-        token.setRevoked(true);
-        noteShareTokenRepository.save(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+    if (token.isRevoked()) {
+      return;
     }
+    token.setRevoked(true);
+    noteShareTokenRepository.save(token);
+    cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+  }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public NoteShareToken validateAndConsume(String rawToken) {
-        Assert.hasText(rawToken, "Share token must not be empty");
-        var token = noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(rawToken)
-            .or(() -> noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(HashingUtils.sha256Hex(rawToken)))
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public NoteShareToken validateAndConsume(String rawToken) {
+    Assert.hasText(rawToken, "Share token must not be empty");
+    var token =
+        noteShareTokenRepository
+            .findOneWithNoteByTokenHashAndRevokedFalse(rawToken)
+            .or(
+                () ->
+                    noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(
+                        HashingUtils.sha256Hex(rawToken)))
             .orElseThrow(() -> new InvalidBearerTokenException("Invalid share token"));
 
-        if (token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now())) {
-            throw new InvalidBearerTokenException("Share token expired");
-        }
-        Note note = token.getNote();
-        if (note.isDeleted()) {
-            throw new InvalidBearerTokenException("Note is not accessible");
-        }
-
-        token.setUseCount(token.getUseCount() + 1);
-        if (token.isOneTime()) {
-            token.setRevoked(true);
-        }
-        noteShareTokenRepository.saveAndFlush(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
-        return token;
+    if (token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now())) {
+      throw new InvalidBearerTokenException("Share token expired");
+    }
+    Note note = token.getNote();
+    if (note.isDeleted()) {
+      throw new InvalidBearerTokenException("Note is not accessible");
     }
 
-    private NoteShareDTO create(Note note, @NotNull CreateShareTokenRequest request) {
-        if (note.isDeleted()) {
-            throw new InvalidBearerTokenException("Cannot share a deleted note");
-        }
-        Instant now = Instant.now();
-        Instant expiresAt;
-        if (Boolean.TRUE.equals(request.noExpiry())) {
-            expiresAt = null;
-        } else if (request.expiresAt() != null) {
-            expiresAt = request.expiresAt();
-        } else {
-            expiresAt = now.plus(DEFAULT_TTL);
-        }
+    token.setUseCount(token.getUseCount() + 1);
+    if (token.isOneTime()) {
+      token.setRevoked(true);
+    }
+    noteShareTokenRepository.saveAndFlush(token);
+    cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+    return token;
+  }
 
-        String rawToken = RandomUtils.hexToken(32);
-        NoteShareToken shareToken = new NoteShareToken();
-        shareToken.setNote(note);
-        shareToken.setPermission(SharePermission.READ);
-        shareToken.setTokenHash(rawToken);
-        shareToken.setExpiresAt(expiresAt);
-        shareToken.setOneTime(Boolean.TRUE.equals(request.oneTime()));
-        shareToken.setUseCount(0);
-        shareToken.setRevoked(false);
-
-        NoteShareToken saved = noteShareTokenRepository.save(shareToken);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
-
-        return toDto(saved, rawToken);
+  private NoteShareDTO create(Note note, @NotNull CreateShareTokenRequest request) {
+    if (note.isDeleted()) {
+      throw new InvalidBearerTokenException("Cannot share a deleted note");
+    }
+    Instant now = Instant.now();
+    Instant expiresAt;
+    if (Boolean.TRUE.equals(request.noExpiry())) {
+      expiresAt = null;
+    } else if (request.expiresAt() != null) {
+      expiresAt = request.expiresAt();
+    } else {
+      expiresAt = now.plus(DEFAULT_TTL);
     }
 
-    private Note loadNote(Long noteId) {
-        return noteRepository.findById(noteId)
-                .orElseThrow(() -> new NoteNotFoundException(noteId));
-    }
+    String rawToken = RandomUtils.hexToken(32);
+    NoteShareToken shareToken = new NoteShareToken();
+    shareToken.setNote(note);
+    shareToken.setPermission(SharePermission.READ);
+    shareToken.setTokenHash(rawToken);
+    shareToken.setExpiresAt(expiresAt);
+    shareToken.setOneTime(Boolean.TRUE.equals(request.oneTime()));
+    shareToken.setUseCount(0);
+    shareToken.setRevoked(false);
 
-    private NoteShareDTO toDto(NoteShareToken token) {
-        return toDto(token, token.getTokenHash());
-    }
+    NoteShareToken saved = noteShareTokenRepository.save(shareToken);
+    cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
 
-    private NoteShareDTO toDto(NoteShareToken token, String tokenValue) {
-        boolean expired = token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now());
-        return new NoteShareDTO(
-                token.getId(),
-                tokenValue,
-                token.getNote().getId(),
-                token.getPermission(),
-                token.getExpiresAt(),
-                token.isOneTime(),
-                token.isRevoked(),
-                token.getUseCount(),
-                token.getCreatedDate(),
-                token.getLastModifiedDate(),
-                expired,
-                token.getNote().getTitle(),
-                token.getNote().getOwner()
-        );
-    }
+    return toDto(saved, rawToken);
+  }
 
-    private Page<NoteShareDTO> fetchPage(Long noteId, Pageable pageable, String q, String status,
-                                         Instant createdFrom, Instant createdTo) {
-        Pageable effective = resolvePageable(pageable);
-        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.forNote(noteId))
-                .and(NoteShareTokenSpecifications.search(q))
-                .and(NoteShareTokenSpecifications.status(status))
-                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        var page = noteShareTokenRepository.findAll(spec, effective);
-        List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
-        return new PageImpl<>(content, effective, page.getTotalElements());
-    }
+  private Note loadNote(Long noteId) {
+    return noteRepository.findById(noteId).orElseThrow(() -> new NoteNotFoundException(noteId));
+  }
 
-    private Page<NoteShareToken> searchForOwner(String owner, String q, String status,
-                                                Instant createdFrom, Instant createdTo,
-                                                Pageable pageable) {
-        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.ownedBy(owner))
-                .and(NoteShareTokenSpecifications.search(q))
-                .and(NoteShareTokenSpecifications.status(status))
-                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        return noteShareTokenRepository.findAll(spec, pageable);
-    }
+  private NoteShareDTO toDto(NoteShareToken token) {
+    return toDto(token, token.getTokenHash());
+  }
 
-    private Page<NoteShareToken> searchAll(String q, String status,
-                                           Instant createdFrom, Instant createdTo,
-                                           Pageable pageable) {
-        Specification<NoteShareToken> spec = Specification.where(NoteShareTokenSpecifications.search(q))
-                .and(NoteShareTokenSpecifications.status(status))
-                .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        return noteShareTokenRepository.findAll(spec, pageable);
-    }
+  private NoteShareDTO toDto(NoteShareToken token, String tokenValue) {
+    boolean expired = token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now());
+    return new NoteShareDTO(
+        token.getId(),
+        tokenValue,
+        token.getNote().getId(),
+        token.getPermission(),
+        token.getExpiresAt(),
+        token.isOneTime(),
+        token.isRevoked(),
+        token.getUseCount(),
+        token.getCreatedDate(),
+        token.getLastModifiedDate(),
+        expired,
+        token.getNote().getTitle(),
+        token.getNote().getOwner());
+  }
 
-    private Pageable resolvePageable(Pageable pageable) {
-        if (pageable.getSort().isUnsorted()) {
-            return PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, "createdDate")
-            );
-        }
-        return pageable;
+  private Page<NoteShareDTO> fetchPage(
+      Long noteId,
+      Pageable pageable,
+      String q,
+      String status,
+      Instant createdFrom,
+      Instant createdTo) {
+    Pageable effective = resolvePageable(pageable);
+    Specification<NoteShareToken> spec =
+        Specification.where(NoteShareTokenSpecifications.forNote(noteId))
+            .and(NoteShareTokenSpecifications.search(q))
+            .and(NoteShareTokenSpecifications.status(status))
+            .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
+    var page = noteShareTokenRepository.findAll(spec, effective);
+    List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
+    return new PageImpl<>(content, effective, page.getTotalElements());
+  }
+
+  private Page<NoteShareToken> searchForOwner(
+      String owner,
+      String q,
+      String status,
+      Instant createdFrom,
+      Instant createdTo,
+      Pageable pageable) {
+    Specification<NoteShareToken> spec =
+        Specification.where(NoteShareTokenSpecifications.ownedBy(owner))
+            .and(NoteShareTokenSpecifications.search(q))
+            .and(NoteShareTokenSpecifications.status(status))
+            .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
+    return noteShareTokenRepository.findAll(spec, pageable);
+  }
+
+  private Page<NoteShareToken> searchAll(
+      String q, String status, Instant createdFrom, Instant createdTo, Pageable pageable) {
+    Specification<NoteShareToken> spec =
+        Specification.where(NoteShareTokenSpecifications.search(q))
+            .and(NoteShareTokenSpecifications.status(status))
+            .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
+    return noteShareTokenRepository.findAll(spec, pageable);
+  }
+
+  private Pageable resolvePageable(Pageable pageable) {
+    if (pageable.getSort().isUnsorted()) {
+      return PageRequest.of(
+          pageable.getPageNumber(),
+          pageable.getPageSize(),
+          Sort.by(Sort.Direction.DESC, "createdDate"));
     }
+    return pageable;
+  }
 }

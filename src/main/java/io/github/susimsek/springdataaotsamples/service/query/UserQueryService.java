@@ -13,16 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserQueryService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
-    public Page<UserSearchDTO> searchUsernames(String query, Pageable pageable) {
-        var spec = UserSpecifications.usernameContains(query);
-        return userRepository.findAll(spec, pageable)
-                .map(user -> new UserSearchDTO(
-                        user.getId(),
-                        user.getUsername(),
-                        user.isEnabled()
-                ));
-    }
+  @Transactional(readOnly = true)
+  public Page<UserSearchDTO> searchUsernames(String query, Pageable pageable) {
+    var spec = UserSpecifications.usernameContains(query);
+    return userRepository
+        .findAll(spec, pageable)
+        .map(user -> new UserSearchDTO(user.getId(), user.getUsername(), user.isEnabled()));
+  }
 }

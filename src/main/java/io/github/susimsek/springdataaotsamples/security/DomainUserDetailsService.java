@@ -12,14 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DomainUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userRepository.findOneWithAuthoritiesByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+  @Transactional(readOnly = true)
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    var user =
+        userRepository
+            .findOneWithAuthoritiesByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        return UserPrincipal.from(user);
-    }
+    return UserPrincipal.from(user);
+  }
 }

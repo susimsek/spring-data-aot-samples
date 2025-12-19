@@ -45,3 +45,12 @@
 
 ## ✅ Test/build
 - Quick check: `./mvnw test` or `./mvnw -DskipTests package`
+
+## 🧹 Code style (Checkstyle)
+- Run only Checkstyle: `./mvnw -DskipTests checkstyle:check`
+- Run as part of build: `./mvnw verify`
+- Config: `checkstyle.xml`
+
+## 🧽 Code format (Spotless)
+- Auto-format: `./mvnw -DskipTests spotless:apply`
+- Auto-format on build: `./mvnw process-sources` (and any later phase like `./mvnw test`, `./mvnw package`)

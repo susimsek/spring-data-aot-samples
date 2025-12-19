@@ -1,8 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.dto;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 public record NoteCriteria(
     @Nullable String query,
@@ -10,5 +9,4 @@ public record NoteCriteria(
     @Nullable Set<String> tags,
     @Nullable String color,
     @Nullable Boolean pinned,
-    @Nullable String owner) {
-}
+    @Nullable String owner) {}

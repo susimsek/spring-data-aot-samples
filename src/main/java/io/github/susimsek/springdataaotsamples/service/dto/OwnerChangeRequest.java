@@ -11,6 +11,4 @@ public record OwnerChangeRequest(
         @NotBlank
         @Username
         @Size(min = 3, max = 100)
-        String owner
-) {
-}
+        String owner) {}

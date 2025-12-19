@@ -17,21 +17,23 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TagQueryService {
 
-    private final TagRepository tagRepository;
-    private final TagMapper tagMapper;
+  private final TagRepository tagRepository;
+  private final TagMapper tagMapper;
 
-    @Transactional(readOnly = true)
-    public Page<TagDTO> suggestPrefixPage(String prefix, Pageable pageable) {
-        var spec = TagSpecifications.startsWith(prefix);
-        var pageableWithSort = ensureSorted(pageable);
-        return tagRepository.findAll(spec, pageableWithSort)
-                .map(tagMapper::toDto);
-    }
+  @Transactional(readOnly = true)
+  public Page<TagDTO> suggestPrefixPage(String prefix, Pageable pageable) {
+    var spec = TagSpecifications.startsWith(prefix);
+    var pageableWithSort = ensureSorted(pageable);
+    return tagRepository.findAll(spec, pageableWithSort).map(tagMapper::toDto);
+  }
 
-    private Pageable ensureSorted(Pageable pageable) {
-        if (pageable.getSort().isUnsorted()) {
-            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Tag_.name.getName()).ascending());
-        }
-        return pageable;
+  private Pageable ensureSorted(Pageable pageable) {
+    if (pageable.getSort().isUnsorted()) {
+      return PageRequest.of(
+          pageable.getPageNumber(),
+          pageable.getPageSize(),
+          Sort.by(Tag_.name.getName()).ascending());
     }
+    return pageable;
+  }
 }
