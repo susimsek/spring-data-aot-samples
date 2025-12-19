@@ -17,7 +17,9 @@ public interface ApplicationDefaults {
 
     interface Security {
         String contentSecurityPolicy =
-                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'";
+                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src"
+                        + " 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none';"
+                        + " frame-ancestors 'self'; base-uri 'self'";
 
         interface Jwt {
             Duration accessTokenTtl = Duration.ofMinutes(30);

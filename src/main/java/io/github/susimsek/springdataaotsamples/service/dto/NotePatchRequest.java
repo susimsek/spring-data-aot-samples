@@ -15,23 +15,16 @@ public record NotePatchRequest(
                         minLength = 3,
                         maxLength = 255,
                         example = "Updated note title")
-                @Nullable
-                @Size(min = 3, max = 255)
-                String title,
+                @Nullable @Size(min = 3, max = 255) String title,
         @Schema(
                         description = "Note content",
                         minLength = 10,
                         maxLength = 1024,
                         example = "Patched content")
-                @Nullable
-                @Size(min = 10, max = 1024)
-                String content,
+                @Nullable @Size(min = 10, max = 1024) String content,
         @Schema(description = "Pinned flag", example = "true") @Nullable Boolean pinned,
         @Schema(description = "Optional color hex (e.g. #2563eb)", example = "#2563eb")
-                @Nullable
-                @HexColor
+                @Nullable @HexColor
                 String color,
         @Schema(description = "Tags attached to the note", example = "[\"audit\",\"liquibase\"]")
-                @Nullable
-                @Size(max = 5)
-                Set<@NotBlank @Size(min = 1, max = 30) @TagValue String> tags) {}
+                @Nullable @Size(max = 5) Set<@NotBlank @Size(min = 1, max = 30) @TagValue String> tags) {}

@@ -56,7 +56,9 @@ public class SecurityConfig {
                                         .permissionsPolicyHeader(
                                                 permissions ->
                                                         permissions.policy(
-                                                                "camera=(), fullscreen=(self), geolocation=(), microphone=()"))
+                                                                "camera=(), fullscreen=(self),"
+                                                                        + " geolocation=(),"
+                                                                        + " microphone=()"))
                                         .httpStrictTransportSecurity(
                                                 hsts ->
                                                         hsts.includeSubDomains(true)

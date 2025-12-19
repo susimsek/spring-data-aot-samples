@@ -14,10 +14,7 @@ public record BulkActionRequest(
                         description = "Bulk action type",
                         example = "DELETE_SOFT",
                         implementation = BulkAction.class)
-                @NotNull
-                @EnumValue(enumClass = BulkAction.class)
+                @NotNull @EnumValue(enumClass = BulkAction.class)
                 String action,
         @Schema(description = "Note identifiers to apply the action to", example = "[1,2,3]")
-                @NotEmpty
-                @Size(max = 100)
-                Set<Long> ids) {}
+                @NotEmpty @Size(max = 100) Set<Long> ids) {}

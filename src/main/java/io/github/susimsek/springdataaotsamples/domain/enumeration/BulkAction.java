@@ -8,7 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
                 Bulk action:
                  * `DELETE_SOFT` - Soft delete (move to trash)
                  * `RESTORE` - Restore from trash
-                 * `DELETE_FOREVER` - Permanently delete""",
+                 * `DELETE_FOREVER` - Permanently delete\
+                """,
         enumAsRef = true)
 public enum BulkAction {
     DELETE_SOFT,

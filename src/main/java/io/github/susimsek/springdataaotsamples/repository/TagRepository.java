@@ -13,14 +13,14 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
 
     @Query(
             """
-        select t.id
-        from Tag t
-        where not exists (
-            select 1
-            from Note n
-            join n.tags tag
-            where tag = t
-        )
-        """)
+            select t.id
+            from Tag t
+            where not exists (
+                select 1
+                from Note n
+                join n.tags tag
+                where tag = t
+            )
+            """)
     List<Long> findOrphanIds();
 }

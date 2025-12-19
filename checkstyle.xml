@@ -1,63 +1,215 @@
 <?xml version="1.0"?>
-<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
-  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
-  <property name="charset" value="UTF-8"/>
-  <property name="severity" value="error"/>
 
-  <module name="SuppressWarningsFilter"/>
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java,properties,xml"/>
 
-  <module name="FileTabCharacter">
-    <property name="eachLine" value="true"/>
-  </module>
+    <!-- ========= FILE LEVEL ========= -->
 
-  <module name="TreeWalker">
-    <module name="OuterTypeFilename"/>
-    <module name="OneTopLevelClass"/>
-
-    <module name="PackageName"/>
-    <module name="TypeName"/>
-    <module name="ConstantName"/>
-    <module name="SuppressWarningsHolder"/>
-
-    <module name="AvoidStarImport"/>
-
-    <module name="IllegalTokenText">
-      <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL, TEXT_BLOCK_CONTENT"/>
-      <property name="format"
-          value="\\u00(09|0(a|A)|0(b|B)|(0|1)(c|C)|(0|1)(d|D)|1(d|D)|1(e|E)|1(f|F)|22|27|5(C|c))|\\u1680|\\u3000|\\u20(00|0(a|A)|28|29|(2|5)(f|F))|\\(0(10|11|12|14|15|40|42|47)|134)"/>
-      <property name="message"
-          value="Consider using special escape sequence instead of octal value or Unicode escaped value."/>
-    </module>
-    <module name="AvoidEscapedUnicodeCharacters">
-      <property name="allowEscapesForControlCharacters" value="true"/>
-      <property name="allowByTailComment" value="true"/>
-      <property name="allowNonPrintableEscapes" value="true"/>
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf"/>
     </module>
 
-    <module name="NeedBraces">
-      <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
     </module>
-    <module name="EmptyStatement"/>
-    <module name="OneStatementPerLine"/>
 
-    <module name="MissingSwitchDefault"/>
-    <module name="FallThrough"/>
-
-    <module name="UpperEll"/>
-    <module name="ModifierOrder"/>
-    <module name="RedundantModifier"/>
-
-    <module name="EqualsHashCode"/>
-    <module name="MissingOverride"/>
-    <module name="NoFinalizer"/>
-
-    <module name="TodoComment">
-      <property name="format" value="^[ \t]*(?!TODO:)(?i:TODO)\\b:?"/>
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Trailing whitespace"/>
+        <property name="severity" value="error"/>
     </module>
-    <module name="EmptyCatchBlock">
-      <property name="commentFormat" value="\\w+"/>
+    <module name="RegexpSingleline">
+        <property name="format" value="Throwables.propagate\("/>
+        <property name="message" value="Throwables.propagate is deprecated"/>
+        <property name="severity" value="error"/>
     </module>
-  </module>
+
+    <!-- No usernames in TODOs -->
+    <module name="RegexpSingleline">
+        <property name="format" value="((//.*)|(\*.*))TODO\("/>
+        <property name="message" value="TODO comments must not include usernames."/>
+        <property name="severity" value="error"/>
+    </module>
+
+    <module name="FileLength">
+        <property name="max" value="3000"/>
+    </module>
+
+    <module name="LineLength">
+        <property name="fileExtensions" value="java"/>
+        <property name="max" value="120"/>
+        <property name="ignorePattern"
+                  value="^package.*|^import.*|http://|https://|ftp://"/>
+    </module>
+
+    <!-- ========= JAVA AST ========= -->
+
+    <module name="TreeWalker">
+
+        <!-- ===== IMPORTS ===== -->
+
+        <module name="ImportOrder">
+            <property name="severity" value="error"/>
+            <property name="groups" value="*,javax,java"/>
+            <property name="separated" value="true"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+            <property name="option" value="bottom"/>
+            <property name="tokens" value="STATIC_IMPORT, IMPORT"/>
+        </module>
+
+        <module name="RedundantImport">
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="UnusedImports">
+            <property name="severity" value="error"/>
+            <property name="processJavadoc" value="true"/>
+            <message key="import.unused"
+                     value="Unused import: {0}."/>
+        </module>
+
+        <module name="AvoidStarImport">
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="^import com.google.common.base.Preconditions;$"/>
+            <property name="message" value="Static import functions from Guava Preconditions"/>
+        </module>
+
+        <!-- ===== BASIC CODE SAFETY ===== -->
+
+        <module name="NeedBraces">
+            <property name="severity" value="error"/>
+            <property name="tokens"
+                      value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR,
+                       LITERAL_WHILE, LITERAL_DO"/>
+        </module>
+
+        <module name="EmptyStatement"/>
+        <module name="SimplifyBooleanExpression"/>
+
+        <module name="FallThrough">
+            <property name="severity" value="error"/>
+            <property name="reliefPattern"
+                      value="fall through|Fall through|fallthru|Fallthru|
+                       falls through|Falls through|fallthrough|
+                       Fallthrough|No break|NO break|no break|continue on"/>
+        </module>
+
+        <!-- ===== WHITESPACE ===== -->
+
+        <module name="WhitespaceAfter">
+            <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
+        </module>
+
+        <module name="WhitespaceAround">
+            <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR,
+        BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN,
+        EQUAL, GE, GT, LAMBDA, LAND, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE,
+        LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN,
+        LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS,
+        MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION,
+        SL, SL_ASSIGN, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND"/>
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="NoWhitespaceAfter">
+            <property name="tokens"
+                      value="BNOT, DEC, DOT, INC, LNOT, UNARY_MINUS,
+                       UNARY_PLUS"/>
+            <property name="allowLineBreaks" value="true"/>
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
+            <property name="allowLineBreaks" value="true"/>
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="ParenPad">
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="OperatorWrap">
+            <property name="option" value="eol"/>
+            <property name="tokens" value="ASSIGN"/>
+        </module>
+
+        <module name="EmptyLineSeparator">
+            <property name="allowMultipleEmptyLines" value="false"/>
+            <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
+            <property name="tokens" value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF,
+        INTERFACE_DEF, ENUM_DEF, STATIC_INIT, INSTANCE_INIT, METHOD_DEF,
+        CTOR_DEF"/>
+        </module>
+
+        <!-- ===== NAMING ===== -->
+
+        <module name="PackageName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]+)*$"/>
+        </module>
+
+        <module name="TypeName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <module name="MethodName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <module name="MemberName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <module name="ParameterName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <module name="LocalFinalVariableName">
+            <property name="severity" value="error"/>
+        </module>
+
+        <module name="StaticVariableName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*_?$"/>
+        </module>
+
+        <module name="LocalVariableName">
+            <property name="severity" value="error"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <module name="ConstantName">
+            <property name="severity" value="error"/>
+            <property name="applyToPublic" value="true"/>
+            <property name="applyToProtected" value="true"/>
+            <property name="applyToPackage" value="true"/>
+            <property name="applyToPrivate" value="false"/>
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+
+        <!-- ===== MISC ===== -->
+
+        <module name="UpperEll"/>
+        <module name="ModifierOrder"/>
+        <module name="ArrayTypeStyle"/>
+
+        <module name="TodoComment">
+            <property name="format" value="^[ \t]*(?!TODO:)(?i:TODO)\b:?"/>
+            <message key="todo.match"
+                     value="''TODO:'' must be written in all caps and followed by a colon."/>
+        </module>
+    </module>
 </module>
