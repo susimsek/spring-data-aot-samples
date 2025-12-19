@@ -7,5 +7,4 @@ import lombok.NoArgsConstructor;
 public final class Constants {
 
   public static final String DEFAULT_AUDITOR = "system";
-  public static final String AUDITOR_HEADER = "X-User";
 }
