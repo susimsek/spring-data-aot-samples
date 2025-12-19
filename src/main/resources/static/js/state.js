@@ -54,7 +54,8 @@ const State = (() => {
         return state.currentUser?.username || '';
     }
 
-    function saveToken() {}
+    function saveToken() {
+    }
 
     function clearToken() {
         state.currentUser = null;
@@ -75,7 +76,17 @@ const State = (() => {
         persistUser(state.currentUser);
     }
 
-    return { state, currentAuditor, currentToken, saveToken, clearToken, currentUsername, setCurrentUser, isAdmin, currentUser };
+    return {
+        state,
+        currentAuditor,
+        currentToken,
+        saveToken,
+        clearToken,
+        currentUsername,
+        setCurrentUser,
+        isAdmin,
+        currentUser
+    };
 })();
 
 export default State;

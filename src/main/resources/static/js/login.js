@@ -4,8 +4,8 @@ import Helpers from '/js/helpers.js';
 import Validation from '/js/validation.js';
 import Theme from '/js/theme.js';
 
-const { clearToken, setCurrentUser } = State;
-const { showToast } = Helpers;
+const {clearToken, setCurrentUser} = State;
+const {showToast} = Helpers;
 const urlParams = new URLSearchParams(window.location.search);
 const rawRedirect = urlParams.get('redirect');
 const redirectTarget = rawRedirect && !rawRedirect.includes('/login') ? rawRedirect : '/';
@@ -17,7 +17,7 @@ const spinner = document.getElementById('loginSpinner');
 const usernameInput = document.getElementById('loginUsername');
 const passwordInput = document.getElementById('loginPassword');
 const rememberMeInput = document.getElementById('loginRememberMe');
-const { toggleInlineMessages } = Validation;
+const {toggleInlineMessages} = Validation;
 const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
 
 function disablePasswordSizeValidation() {
@@ -87,8 +87,8 @@ async function handleSubmit(event) {
     const rememberMe = !!rememberMeInput?.checked;
 
     setLoading(true);
-    const response = await Api.login({ username, password, rememberMe }).catch(err => {
-        return { error: err };
+    const response = await Api.login({username, password, rememberMe}).catch(err => {
+        return {error: err};
     });
     setLoading(false);
 
@@ -109,7 +109,7 @@ async function handleSubmit(event) {
         const me = await Api.currentUser();
         setCurrentUser(me);
     } catch (e) {
-        setCurrentUser({ username });
+        setCurrentUser({username});
     }
     form.reset();
     clearValidation();
@@ -126,7 +126,7 @@ function init() {
         usernameInput.focus();
     }
     disablePasswordSizeValidation();
-    Theme.init({ button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel' });
+    Theme.init({button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel'});
     bindLiveValidation();
 }
 

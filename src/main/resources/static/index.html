@@ -31,7 +31,8 @@
             <img src="/favicon.svg" alt="Notes logo" width="28" height="28">
             <span>Notes</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#notesNavbar" aria-controls="notesNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#notesNavbar"
+                aria-controls="notesNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <i class="fa-solid fa-bars"></i>
         </button>
         <div class="collapse navbar-collapse" id="notesNavbar">
@@ -43,26 +44,38 @@
                     </button>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-column flex-lg-row justify-content-center justify-content-lg-end order-2 order-lg-2 w-100">
-                    <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/index.html">
+                    <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
+                       href="/index.html">
                         <i class="fa-solid fa-house"></i><span>Home</span>
                     </a>
-                    <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" href="/shared-links.html" id="navbarSharedLinks">
+                    <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
+                       href="/shared-links.html" id="navbarSharedLinks">
                         <i class="fa-solid fa-link"></i><span>Shared links</span>
                     </a>
-                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" type="button" id="themeToggle">
+                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
+                            type="button" id="themeToggle">
                         <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
                         <span id="themeToggleLabel">Dark</span>
                     </button>
                     <div class="dropdown">
-                        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0 dropdown-toggle d-none" type="button" id="authBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0 dropdown-toggle d-none"
+                                type="button" id="authBtn" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-user"></i>
                             <span id="authBtnLabel"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authBtn" id="authMenu">
                             <li class="dropdown-header text-muted small d-none" id="authUserLabel"></li>
-                            <li><a class="dropdown-item d-flex align-items-center gap-2 d-none" href="/shared-links.html" id="adminSharedLinksItem"><i class="fa-solid fa-link"></i><span>Shared links</span></a></li>
-                            <li><hr class="dropdown-divider d-none" id="signOutDivider"></li>
-                            <li><button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button" id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></li>
+                            <li><a class="dropdown-item d-flex align-items-center gap-2 d-none"
+                                   href="/shared-links.html" id="adminSharedLinksItem"><i
+                                    class="fa-solid fa-link"></i><span>Shared links</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider d-none" id="signOutDivider">
+                            </li>
+                            <li>
+                                <button class="dropdown-item d-flex align-items-center gap-2 d-none" type="button"
+                                        id="signOutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span>
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -75,7 +88,8 @@
     <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between">
         <div>
             <h1 class="h4 mb-1 text-body">Notes</h1>
-            <p class="mb-0 text-muted">Create, edit, delete — audit-ready. Sign in to get a JWT; audit metadata uses your user.</p>
+            <p class="mb-0 text-muted">Create, edit, delete — audit-ready. Sign in to get a JWT; audit metadata uses
+                your user.</p>
         </div>
         <div class="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
             <span class="badge bg-primary-subtle text-primary">JPA Auditing</span>
@@ -86,144 +100,158 @@
 </header>
 
 <main class="bg-body-tertiary flex-grow-1">
-<div class="container pb-5">
-    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+    <div class="container pb-5">
+        <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
-    <div class="row g-4 align-items-start">
-        <div class="col-lg-3 order-1 order-lg-2 d-flex flex-column gap-2">
-            <button class="btn btn-primary shadow-sm px-3 py-2 w-100" type="button" id="addNoteBtn">
-                <i class="fa-solid fa-plus"></i> New Note
-            </button>
-        </div>
-
-        <div class="col-lg-9 order-2 order-lg-1">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h5 mb-0 d-flex align-items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-primary"></i>
-                    <span>All Notes</span>
-                </h2>
-                <span class="text-muted small" id="totalLabel">Total: 0</span>
-            </div>
-
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <ul class="nav nav-tabs nav-tabs-sm shadow-sm" id="viewTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active d-inline-flex align-items-center gap-2" id="activeViewTab" type="button" role="tab" aria-selected="true">
-                            <i class="fa-solid fa-layer-group"></i><span>Active</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link d-inline-flex align-items-center gap-2" id="trashViewTab" type="button" role="tab" aria-selected="false">
-                            <i class="fa-solid fa-trash-can"></i><span>Trash</span>
-                        </button>
-                    </li>
-                </ul>
-                <div class="text-muted small" id="pageInfo" hidden>Page 1 of 1</div>
-            </div>
-
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-body">
-                    <div class="d-flex flex-wrap align-items-start gap-3">
-                        <div class="flex-grow-1" style="min-width: 320px;">
-                            <label class="form-label small text-muted mb-1" for="filterTagsInput">Filter by tags</label>
-                            <div class="form-control p-2" id="filterTagsContainer">
-                                <div id="filterTagsList" class="d-flex flex-wrap gap-2 mb-2"></div>
-                                <input id="filterTagsInput" type="text" class="form-control form-control-sm border-0 shadow-none p-0" list="filterTagsSuggestions" placeholder="Type to search tags, press Enter or comma">
-                                <datalist id="filterTagsSuggestions"></datalist>
-                            </div>
-                            <div class="invalid-feedback d-none" id="filterTagsError"></div>
-                        </div>
-                        <div class="d-flex flex-column gap-2 flex-shrink-0" style="min-width: 180px;">
-                            <label class="form-label small text-muted mb-1" for="filterColor">Color</label>
-                            <div class="d-flex align-items-center gap-2">
-                                <input id="filterColor" type="color" class="form-control form-control-color" value="#2563eb" aria-label="Pick color filter" style="width: 48px; height: 38px;">
-                                <button class="btn btn-outline-secondary btn-sm flex-grow-1" type="button" id="clearColorFilter">
-                                    <i class="fa-solid fa-xmark"></i> Clear
-                                </button>
-                            </div>
-                        </div>
-                        <div class="d-flex flex-column gap-2 flex-shrink-0" style="min-width: 160px;">
-                            <label class="form-label small text-muted mb-1" for="filterPinned">Pinned</label>
-                            <select id="filterPinned" class="form-select form-select-sm">
-                                <option value="">All</option>
-                                <option value="true">Pinned</option>
-                                <option value="false">Unpinned</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 flex-wrap mt-3">
-                        <button class="btn btn-outline-secondary btn-sm" type="button" id="resetFilters">
-                            <i class="fa-solid fa-rotate-left"></i> Reset
-                        </button>
-                        <button class="btn btn-primary btn-sm" type="button" id="applyFilters">
-                            <i class="fa-solid fa-filter"></i> Apply
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2" id="controlsRow">
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <div class="d-flex align-items-center gap-2">
-                    <label class="text-muted small mb-0" for="pageSize">Page size</label>
-                    <select class="form-select form-select-sm w-auto" id="pageSize">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="25">25</option>
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <label class="text-muted small mb-0" for="sortSelect">Sort</label>
-                        <select class="form-select form-select-sm w-auto" id="sortSelect">
-                            <option value="createdDate,desc" selected>Created (newest)</option>
-                            <option value="createdDate,asc">Created (oldest)</option>
-                            <option value="lastModifiedDate,desc">Updated (newest)</option>
-                            <option value="lastModifiedDate,asc">Updated (oldest)</option>
-                            <option value="title,asc">Title A-Z</option>
-                            <option value="title,desc">Title Z-A</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2 d-none" type="button" id="emptyTrashBtn" hidden>
-                    <span class="spinner-border spinner-border-sm d-none" id="emptyTrashSpinner" role="status" aria-hidden="true"></span>
-                    <i class="fa-solid fa-trash"></i><span id="emptyTrashLabel">Empty Trash</span>
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-3 order-1 order-lg-2 d-flex flex-column gap-2">
+                <button class="btn btn-primary shadow-sm px-3 py-2 w-100" type="button" id="addNoteBtn">
+                    <i class="fa-solid fa-plus"></i> New Note
                 </button>
             </div>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2" id="bulkRow">
-                <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" value="" id="selectAllCheckbox">
-                    <label class="form-check-label text-muted small" for="selectAllCheckbox">
-                        Select all on page
-                    </label>
+            <div class="col-lg-9 order-2 order-lg-1">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-primary"></i>
+                        <span>All Notes</span>
+                    </h2>
+                    <span class="text-muted small" id="totalLabel">Total: 0</span>
                 </div>
-                <div class="d-flex flex-wrap gap-2 align-items-center" id="bulkActions">
-                    <span class="text-muted small d-none" id="selectedCount">Selected: 0</span>
-                    <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" type="button" id="bulkDeleteBtn" disabled>
-                        <i class="fa-solid fa-trash"></i> Delete
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <ul class="nav nav-tabs nav-tabs-sm shadow-sm" id="viewTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active d-inline-flex align-items-center gap-2" id="activeViewTab"
+                                    type="button" role="tab" aria-selected="true">
+                                <i class="fa-solid fa-layer-group"></i><span>Active</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link d-inline-flex align-items-center gap-2" id="trashViewTab"
+                                    type="button" role="tab" aria-selected="false">
+                                <i class="fa-solid fa-trash-can"></i><span>Trash</span>
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="text-muted small" id="pageInfo" hidden>Page 1 of 1</div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-start gap-3">
+                            <div class="flex-grow-1" style="min-width: 320px;">
+                                <label class="form-label small text-muted mb-1" for="filterTagsInput">Filter by
+                                    tags</label>
+                                <div class="form-control p-2" id="filterTagsContainer">
+                                    <div id="filterTagsList" class="d-flex flex-wrap gap-2 mb-2"></div>
+                                    <input id="filterTagsInput" type="text"
+                                           class="form-control form-control-sm border-0 shadow-none p-0"
+                                           list="filterTagsSuggestions"
+                                           placeholder="Type to search tags, press Enter or comma">
+                                    <datalist id="filterTagsSuggestions"></datalist>
+                                </div>
+                                <div class="invalid-feedback d-none" id="filterTagsError"></div>
+                            </div>
+                            <div class="d-flex flex-column gap-2 flex-shrink-0" style="min-width: 180px;">
+                                <label class="form-label small text-muted mb-1" for="filterColor">Color</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input id="filterColor" type="color" class="form-control form-control-color"
+                                           value="#2563eb" aria-label="Pick color filter"
+                                           style="width: 48px; height: 38px;">
+                                    <button class="btn btn-outline-secondary btn-sm flex-grow-1" type="button"
+                                            id="clearColorFilter">
+                                        <i class="fa-solid fa-xmark"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-2 flex-shrink-0" style="min-width: 160px;">
+                                <label class="form-label small text-muted mb-1" for="filterPinned">Pinned</label>
+                                <select id="filterPinned" class="form-select form-select-sm">
+                                    <option value="">All</option>
+                                    <option value="true">Pinned</option>
+                                    <option value="false">Unpinned</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap mt-3">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" id="resetFilters">
+                                <i class="fa-solid fa-rotate-left"></i> Reset
+                            </button>
+                            <button class="btn btn-primary btn-sm" type="button" id="applyFilters">
+                                <i class="fa-solid fa-filter"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2" id="controlsRow">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="text-muted small mb-0" for="pageSize">Page size</label>
+                            <select class="form-select form-select-sm w-auto" id="pageSize">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                            </select>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="text-muted small mb-0" for="sortSelect">Sort</label>
+                            <select class="form-select form-select-sm w-auto" id="sortSelect">
+                                <option value="createdDate,desc" selected>Created (newest)</option>
+                                <option value="createdDate,asc">Created (oldest)</option>
+                                <option value="lastModifiedDate,desc">Updated (newest)</option>
+                                <option value="lastModifiedDate,asc">Updated (oldest)</option>
+                                <option value="title,asc">Title A-Z</option>
+                                <option value="title,desc">Title Z-A</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2 d-none"
+                            type="button" id="emptyTrashBtn" hidden>
+                        <span class="spinner-border spinner-border-sm d-none" id="emptyTrashSpinner" role="status"
+                              aria-hidden="true"></span>
+                        <i class="fa-solid fa-trash"></i><span id="emptyTrashLabel">Empty Trash</span>
                     </button>
-                    <button class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1 d-none" type="button" id="bulkRestoreBtn" disabled>
-                        <i class="fa-solid fa-rotate-left"></i> Restore
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 d-none" type="button" id="bulkDeleteForeverBtn" disabled>
-                        <i class="fa-solid fa-trash"></i> Delete permanently
-                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2" id="bulkRow">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" value="" id="selectAllCheckbox">
+                        <label class="form-check-label text-muted small" for="selectAllCheckbox">
+                            Select all on page
+                        </label>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center" id="bulkActions">
+                        <span class="text-muted small d-none" id="selectedCount">Selected: 0</span>
+                        <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
+                                type="button" id="bulkDeleteBtn" disabled>
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                        <button class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1 d-none"
+                                type="button" id="bulkRestoreBtn" disabled>
+                            <i class="fa-solid fa-rotate-left"></i> Restore
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 d-none"
+                                type="button" id="bulkDeleteForeverBtn" disabled>
+                            <i class="fa-solid fa-trash"></i> Delete permanently
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-3" id="noteGrid">
+                    <div class="col-12 text-center text-muted py-3">Loading...</div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3" id="pager" hidden>
+                    <div class="d-flex align-items-center gap-3">
+                        <ul class="pagination mb-0" id="pagination"></ul>
+                    </div>
                 </div>
             </div>
 
-            <div class="row g-3" id="noteGrid">
-                <div class="col-12 text-center text-muted py-3">Loading...</div>
-            </div>
-
-            <div class="d-flex justify-content-center mt-3" id="pager" hidden>
-                <div class="d-flex align-items-center gap-3">
-                    <ul class="pagination mb-0" id="pagination"></ul>
-                </div>
-            </div>
         </div>
-
     </div>
-</div>
 </main>
 
 <!-- Note Modal -->
@@ -239,26 +267,34 @@
                 <form id="noteForm" novalidate>
                     <div class="mb-3">
                         <label class="form-label" for="title">Title</label>
-                        <input id="title" name="title" type="text" class="form-control" placeholder="Enter a concise title" required minlength="3" maxlength="255">
+                        <input id="title" name="title" type="text" class="form-control"
+                               placeholder="Enter a concise title" required minlength="3" maxlength="255">
                         <div class="invalid-feedback" data-error-type="title-required">This field is required.</div>
-                        <div class="invalid-feedback d-none" data-error-type="title-size">Size must be between 3 and 255 characters.</div>
+                        <div class="invalid-feedback d-none" data-error-type="title-size">Size must be between 3 and 255
+                            characters.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="content">Content</label>
-                        <textarea id="content" name="content" rows="4" class="form-control" placeholder="Describe your note" required minlength="10" maxlength="1024"></textarea>
+                        <textarea id="content" name="content" rows="4" class="form-control"
+                                  placeholder="Describe your note" required minlength="10" maxlength="1024"></textarea>
                         <div class="invalid-feedback" data-error-type="content-required">This field is required.</div>
-                        <div class="invalid-feedback d-none" data-error-type="content-size">Size must be between 10 and 1024 characters.</div>
+                        <div class="invalid-feedback d-none" data-error-type="content-size">Size must be between 10 and
+                            1024 characters.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="color">Color</label>
-                        <input id="color" name="color" type="color" class="form-control form-control-color" value="#2563eb" aria-label="Pick a color">
+                        <input id="color" name="color" type="color" class="form-control form-control-color"
+                               value="#2563eb" aria-label="Pick a color">
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="tagsInput">Tags</label>
                         <div class="form-control p-2" id="tagsContainer">
                             <div id="tagsList" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <div class="d-flex align-items-center mt-1">
-                                <input id="tagsInput" type="text" class="form-control border-0 shadow-none p-0 w-100" placeholder="Type and press Enter or comma" list="tagSuggestions">
+                                <input id="tagsInput" type="text" class="form-control border-0 shadow-none p-0 w-100"
+                                       placeholder="Type and press Enter or comma" list="tagSuggestions">
                             </div>
                             <datalist id="tagSuggestions"></datalist>
                         </div>
@@ -271,7 +307,8 @@
                     </div>
                     <div class="d-flex justify-content-end">
                         <button class="btn btn-primary d-inline-flex align-items-center gap-2" type="submit">
-                            <span class="spinner-border spinner-border-sm d-none" id="noteSubmitSpinner" role="status" aria-hidden="true"></span>
+                            <span class="spinner-border spinner-border-sm d-none" id="noteSubmitSpinner" role="status"
+                                  aria-hidden="true"></span>
                             <i class="fa-solid fa-save"></i><span id="noteSubmitLabel">Save</span>
                         </button>
                     </div>
@@ -317,8 +354,10 @@
                     </div>
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="shareSubmitBtn">
-                            <span class="spinner-border spinner-border-sm d-none" role="status" id="shareSubmitSpinner" aria-hidden="true"></span>
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2"
+                                id="shareSubmitBtn">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" id="shareSubmitSpinner"
+                                  aria-hidden="true"></span>
                             <span id="shareSubmitLabel">Create link</span>
                         </button>
                     </div>
@@ -328,22 +367,28 @@
                         <label class="form-label">Share link</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="shareLink" readonly>
-                            <button class="btn btn-outline-secondary" type="button" id="copyShareLink"><i class="fa-solid fa-copy"></i> Copy</button>
+                            <button class="btn btn-outline-secondary" type="button" id="copyShareLink"><i
+                                    class="fa-solid fa-copy"></i> Copy
+                            </button>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-success-subtle text-success" id="sharePermissionBadge"></span>
                         <span class="text-muted small" id="shareExpiryLabel"></span>
-                        <span class="badge bg-secondary-subtle text-secondary d-none" id="shareOneTimeBadge">One-time</span>
+                        <span class="badge bg-secondary-subtle text-secondary d-none"
+                              id="shareOneTimeBadge">One-time</span>
                     </div>
                 </div>
                 <div class="mt-4 d-none" id="shareLinksSection">
-                    <div class="spinner-border spinner-border-sm text-secondary d-none" id="shareLinksSpinner" role="status" aria-hidden="true"></div>
+                    <div class="spinner-border spinner-border-sm text-secondary d-none" id="shareLinksSpinner"
+                         role="status" aria-hidden="true"></div>
                     <div id="shareLinksEmpty" class="text-muted small">No share links yet.</div>
-                    <div class="list-group" id="shareLinksList" style="max-height: 36rem; min-height: 32rem; overflow-y: auto; overflow-x: hidden;"></div>
+                    <div class="list-group" id="shareLinksList"
+                         style="max-height: 36rem; min-height: 32rem; overflow-y: auto; overflow-x: hidden;"></div>
                     <div class="d-flex justify-content-center mt-2">
                         <button class="btn btn-outline-secondary btn-sm d-none" type="button" id="shareLinksLoadMore">
-                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="shareLinksLoadMoreSpinner"></span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"
+                                  id="shareLinksLoadMoreSpinner"></span>
                             <span id="shareLinksLoadMoreLabel">Load more</span>
                         </button>
                     </div>
@@ -364,11 +409,14 @@
             <div class="modal-body">
                 <p class="mb-3">Are you sure you want to delete this note?</p>
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2" id="confirmDeleteBtn">
-                        <span class="spinner-border spinner-border-sm d-none" id="deleteSpinner" role="status" aria-hidden="true"></span>
+                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2"
+                            id="confirmDeleteBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="deleteSpinner" role="status"
+                              aria-hidden="true"></span>
                         <i class="fa-solid fa-trash"></i><span id="deleteLabel">Delete</span>
                     </button>
                 </div>
@@ -388,11 +436,14 @@
             <div class="modal-body">
                 <p class="mb-3">This will permanently delete all items in Trash. Continue?</p>
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2" id="confirmEmptyTrashBtn">
-                        <span class="spinner-border spinner-border-sm d-none" id="emptyTrashConfirmSpinner" role="status" aria-hidden="true"></span>
+                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2"
+                            id="confirmEmptyTrashBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="emptyTrashConfirmSpinner"
+                              role="status" aria-hidden="true"></span>
                         <i class="fa-solid fa-trash"></i><span id="emptyTrashConfirmLabel">Empty Trash</span>
                     </button>
                 </div>
@@ -402,7 +453,8 @@
 </div>
 
 <!-- Permanent Delete Modal -->
-<div class="modal fade" id="deleteForeverModal" tabindex="-1" aria-labelledby="deleteForeverModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteForeverModal" tabindex="-1" aria-labelledby="deleteForeverModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -412,11 +464,14 @@
             <div class="modal-body">
                 <p class="mb-3">This action cannot be undone. Delete this note permanently?</p>
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2" id="confirmDeleteForeverBtn">
-                        <span class="spinner-border spinner-border-sm d-none" id="deleteForeverSpinner" role="status" aria-hidden="true"></span>
+                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2"
+                            id="confirmDeleteForeverBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="deleteForeverSpinner" role="status"
+                              aria-hidden="true"></span>
                         <i class="fa-solid fa-trash"></i><span id="deleteForeverLabel">Delete</span>
                     </button>
                 </div>
@@ -436,11 +491,14 @@
             <div class="modal-body">
                 <p class="mb-3" id="bulkModalMessage">Apply action to selected items?</p>
                 <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2" id="confirmBulkBtn">
-                        <span class="spinner-border spinner-border-sm d-none" id="bulkSpinner" role="status" aria-hidden="true"></span>
+                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2"
+                            id="confirmBulkBtn">
+                        <span class="spinner-border spinner-border-sm d-none" id="bulkSpinner" role="status"
+                              aria-hidden="true"></span>
                         <i class="fa-solid fa-check"></i><span id="bulkConfirmLabel">Confirm</span>
                     </button>
                 </div>
@@ -494,23 +552,31 @@
                     <div id="ownerCurrentLabel" class="text-muted small mb-2 d-none"></div>
                     <label class="form-label" for="ownerInput">New owner</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="ownerInput" name="owner" placeholder="Search username" autocomplete="off" required>
+                        <input type="text" class="form-control" id="ownerInput" name="owner"
+                               placeholder="Search username" autocomplete="off" required>
                     </div>
-                    <div class="list-group mt-2" id="ownerSuggestions" style="overflow-y: auto; overflow-x: hidden;"></div>
+                    <div class="list-group mt-2" id="ownerSuggestions"
+                         style="overflow-y: auto; overflow-x: hidden;"></div>
                     <div class="d-grid mt-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm d-none d-flex align-items-center justify-content-center gap-2" id="ownerLoadMore">
-                            <span class="spinner-border spinner-border-sm d-none" data-owner-load-more-spinner="true" role="status" aria-hidden="true"></span>
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm d-none d-flex align-items-center justify-content-center gap-2"
+                                id="ownerLoadMore">
+                            <span class="spinner-border spinner-border-sm d-none" data-owner-load-more-spinner="true"
+                                  role="status" aria-hidden="true"></span>
                             <span>Load more</span>
                         </button>
                     </div>
                     <div class="form-text text-muted">Type to search and pick a user to set as owner.</div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                            data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark"></i> Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2" id="ownerSubmit" disabled>
-                        <span class="spinner-border spinner-border-sm d-none" id="ownerSubmitSpinner" role="status" aria-hidden="true"></span>
+                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2"
+                            id="ownerSubmit" disabled>
+                        <span class="spinner-border spinner-border-sm d-none" id="ownerSubmitSpinner" role="status"
+                              aria-hidden="true"></span>
                         <i class="fa-solid fa-user-check"></i> <span>Change owner</span>
                     </button>
                 </div>

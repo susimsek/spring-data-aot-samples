@@ -1,6 +1,6 @@
 import Helpers from './helpers.js';
 
-const { escapeHtml, formatDate } = Helpers;
+const {escapeHtml, formatDate} = Helpers;
 
 function renderTags(note) {
     const tags = (note?.tags || [])

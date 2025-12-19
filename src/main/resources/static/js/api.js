@@ -98,7 +98,7 @@ const Api = (() => {
     };
 
     const currentUser = async () => {
-        return request('/api/auth/me', { headers: jsonHeaders() });
+        return request('/api/auth/me', {headers: jsonHeaders()});
     };
 
     const noteBase = (suffix = '') => {
@@ -115,7 +115,7 @@ const Api = (() => {
         return parseResponse(res);
     };
 
-    const fetchNotes = async ({ view, page, size, sort, query, tags, color, pinned }) => {
+    const fetchNotes = async ({view, page, size, sort, query, tags, color, pinned}) => {
         const base = view === 'trash'
             ? noteBase('/deleted')
             : noteBase();
@@ -129,7 +129,7 @@ const Api = (() => {
         if (tags && Array.isArray(tags)) {
             tags.forEach(tag => params.append('tags', tag));
         }
-        return request(`${base}?${params.toString()}`, { headers: jsonHeaders() });
+        return request(`${base}?${params.toString()}`, {headers: jsonHeaders()});
     };
 
     const createNote = async (payload) => {
@@ -219,7 +219,7 @@ const Api = (() => {
         if (query) {
             url.searchParams.set('q', query);
         }
-        const body = await request(url.toString(), { headers: jsonHeaders() });
+        const body = await request(url.toString(), {headers: jsonHeaders()});
         if (Array.isArray(body)) {
             return body;
         }

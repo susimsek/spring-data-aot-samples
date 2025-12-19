@@ -42,7 +42,7 @@ const Validation = (() => {
         }
     }
 
-    return { toggleSizeMessages, toggleInlineMessages };
+    return {toggleSizeMessages, toggleInlineMessages};
 })();
 
 export default Validation;

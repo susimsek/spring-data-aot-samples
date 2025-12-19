@@ -3,7 +3,7 @@ import Theme from '/js/theme.js';
 import State from '/js/state.js';
 import Helpers from '/js/helpers.js';
 
-const { escapeHtml, formatDate, showToast, debounce } = Helpers;
+const {escapeHtml, formatDate, showToast, debounce} = Helpers;
 
 const listEl = document.getElementById('sharedLinksList');
 const emptyEl = document.getElementById('sharedLinksEmpty');
@@ -58,6 +58,7 @@ let dateFilter = 'none';
 let createdFrom = '';
 let createdTo = '';
 let lastDateFilter = 'none';
+
 function getErrorMessage(error, fallback = 'Request failed') {
     if (error?.body?.detail) return error.body.detail;
     if (error?.body?.title) return error.body.title;
@@ -66,7 +67,7 @@ function getErrorMessage(error, fallback = 'Request failed') {
 }
 
 async function handleApi(promise, options = {}) {
-    const { fallback = 'Request failed', onError, onFinally, silent } = options;
+    const {fallback = 'Request failed', onError, onFinally, silent} = options;
     try {
         return await promise;
     } catch (e) {
@@ -83,7 +84,7 @@ async function handleApi(promise, options = {}) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    Theme.init({ button: themeToggle, icon: themeToggleIcon, label: themeToggleLabel });
+    Theme.init({button: themeToggle, icon: themeToggleIcon, label: themeToggleLabel});
     initAuth().then((admin) => {
         isAdmin = admin;
         scopeGroup?.classList.add('d-none');
@@ -91,23 +92,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sharedLinksSubtitle) sharedLinksSubtitle.textContent = admin
             ? 'See every link you’ve issued, check status, and revoke when needed.'
             : 'See every link you’ve issued, check status, and revoke when needed.';
-    if (pageSizeSelect) {
-        const val = parseInt(pageSizeSelect.value, 10);
-        pageSize = Number.isNaN(val) ? pageSize : val;
-    }
-    if (sortSelect) {
-        sort = sortSelect.value || sort;
-    }
-    if (statusSelect) {
-        status = statusSelect.value || status;
-    }
-    if (dateFilterSelect) {
-        dateFilter = dateFilterSelect.value || dateFilter;
-        lastDateFilter = dateFilter;
-    }
-    applyDatePreset(dateFilter);
-    loadLinks();
-});
+        if (pageSizeSelect) {
+            const val = parseInt(pageSizeSelect.value, 10);
+            pageSize = Number.isNaN(val) ? pageSize : val;
+        }
+        if (sortSelect) {
+            sort = sortSelect.value || sort;
+        }
+        if (statusSelect) {
+            status = statusSelect.value || status;
+        }
+        if (dateFilterSelect) {
+            dateFilter = dateFilterSelect.value || dateFilter;
+            lastDateFilter = dateFilter;
+        }
+        applyDatePreset(dateFilter);
+        loadLinks();
+    });
     bindEvents();
 });
 
@@ -166,7 +167,7 @@ function bindEvents() {
         loadLinks(0);
     });
     customDateSave?.addEventListener('click', () => {
-        const { valid, fromVal, toVal } = validateCustomInputs(true);
+        const {valid, fromVal, toVal} = validateCustomInputs(true);
         if (!valid) return;
         createdFrom = fromVal || '';
         createdTo = toVal || '';
@@ -268,21 +269,21 @@ function validateCustomInputs(requireAny) {
     if (mustRequire) {
         if (!fromVal || !toVal) {
             showCustomDateError('Start and end dates are both required.');
-            return { valid: false, fromVal, toVal };
+            return {valid: false, fromVal, toVal};
         }
         if (new Date(fromVal) > new Date(toVal)) {
             showCustomDateError('Start date cannot be after end date.');
-            return { valid: false, fromVal, toVal };
+            return {valid: false, fromVal, toVal};
         }
     } else if (!fromVal && !toVal) {
         hideCustomDateError();
-        return { valid: true, fromVal, toVal };
+        return {valid: true, fromVal, toVal};
     } else if (fromVal && toVal && new Date(fromVal) > new Date(toVal)) {
         showCustomDateError('Start date cannot be after end date.');
-        return { valid: false, fromVal, toVal };
+        return {valid: false, fromVal, toVal};
     }
     hideCustomDateError();
-    return { valid: true, fromVal, toVal };
+    return {valid: true, fromVal, toVal};
 }
 
 function applyDatePreset(val) {
@@ -520,7 +521,9 @@ async function handleListClick(event) {
         btn.disabled = true;
         const res = await handleApi(Api.revokeShareLink(id), {
             fallback: 'Could not revoke link.',
-            onFinally: () => { btn.disabled = false; },
+            onFinally: () => {
+                btn.disabled = false;
+            },
             silent: false
         });
         if (res !== null) {

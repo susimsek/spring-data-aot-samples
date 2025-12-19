@@ -69,7 +69,7 @@ const Theme = (() => {
         }
     }
 
-    return { init, toggleTheme, applyTheme };
+    return {init, toggleTheme, applyTheme};
 })();
 
 export default Theme;

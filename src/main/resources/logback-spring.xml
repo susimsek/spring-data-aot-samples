@@ -4,19 +4,19 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <!-- Noisy frameworks trimmed down to WARN to keep dev console readable -->
-   <logger name="com.zaxxer" level="WARN"/>
-   <logger name="org.apache" level="WARN"/>
+    <logger name="com.zaxxer" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
-   <logger name="org.springframework" level="WARN"/>
-   <logger name="org.springframework.web" level="WARN"/>
-   <logger name="org.springframework.security" level="WARN"/>
-   <logger name="org.springframework.security.oauth2" level="WARN"/>
-   <logger name="liquibase" level="WARN"/>
-   <logger name="LiquibaseSchemaResolver" level="INFO"/>
-   <logger name="io.swagger.v3" level="INFO"/>
-  <logger name="_org.springframework.web.servlet.HandlerMapping.Mappings" level="INFO"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.web" level="WARN"/>
+    <logger name="org.springframework.security" level="WARN"/>
+    <logger name="org.springframework.security.oauth2" level="WARN"/>
+    <logger name="liquibase" level="WARN"/>
+    <logger name="LiquibaseSchemaResolver" level="INFO"/>
+    <logger name="io.swagger.v3" level="INFO"/>
+    <logger name="_org.springframework.web.servlet.HandlerMapping.Mappings" level="INFO"/>
 
-    <springProperty name="log.level" source="logging.level.root" defaultValue="INFO" />
+    <springProperty name="log.level" source="logging.level.root" defaultValue="INFO"/>
     <root level="${log.level}">
         <appender-ref ref="CONSOLE"/>
     </root>

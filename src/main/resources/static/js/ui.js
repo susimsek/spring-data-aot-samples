@@ -27,7 +27,7 @@ const Ui = (() => {
         });
     }
 
-    return { bindNoteGridActions, bindRevisionActions };
+    return {bindNoteGridActions, bindRevisionActions};
 })();
 
 export default Ui;

@@ -9,7 +9,7 @@ const Diff = (() => {
         const b = (newText || '').split(/\r?\n/);
         const m = a.length;
         const n = b.length;
-        const lcs = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+        const lcs = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
         for (let i = m - 1; i >= 0; i--) {
             for (let j = n - 1; j >= 0; j--) {
                 if (a[i] === b[j]) {
@@ -23,18 +23,19 @@ const Diff = (() => {
         let i = 0, j = 0;
         while (i < m && j < n) {
             if (a[i] === b[j]) {
-                ops.push({ type: DIFF_EQ, oldValue: a[i], newValue: b[j] });
-                i++; j++;
+                ops.push({type: DIFF_EQ, oldValue: a[i], newValue: b[j]});
+                i++;
+                j++;
             } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
-                ops.push({ type: DIFF_DEL, oldValue: a[i], newValue: '' });
+                ops.push({type: DIFF_DEL, oldValue: a[i], newValue: ''});
                 i++;
             } else {
-                ops.push({ type: DIFF_ADD, oldValue: '', newValue: b[j] });
+                ops.push({type: DIFF_ADD, oldValue: '', newValue: b[j]});
                 j++;
             }
         }
-        while (i < m) ops.push({ type: DIFF_DEL, oldValue: a[i++], newValue: '' });
-        while (j < n) ops.push({ type: DIFF_ADD, oldValue: '', newValue: b[j++] });
+        while (i < m) ops.push({type: DIFF_DEL, oldValue: a[i++], newValue: ''});
+        while (j < n) ops.push({type: DIFF_ADD, oldValue: '', newValue: b[j++]});
         return ops;
     }
 
@@ -63,7 +64,7 @@ const Diff = (() => {
             .replace(/'/g, '&#39;');
     }
 
-    return { diffLines, diffLinesDetailed };
+    return {diffLines, diffLinesDetailed};
 })();
 
 export default Diff;

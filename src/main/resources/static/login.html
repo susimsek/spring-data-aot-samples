@@ -30,7 +30,8 @@
             </a>
         </div>
         <div class="d-flex align-items-center gap-2 ms-auto flex-nowrap">
-            <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0" type="button" id="themeToggle">
+            <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
+                    type="button" id="themeToggle">
                 <i class="fa-solid fa-moon" id="themeToggleIcon"></i>
                 <span id="themeToggleLabel">Dark</span>
             </button>
@@ -49,21 +50,27 @@
             <form id="loginForm" novalidate>
                 <div class="mb-3">
                     <label class="form-label" for="loginUsername">Username</label>
-                    <input id="loginUsername" name="username" class="form-control" autocomplete="username" required placeholder="admin">
+                    <input id="loginUsername" name="username" class="form-control" autocomplete="username" required
+                           placeholder="admin">
                     <div class="invalid-feedback" data-error-type="loginUsername-required">Username is required.</div>
-                    <div class="invalid-feedback d-none" data-error-type="loginUsername-pattern">Username may include letters, digits, dot, underscore, or hyphen.</div>
+                    <div class="invalid-feedback d-none" data-error-type="loginUsername-pattern">Username may include
+                        letters, digits, dot, underscore, or hyphen.
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="loginPassword">Password</label>
-                    <input id="loginPassword" name="password" type="password" class="form-control" autocomplete="current-password" required placeholder="••••••">
+                    <input id="loginPassword" name="password" type="password" class="form-control"
+                           autocomplete="current-password" required placeholder="••••••">
                     <div class="invalid-feedback" data-error-type="loginPassword-required">Password is required.</div>
                 </div>
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" value="true" id="loginRememberMe" name="rememberMe">
                     <label class="form-check-label" for="loginRememberMe">Remember me</label>
                 </div>
-                <button class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2" type="submit" id="loginSubmit">
-                    <span class="spinner-border spinner-border-sm d-none" id="loginSpinner" role="status" aria-hidden="true"></span>
+                <button class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                        type="submit" id="loginSubmit">
+                    <span class="spinner-border spinner-border-sm d-none" id="loginSpinner" role="status"
+                          aria-hidden="true"></span>
                     <i class="fa-solid fa-right-to-bracket"></i>
                     <span>Sign in</span>
                 </button>

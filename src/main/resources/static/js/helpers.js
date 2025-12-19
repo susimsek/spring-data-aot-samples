@@ -99,7 +99,7 @@ const Helpers = (() => {
         };
     }
 
-    return { escapeHtml, formatDate, showToast, toggleSpinner, debounce };
+    return {escapeHtml, formatDate, showToast, toggleSpinner, debounce};
 })();
 
 export default Helpers;

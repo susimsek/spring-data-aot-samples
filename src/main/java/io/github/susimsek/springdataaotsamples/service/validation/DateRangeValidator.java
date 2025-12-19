@@ -31,9 +31,6 @@ public class DateRangeValidator implements ConstraintValidator<DateRange, Instan
         if (value.isBefore(minInstant)) {
             return false;
         }
-        if (maxInstant != null && value.isAfter(maxInstant)) {
-            return false;
-        }
-        return true;
+        return maxInstant == null || !value.isAfter(maxInstant);
     }
 }

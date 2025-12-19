@@ -160,9 +160,9 @@ function updateAuthUi(username, signedIn) {
 }
 
 function splitDateTime(value) {
-    if (!value) return { date: '—', time: '—' };
+    if (!value) return {date: '—', time: '—'};
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return { date: value, time: '' };
+    if (Number.isNaN(date.getTime())) return {date: value, time: ''};
     return {
         date: date.toLocaleDateString(),
         time: date.toLocaleTimeString()
