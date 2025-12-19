@@ -8,13 +8,13 @@ import org.springframework.util.StringUtils;
 
 public class UsernameValidator implements ConstraintValidator<Username, String> {
 
-  private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._-]+$");
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z0-9._-]+$");
 
-  @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
-    if (!StringUtils.hasText(value)) {
-      return true; // optional field
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (!StringUtils.hasText(value)) {
+            return true; // optional field
+        }
+        return USERNAME_PATTERN.matcher(value).matches();
     }
-    return USERNAME_PATTERN.matcher(value).matches();
-  }
 }

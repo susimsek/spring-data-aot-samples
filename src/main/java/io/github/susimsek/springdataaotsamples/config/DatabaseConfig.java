@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration(proxyBeanMethods = false)
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableJpaRepositories(
-    basePackages = "io.github.susimsek.springdataaotsamples.repository",
-    repositoryFactoryBeanClass = EnversRevisionRepositoryFactoryBean.class)
+        basePackages = "io.github.susimsek.springdataaotsamples.repository",
+        repositoryFactoryBeanClass = EnversRevisionRepositoryFactoryBean.class)
 @EnableTransactionManagement
 public class DatabaseConfig {
 
-  @Bean
-  public AuditorAware<String> auditorAware() {
-    return new SecurityAuditorAware();
-  }
+    @Bean
+    public AuditorAware<String> auditorAware() {
+        return new SecurityAuditorAware();
+    }
 }

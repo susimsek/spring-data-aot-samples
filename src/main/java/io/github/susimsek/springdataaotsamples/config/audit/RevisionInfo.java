@@ -21,17 +21,17 @@ import org.hibernate.envers.RevisionTimestamp;
 @RevisionEntity(RevisionInfoListener.class)
 public class RevisionInfo {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rev_seq")
-  @SequenceGenerator(name = "rev_seq", sequenceName = "rev_seq", allocationSize = 1)
-  @RevisionNumber
-  @Column(name = "rev", nullable = false, updatable = false)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rev_seq")
+    @SequenceGenerator(name = "rev_seq", sequenceName = "rev_seq", allocationSize = 1)
+    @RevisionNumber
+    @Column(name = "rev", nullable = false, updatable = false)
+    private Long id;
 
-  @RevisionTimestamp
-  @Column(name = "revtstmp", nullable = false)
-  private Instant timestamp;
+    @RevisionTimestamp
+    @Column(name = "revtstmp", nullable = false)
+    private Instant timestamp;
 
-  @Column(name = "username", length = 100)
-  private String username;
+    @Column(name = "username", length = 100)
+    private String username;
 }

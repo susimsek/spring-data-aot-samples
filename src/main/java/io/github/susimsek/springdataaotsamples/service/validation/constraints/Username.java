@@ -20,9 +20,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Username {
 
-  String message() default "{app.validation.username.message}";
+    String message() default "{app.validation.username.message}";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 }

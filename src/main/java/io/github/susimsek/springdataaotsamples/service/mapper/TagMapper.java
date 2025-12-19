@@ -14,22 +14,22 @@ import org.springframework.util.StringUtils;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TagMapper extends EntityMapper<TagDTO, Tag> {
 
-  default Set<Tag> toTags(Set<String> names) {
-    if (CollectionUtils.isEmpty(names)) {
-      return Set.of();
+    default Set<Tag> toTags(Set<String> names) {
+        if (CollectionUtils.isEmpty(names)) {
+            return Set.of();
+        }
+        return names.stream()
+                .filter(StringUtils::hasText)
+                .map(name -> name.trim().toLowerCase(Locale.ROOT))
+                .distinct()
+                .map(normalized -> new Tag(null, normalized))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
-    return names.stream()
-        .filter(StringUtils::hasText)
-        .map(name -> name.trim().toLowerCase(Locale.ROOT))
-        .distinct()
-        .map(normalized -> new Tag(null, normalized))
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
 
-  default Set<String> toNames(Set<Tag> tags) {
-    if (CollectionUtils.isEmpty(tags)) {
-      return Set.of();
+    default Set<String> toNames(Set<Tag> tags) {
+        if (CollectionUtils.isEmpty(tags)) {
+            return Set.of();
+        }
+        return tags.stream().map(Tag::getName).collect(Collectors.toCollection(LinkedHashSet::new));
     }
-    return tags.stream().map(Tag::getName).collect(Collectors.toCollection(LinkedHashSet::new));
-  }
 }

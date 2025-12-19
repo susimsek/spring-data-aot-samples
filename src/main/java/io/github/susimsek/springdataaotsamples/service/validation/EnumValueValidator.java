@@ -10,38 +10,37 @@ import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator
 
 public class EnumValueValidator implements ConstraintValidator<EnumValue, String> {
 
-  private Set<String> acceptedValues;
-  private String allowedDisplay;
+    private Set<String> acceptedValues;
+    private String allowedDisplay;
 
-  @Override
-  public void initialize(EnumValue constraintAnnotation) {
-    acceptedValues =
-        Arrays.stream(constraintAnnotation.enumClass().getEnumConstants())
-            .map(Enum::name)
-            .collect(Collectors.toSet());
-    allowedDisplay = String.join(", ", acceptedValues);
-  }
-
-  @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
-    if (value == null) {
-      return true;
+    @Override
+    public void initialize(EnumValue constraintAnnotation) {
+        acceptedValues =
+                Arrays.stream(constraintAnnotation.enumClass().getEnumConstants())
+                        .map(Enum::name)
+                        .collect(Collectors.toSet());
+        allowedDisplay = String.join(", ", acceptedValues);
     }
 
-    boolean valid = acceptedValues.contains(value);
-    if (!valid) {
-      context.disableDefaultConstraintViolation();
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true;
+        }
 
-      HibernateConstraintValidatorContext hContext =
-          context
-              .unwrap(HibernateConstraintValidatorContext.class)
-              .addMessageParameter("allowedValues", allowedDisplay);
+        boolean valid = acceptedValues.contains(value);
+        if (!valid) {
+            context.disableDefaultConstraintViolation();
 
-      hContext
-          .buildConstraintViolationWithTemplate(hContext.getDefaultConstraintMessageTemplate())
-          .addConstraintViolation();
+            HibernateConstraintValidatorContext hContext =
+                    context.unwrap(HibernateConstraintValidatorContext.class)
+                            .addMessageParameter("allowedValues", allowedDisplay);
+
+            hContext.buildConstraintViolationWithTemplate(
+                            hContext.getDefaultConstraintMessageTemplate())
+                    .addConstraintViolation();
+        }
+
+        return valid;
     }
-
-    return valid;
-  }
 }

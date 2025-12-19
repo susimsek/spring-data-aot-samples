@@ -14,8 +14,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class AsyncConfig implements AsyncConfigurer {
 
-  @Override
-  public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-    return new SimpleAsyncUncaughtExceptionHandler();
-  }
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        return new SimpleAsyncUncaughtExceptionHandler();
+    }
 }

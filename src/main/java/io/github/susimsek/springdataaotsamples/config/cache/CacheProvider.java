@@ -10,14 +10,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CacheProvider {
 
-  private final CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
-  public void clearCaches(String... cacheNames) {
-    Arrays.stream(cacheNames).forEach(this::clearCache);
-  }
+    public void clearCaches(String... cacheNames) {
+        Arrays.stream(cacheNames).forEach(this::clearCache);
+    }
 
-  public void clearCache(String cacheName) {
-    Objects.requireNonNull(cacheManager.getCache(cacheName), cacheName + " cache not configured")
-        .clear();
-  }
+    public void clearCache(String cacheName) {
+        Objects.requireNonNull(
+                        cacheManager.getCache(cacheName), cacheName + " cache not configured")
+                .clear();
+    }
 }

@@ -20,9 +20,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface HexColor {
 
-  String message() default "{app.validation.hexColor.message}";
+    String message() default "{app.validation.hexColor.message}";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 }

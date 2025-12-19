@@ -12,18 +12,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class RevisionInfoListener implements RevisionListener {
 
-  @Setter(onMethod_ = @Autowired)
-  private @Nullable AuditorAware<String> auditorAware;
+    @Setter(onMethod_ = @Autowired)
+    private @Nullable AuditorAware<String> auditorAware;
 
-  @Override
-  public void newRevision(Object revisionEntity) {
-    if (!(revisionEntity instanceof RevisionInfo revisionInfo)) {
-      return;
-    }
+    @Override
+    public void newRevision(Object revisionEntity) {
+        if (!(revisionEntity instanceof RevisionInfo revisionInfo)) {
+            return;
+        }
 
-    if (auditorAware != null) {
-      var auditor = auditorAware.getCurrentAuditor().orElse(DEFAULT_AUDITOR);
-      revisionInfo.setUsername(auditor);
+        if (auditorAware != null) {
+            var auditor = auditorAware.getCurrentAuditor().orElse(DEFAULT_AUDITOR);
+            revisionInfo.setUsername(auditor);
+        }
     }
-  }
 }

@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
-  Optional<RefreshToken> findByTokenAndRevokedFalse(String token);
+    Optional<RefreshToken> findByTokenAndRevokedFalse(String token);
 
-  long deleteByExpiresAtBefore(Instant cutoff);
+    long deleteByExpiresAtBefore(Instant cutoff);
 
-  long deleteByRevokedTrue();
+    long deleteByRevokedTrue();
 }

@@ -23,96 +23,96 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NoteTrashService {
 
-  private final NoteRepository noteRepository;
-  private final TagCommandService tagCommandService;
-  private final NoteAuthorizationService noteAuthorizationService;
-  private final NoteQueryService noteQueryService;
-  private final CacheProvider cacheProvider;
+    private final NoteRepository noteRepository;
+    private final TagCommandService tagCommandService;
+    private final NoteAuthorizationService noteAuthorizationService;
+    private final NoteQueryService noteQueryService;
+    private final CacheProvider cacheProvider;
 
-  @Transactional(readOnly = true)
-  public Page<NoteDTO> findDeleted(
-      Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-    return noteQueryService.findByCriteria(
-        new NoteCriteria(query, true, tags, color, pinned, null), pageable);
-  }
-
-  @Transactional(readOnly = true)
-  public Page<NoteDTO> findDeletedForCurrentUser(
-      Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-    return noteQueryService.findByCriteria(
-        new NoteCriteria(query, true, tags, color, pinned, getCurrentUsername()), pageable);
-  }
-
-  @Transactional
-  public void restore(Long id) {
-    int updated = noteRepository.restoreById(id);
-    if (updated == 0) {
-      throw new NoteNotFoundException(id);
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findDeleted(
+            Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return noteQueryService.findByCriteria(
+                new NoteCriteria(query, true, tags, color, pinned, null), pageable);
     }
-    evictNoteCaches();
-  }
 
-  @Transactional
-  public void restoreForCurrentUser(Long id) {
-    var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
-    noteAuthorizationService.ensureEditAccess(note);
-    if (!note.isDeleted()) {
-      throw new NoteNotFoundException(id);
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findDeletedForCurrentUser(
+            Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return noteQueryService.findByCriteria(
+                new NoteCriteria(query, true, tags, color, pinned, getCurrentUsername()), pageable);
     }
-    int updated = noteRepository.restoreById(id);
-    if (updated == 0) {
-      throw new NoteNotFoundException(id);
+
+    @Transactional
+    public void restore(Long id) {
+        int updated = noteRepository.restoreById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+        evictNoteCaches();
     }
-    evictNoteCaches();
-  }
 
-  @Transactional
-  public void emptyTrash() {
-    noteRepository.purgeDeleted();
-    tagCommandService.cleanupOrphanTagsAsync();
-    evictNoteCaches();
-  }
-
-  @Transactional
-  public void emptyTrashForCurrentUser() {
-    var username =
-        SecurityUtils.getCurrentUserLogin()
-            .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-    noteRepository.purgeDeletedByOwner(username);
-    tagCommandService.cleanupOrphanTagsAsync();
-    evictNoteCaches();
-  }
-
-  @Transactional
-  public void deletePermanently(Long id) {
-    var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
-    if (!note.isDeleted()) {
-      throw new InvalidPermanentDeleteException(id);
+    @Transactional
+    public void restoreForCurrentUser(Long id) {
+        var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+        noteAuthorizationService.ensureEditAccess(note);
+        if (!note.isDeleted()) {
+            throw new NoteNotFoundException(id);
+        }
+        int updated = noteRepository.restoreById(id);
+        if (updated == 0) {
+            throw new NoteNotFoundException(id);
+        }
+        evictNoteCaches();
     }
-    noteRepository.deleteById(id);
-    tagCommandService.cleanupOrphanTagsAsync();
-    evictNoteCaches();
-  }
 
-  @Transactional
-  public void deletePermanentlyForCurrentUser(Long id) {
-    var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
-    noteAuthorizationService.ensureEditAccess(note);
-    if (!note.isDeleted()) {
-      throw new InvalidPermanentDeleteException(id);
+    @Transactional
+    public void emptyTrash() {
+        noteRepository.purgeDeleted();
+        tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
     }
-    noteRepository.deleteById(id);
-    tagCommandService.cleanupOrphanTagsAsync();
-    evictNoteCaches();
-  }
 
-  private String getCurrentUsername() {
-    return SecurityUtils.getCurrentUserLogin()
-        .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-  }
+    @Transactional
+    public void emptyTrashForCurrentUser() {
+        var username =
+                SecurityUtils.getCurrentUserLogin()
+                        .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+        noteRepository.purgeDeletedByOwner(username);
+        tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
+    }
 
-  private void evictNoteCaches() {
-    cacheProvider.clearCaches(
-        Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
-  }
+    @Transactional
+    public void deletePermanently(Long id) {
+        var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+        if (!note.isDeleted()) {
+            throw new InvalidPermanentDeleteException(id);
+        }
+        noteRepository.deleteById(id);
+        tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
+    }
+
+    @Transactional
+    public void deletePermanentlyForCurrentUser(Long id) {
+        var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
+        noteAuthorizationService.ensureEditAccess(note);
+        if (!note.isDeleted()) {
+            throw new InvalidPermanentDeleteException(id);
+        }
+        noteRepository.deleteById(id);
+        tagCommandService.cleanupOrphanTagsAsync();
+        evictNoteCaches();
+    }
+
+    private String getCurrentUsername() {
+        return SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+    }
+
+    private void evictNoteCaches() {
+        cacheProvider.clearCaches(
+                Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+    }
 }

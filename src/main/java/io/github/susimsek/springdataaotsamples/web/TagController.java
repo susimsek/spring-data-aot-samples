@@ -25,28 +25,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "tags", description = "Tag lookup APIs")
 public class TagController {
 
-  private final TagQueryService tagQueryService;
+    private final TagQueryService tagQueryService;
 
-  @Operation(
-      summary = "Suggest tags",
-      description = "Returns paged tag names that start with the provided prefix.")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Suggested tag names",
-      content =
-          @Content(
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              schema = @Schema(implementation = TagDTO.class)))
-  @GetMapping("/suggest")
-  public Page<TagDTO> suggest(
-      @ParameterObject Pageable pageable,
-      @RequestParam(value = "q", required = false)
-          @Parameter(description = "Prefix to search tag names")
-          String query) {
-    if (!StringUtils.hasText(query) || query.trim().length() < 2) {
-      return Page.empty(pageable);
+    @Operation(
+            summary = "Suggest tags",
+            description = "Returns paged tag names that start with the provided prefix.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Suggested tag names",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = TagDTO.class)))
+    @GetMapping("/suggest")
+    public Page<TagDTO> suggest(
+            @ParameterObject Pageable pageable,
+            @RequestParam(value = "q", required = false)
+                    @Parameter(description = "Prefix to search tag names")
+                    String query) {
+        if (!StringUtils.hasText(query) || query.trim().length() < 2) {
+            return Page.empty(pageable);
+        }
+        var trimmed = query.trim();
+        return tagQueryService.suggestPrefixPage(trimmed, pageable);
     }
-    var trimmed = query.trim();
-    return tagQueryService.suggestPrefixPage(trimmed, pageable);
-  }
 }

@@ -18,45 +18,46 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-  private final AuthenticationManager authenticationManager;
-  private final TokenService tokenService;
-  private final UserRepository userRepository;
-  private final RefreshTokenRepository refreshTokenRepository;
-  private final UserMapper userMapper;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserMapper userMapper;
 
-  public TokenDTO login(LoginRequest request) {
-    Authentication authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+    public TokenDTO login(LoginRequest request) {
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.username(), request.password()));
 
-    return tokenService.generateToken(authentication, request.rememberMe());
-  }
-
-  public TokenDTO refresh(String refreshToken) {
-    return tokenService.refresh(refreshToken);
-  }
-
-  public UserDTO getCurrentUser() {
-    var login =
-        SecurityUtils.getCurrentUserLogin()
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    var user =
-        userRepository
-            .findOneWithAuthoritiesByUsername(login)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    return userMapper.toDto(user);
-  }
-
-  public void logout(String refreshToken) {
-    if (!StringUtils.hasText(refreshToken)) {
-      return;
+        return tokenService.generateToken(authentication, request.rememberMe());
     }
-    String tokenHash = HashingUtils.sha256Hex(refreshToken);
-    var tokenOpt = refreshTokenRepository.findByTokenAndRevokedFalse(tokenHash);
-    tokenOpt.ifPresent(
-        token -> {
-          token.setRevoked(true);
-          refreshTokenRepository.save(token);
-        });
-  }
+
+    public TokenDTO refresh(String refreshToken) {
+        return tokenService.refresh(refreshToken);
+    }
+
+    public UserDTO getCurrentUser() {
+        var login =
+                SecurityUtils.getCurrentUserLogin()
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        var user =
+                userRepository
+                        .findOneWithAuthoritiesByUsername(login)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return userMapper.toDto(user);
+    }
+
+    public void logout(String refreshToken) {
+        if (!StringUtils.hasText(refreshToken)) {
+            return;
+        }
+        String tokenHash = HashingUtils.sha256Hex(refreshToken);
+        var tokenOpt = refreshTokenRepository.findByTokenAndRevokedFalse(tokenHash);
+        tokenOpt.ifPresent(
+                token -> {
+                    token.setRevoked(true);
+                    refreshTokenRepository.save(token);
+                });
+    }
 }

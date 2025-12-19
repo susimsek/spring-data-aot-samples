@@ -11,12 +11,12 @@ import lombok.Setter;
 @MappedSuperclass
 public abstract class SoftDeletableEntity extends AuditableEntity {
 
-  @Column(name = "deleted", nullable = false)
-  private boolean deleted = false;
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
-  @Column(name = "deleted_by", length = 100)
-  private String deletedBy;
+    @Column(name = "deleted_by", length = 100)
+    private String deletedBy;
 
-  @Column(name = "deleted_date")
-  private Instant deletedDate;
+    @Column(name = "deleted_date")
+    private Instant deletedDate;
 }

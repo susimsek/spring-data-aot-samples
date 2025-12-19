@@ -11,14 +11,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
-  String USER_BY_USERNAME_CACHE = "userByUsername";
+    String USER_BY_USERNAME_CACHE = "userByUsername";
 
-  @EntityGraph(value = "User.withAuthorities")
-  @Cacheable(cacheNames = USER_BY_USERNAME_CACHE, key = "#username", unless = "#result == null")
-  Optional<User> findOneWithAuthoritiesByUsername(String username);
+    @EntityGraph(value = "User.withAuthorities")
+    @Cacheable(cacheNames = USER_BY_USERNAME_CACHE, key = "#username", unless = "#result == null")
+    Optional<User> findOneWithAuthoritiesByUsername(String username);
 
-  @EntityGraph(value = "User.withAuthorities")
-  Optional<User> findOneWithAuthoritiesById(Long id);
+    @EntityGraph(value = "User.withAuthorities")
+    Optional<User> findOneWithAuthoritiesById(Long id);
 
-  boolean existsByUsername(String username);
+    boolean existsByUsername(String username);
 }

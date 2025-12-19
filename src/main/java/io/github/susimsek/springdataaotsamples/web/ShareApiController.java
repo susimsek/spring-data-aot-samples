@@ -21,21 +21,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ShareApiController {
 
-  private final NoteShareService noteShareService;
-  private final NoteMapper noteMapper;
+    private final NoteShareService noteShareService;
+    private final NoteMapper noteMapper;
 
-  @Operation(summary = "Get shared note", description = "Returns a note by share token.")
-  @ApiResponse(
-      responseCode = "200",
-      description = "Note returned",
-      content =
-          @Content(
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              schema = @Schema(implementation = NoteDTO.class)))
-  @GetMapping("/{token}")
-  public NoteDTO getShared(@PathVariable String token) {
-    var shareToken = noteShareService.validateAndConsume(token);
-    var note = shareToken.getNote();
-    return noteMapper.toDto(note);
-  }
+    @Operation(summary = "Get shared note", description = "Returns a note by share token.")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Note returned",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = NoteDTO.class)))
+    @GetMapping("/{token}")
+    public NoteDTO getShared(@PathVariable String token) {
+        var shareToken = noteShareService.validateAndConsume(token);
+        var note = shareToken.getNote();
+        return noteMapper.toDto(note);
+    }
 }

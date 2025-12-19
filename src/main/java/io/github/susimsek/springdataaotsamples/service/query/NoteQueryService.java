@@ -23,77 +23,80 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NoteQueryService {
 
-  private final NoteRepository noteRepository;
-  private final NoteMapper noteMapper;
-  private final NoteAuthorizationService noteAuthorizationService;
+    private final NoteRepository noteRepository;
+    private final NoteMapper noteMapper;
+    private final NoteAuthorizationService noteAuthorizationService;
 
-  @Transactional(readOnly = true)
-  public Page<NoteDTO> findAll(
-      Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-    return find(new NoteCriteria(query, false, tags, color, pinned, null), pageable);
-  }
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findAll(
+            Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return find(new NoteCriteria(query, false, tags, color, pinned, null), pageable);
+    }
 
-  @Transactional(readOnly = true)
-  public Page<NoteDTO> findAllForCurrentUser(
-      Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
-    return find(
-        new NoteCriteria(query, false, tags, color, pinned, getCurrentUsername()), pageable);
-  }
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findAllForCurrentUser(
+            Pageable pageable, String query, Set<String> tags, String color, Boolean pinned) {
+        return find(
+                new NoteCriteria(query, false, tags, color, pinned, getCurrentUsername()),
+                pageable);
+    }
 
-  @Transactional(readOnly = true)
-  public NoteDTO findById(Long id) {
-    var note = findActiveNote(id);
-    return noteMapper.toDto(note);
-  }
+    @Transactional(readOnly = true)
+    public NoteDTO findById(Long id) {
+        var note = findActiveNote(id);
+        return noteMapper.toDto(note);
+    }
 
-  @Transactional(readOnly = true)
-  public NoteDTO findByIdForCurrentUser(Long id) {
-    var note = findActiveNote(id);
-    noteAuthorizationService.ensureReadAccess(note);
-    return noteMapper.toDto(note);
-  }
+    @Transactional(readOnly = true)
+    public NoteDTO findByIdForCurrentUser(Long id) {
+        var note = findActiveNote(id);
+        noteAuthorizationService.ensureReadAccess(note);
+        return noteMapper.toDto(note);
+    }
 
-  @Transactional(readOnly = true)
-  public Page<NoteDTO> findByCriteria(NoteCriteria criteria, Pageable pageable) {
-    return find(criteria, pageable);
-  }
+    @Transactional(readOnly = true)
+    public Page<NoteDTO> findByCriteria(NoteCriteria criteria, Pageable pageable) {
+        return find(criteria, pageable);
+    }
 
-  private Specification<Note> createSpecification(NoteCriteria criteria) {
-    boolean deleted = Boolean.TRUE.equals(criteria.deleted());
-    String query = criteria.query();
-    var tags = criteria.tags();
-    var color = criteria.color();
-    var pinned = criteria.pinned();
-    var owner = criteria.owner();
+    private Specification<Note> createSpecification(NoteCriteria criteria) {
+        boolean deleted = Boolean.TRUE.equals(criteria.deleted());
+        String query = criteria.query();
+        var tags = criteria.tags();
+        var color = criteria.color();
+        var pinned = criteria.pinned();
+        var owner = criteria.owner();
 
-    Specification<Note> spec =
-        deleted
-            ? Specification.where(NoteSpecifications.isDeleted())
-            : Specification.where(NoteSpecifications.isNotDeleted());
+        Specification<Note> spec =
+                deleted
+                        ? Specification.where(NoteSpecifications.isDeleted())
+                        : Specification.where(NoteSpecifications.isNotDeleted());
 
-    return spec.and(NoteSpecifications.search(query))
-        .and(NoteSpecifications.hasColor(color))
-        .and(NoteSpecifications.isPinned(pinned))
-        .and(NoteSpecifications.ownedBy(owner))
-        .and(NoteSpecifications.hasTags(tags));
-  }
+        return spec.and(NoteSpecifications.search(query))
+                .and(NoteSpecifications.hasColor(color))
+                .and(NoteSpecifications.isPinned(pinned))
+                .and(NoteSpecifications.ownedBy(owner))
+                .and(NoteSpecifications.hasTags(tags));
+    }
 
-  private String getCurrentUsername() {
-    return SecurityUtils.getCurrentUserLogin()
-        .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-  }
+    private String getCurrentUsername() {
+        return SecurityUtils.getCurrentUserLogin()
+                .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+    }
 
-  private Note findActiveNote(Long id) {
-    return noteRepository
-        .findOne(
-            Specification.where(NoteSpecifications.isNotDeleted())
-                .and((root, cq, cb) -> cb.equal(root.get(Note_.id), id)))
-        .orElseThrow(() -> new NoteNotFoundException(id));
-  }
+    private Note findActiveNote(Long id) {
+        return noteRepository
+                .findOne(
+                        Specification.where(NoteSpecifications.isNotDeleted())
+                                .and((root, cq, cb) -> cb.equal(root.get(Note_.id), id)))
+                .orElseThrow(() -> new NoteNotFoundException(id));
+    }
 
-  private Page<NoteDTO> find(NoteCriteria criteria, Pageable pageable) {
-    var specification = createSpecification(criteria);
-    var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
-    return noteRepository.findAllWithTags(specification, pageableWithPinned).map(noteMapper::toDto);
-  }
+    private Page<NoteDTO> find(NoteCriteria criteria, Pageable pageable) {
+        var specification = createSpecification(criteria);
+        var pageableWithPinned = NoteSpecifications.prioritizePinned(pageable);
+        return noteRepository
+                .findAllWithTags(specification, pageableWithPinned)
+                .map(noteMapper::toDto);
+    }
 }

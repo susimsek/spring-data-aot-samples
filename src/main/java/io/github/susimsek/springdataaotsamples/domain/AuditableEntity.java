@@ -18,19 +18,19 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AuditableEntity {
 
-  @CreatedBy
-  @Column(name = "created_by", nullable = false, updatable = false, length = 100)
-  private String createdBy;
+    @CreatedBy
+    @Column(name = "created_by", nullable = false, updatable = false, length = 100)
+    private String createdBy;
 
-  @CreatedDate
-  @Column(name = "created_date", nullable = false, updatable = false)
-  private Instant createdDate;
+    @CreatedDate
+    @Column(name = "created_date", nullable = false, updatable = false)
+    private Instant createdDate;
 
-  @LastModifiedBy
-  @Column(name = "last_modified_by", length = 100)
-  private String lastModifiedBy;
+    @LastModifiedBy
+    @Column(name = "last_modified_by", length = 100)
+    private String lastModifiedBy;
 
-  @LastModifiedDate
-  @Column(name = "last_modified_date")
-  private Instant lastModifiedDate;
+    @LastModifiedDate
+    @Column(name = "last_modified_date")
+    private Instant lastModifiedDate;
 }

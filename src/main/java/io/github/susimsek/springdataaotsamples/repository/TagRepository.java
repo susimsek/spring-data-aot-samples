@@ -9,10 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificationExecutor<Tag> {
 
-  List<Tag> findByNameIn(Collection<String> names);
+    List<Tag> findByNameIn(Collection<String> names);
 
-  @Query(
-      """
+    @Query(
+            """
         select t.id
         from Tag t
         where not exists (
@@ -22,5 +22,5 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
             where tag = t
         )
         """)
-  List<Long> findOrphanIds();
+    List<Long> findOrphanIds();
 }

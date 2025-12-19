@@ -8,14 +8,14 @@ import org.springframework.util.StringUtils;
 
 public class TagValueValidator implements ConstraintValidator<TagValue, String> {
 
-  private static final Pattern TAG_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+    private static final Pattern TAG_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
 
-  @Override
-  public boolean isValid(String value, ConstraintValidatorContext context) {
-    if (!StringUtils.hasText(value)) {
-      return true; // optional field
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (!StringUtils.hasText(value)) {
+            return true; // optional field
+        }
+        var trimmed = value.trim();
+        return TAG_PATTERN.matcher(trimmed).matches();
     }
-    var trimmed = value.trim();
-    return TAG_PATTERN.matcher(trimmed).matches();
-  }
 }

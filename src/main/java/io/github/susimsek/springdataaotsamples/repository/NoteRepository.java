@@ -19,42 +19,43 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface NoteRepository
-    extends JpaRepository<Note, Long>,
-        JpaSpecificationExecutor<Note>,
-        NoteRepositoryCustom,
-        SoftDeleteRepository<Note, Long>,
-        RevisionRepository<Note, Long, Long> {
+        extends JpaRepository<Note, Long>,
+                JpaSpecificationExecutor<Note>,
+                NoteRepositoryCustom,
+                SoftDeleteRepository<Note, Long>,
+                RevisionRepository<Note, Long, Long> {
 
-  @Override
-  @EntityGraph(attributePaths = "tags")
-  Optional<Note> findOne(Specification<Note> spec);
+    @Override
+    @EntityGraph(attributePaths = "tags")
+    Optional<Note> findOne(Specification<Note> spec);
 
-  @EntityGraph(attributePaths = "tags")
-  List<Note> findAllByIdIn(List<Long> ids);
+    @EntityGraph(attributePaths = "tags")
+    List<Note> findAllByIdIn(List<Long> ids);
 
-  @Query("select n from Note n where n.id in :ids and n.owner = ?#{authentication.name}")
-  List<Note> findAllByIdInForCurrentUser(@Param("ids") Iterable<Long> ids);
+    @Query("select n from Note n where n.id in :ids and n.owner = ?#{authentication.name}")
+    List<Note> findAllByIdInForCurrentUser(@Param("ids") Iterable<Long> ids);
 
-  default Page<Note> findAllWithTags(Specification<Note> spec, Pageable pageable) {
+    default Page<Note> findAllWithTags(Specification<Note> spec, Pageable pageable) {
 
-    Page<Long> idPage = findIds(spec, pageable);
-    if (idPage.isEmpty()) {
-      return Page.empty(pageable);
+        Page<Long> idPage = findIds(spec, pageable);
+        if (idPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        var ids = idPage.getContent();
+
+        var loadedNotes = findAllByIdIn(ids);
+
+        var noteMap =
+                loadedNotes.stream().collect(Collectors.toMap(Note::getId, n -> n, (a, b) -> a));
+
+        var ordered = ids.stream().map(noteMap::get).toList();
+
+        return new PageImpl<>(ordered, pageable, idPage.getTotalElements());
     }
 
-    var ids = idPage.getContent();
-
-    var loadedNotes = findAllByIdIn(ids);
-
-    var noteMap = loadedNotes.stream().collect(Collectors.toMap(Note::getId, n -> n, (a, b) -> a));
-
-    var ordered = ids.stream().map(noteMap::get).toList();
-
-    return new PageImpl<>(ordered, pageable, idPage.getTotalElements());
-  }
-
-  @Modifying
-  @Transactional
-  @Query("delete from Note n where n.deleted = true and n.owner = :owner")
-  void purgeDeletedByOwner(@Param("owner") String owner);
+    @Modifying
+    @Transactional
+    @Query("delete from Note n where n.deleted = true and n.owner = :owner")
+    void purgeDeletedByOwner(@Param("owner") String owner);
 }

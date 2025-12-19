@@ -23,62 +23,65 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 public class TagCommandService {
 
-  private final TagRepository tagRepository;
-  private final TagMapper tagMapper;
-  private final CacheProvider cacheProvider;
+    private final TagRepository tagRepository;
+    private final TagMapper tagMapper;
+    private final CacheProvider cacheProvider;
 
-  @Transactional
-  public Set<Tag> resolveTags(Set<String> names) {
-    var normalized = normalizeNames(names);
-    if (normalized.isEmpty()) {
-      return new LinkedHashSet<>();
+    @Transactional
+    public Set<Tag> resolveTags(Set<String> names) {
+        var normalized = normalizeNames(names);
+        if (normalized.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+
+        var existing = tagRepository.findByNameIn(normalized);
+        Map<String, Tag> byName =
+                existing.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        Tag::getName,
+                                        Function.identity(),
+                                        (a, b) -> a,
+                                        LinkedHashMap::new));
+
+        var missing =
+                normalized.stream()
+                        .filter(name -> !byName.containsKey(name))
+                        .map(
+                                name -> {
+                                    var tag = new Tag();
+                                    tag.setName(name);
+                                    return tag;
+                                })
+                        .toList();
+
+        if (!missing.isEmpty()) {
+            var saved = tagRepository.saveAll(missing);
+            saved.forEach(tag -> byName.put(tag.getName(), tag));
+        }
+
+        return new LinkedHashSet<>(byName.values());
     }
 
-    var existing = tagRepository.findByNameIn(normalized);
-    Map<String, Tag> byName =
-        existing.stream()
-            .collect(
-                Collectors.toMap(
-                    Tag::getName, Function.identity(), (a, b) -> a, LinkedHashMap::new));
-
-    var missing =
-        normalized.stream()
-            .filter(name -> !byName.containsKey(name))
-            .map(
-                name -> {
-                  var tag = new Tag();
-                  tag.setName(name);
-                  return tag;
-                })
-            .toList();
-
-    if (!missing.isEmpty()) {
-      var saved = tagRepository.saveAll(missing);
-      saved.forEach(tag -> byName.put(tag.getName(), tag));
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void cleanupOrphanTagsAsync() {
+        var orphanIds = tagRepository.findOrphanIds();
+        if (orphanIds.isEmpty()) {
+            return;
+        }
+        tagRepository.deleteAllByIdInBatch(orphanIds);
+        log.debug("Deleted {} orphan tags", orphanIds.size());
+        cacheProvider.clearCache(Tag.class.getName());
     }
 
-    return new LinkedHashSet<>(byName.values());
-  }
+    private Set<String> normalizeNames(Set<String> names) {
+        if (CollectionUtils.isEmpty(names)) {
+            return Set.of();
+        }
 
-  @Async
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void cleanupOrphanTagsAsync() {
-    var orphanIds = tagRepository.findOrphanIds();
-    if (orphanIds.isEmpty()) {
-      return;
+        return tagMapper.toTags(names).stream()
+                .map(Tag::getName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
-    tagRepository.deleteAllByIdInBatch(orphanIds);
-    log.debug("Deleted {} orphan tags", orphanIds.size());
-    cacheProvider.clearCache(Tag.class.getName());
-  }
-
-  private Set<String> normalizeNames(Set<String> names) {
-    if (CollectionUtils.isEmpty(names)) {
-      return Set.of();
-    }
-
-    return tagMapper.toTags(names).stream()
-        .map(Tag::getName)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
-  }
 }

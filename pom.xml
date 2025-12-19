@@ -181,7 +181,9 @@
         <version>${spotless-maven-plugin.version}</version>
         <configuration>
           <java>
-            <googleJavaFormat/>
+            <googleJavaFormat>
+              <style>AOSP</style>
+            </googleJavaFormat>
             <removeUnusedImports/>
             <trimTrailingWhitespace/>
             <endWithNewline/>

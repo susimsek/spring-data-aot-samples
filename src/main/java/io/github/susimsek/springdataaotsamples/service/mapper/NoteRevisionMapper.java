@@ -13,35 +13,35 @@ import org.springframework.data.history.Revision;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = NoteMapper.class)
 public interface NoteRevisionMapper {
 
-  @Mapping(target = "revision", source = "revision", qualifiedByName = "revisionNumber")
-  @Mapping(target = "revisionType", source = "revision", qualifiedByName = "revisionType")
-  @Mapping(target = "revisionDate", source = "revision", qualifiedByName = "revisionInstant")
-  @Mapping(target = "auditor", source = "revision", qualifiedByName = "revisionAuditor")
-  @Mapping(target = "note", source = "entity")
-  NoteRevisionDTO toRevisionDto(Revision<Long, Note> revision);
+    @Mapping(target = "revision", source = "revision", qualifiedByName = "revisionNumber")
+    @Mapping(target = "revisionType", source = "revision", qualifiedByName = "revisionType")
+    @Mapping(target = "revisionDate", source = "revision", qualifiedByName = "revisionInstant")
+    @Mapping(target = "auditor", source = "revision", qualifiedByName = "revisionAuditor")
+    @Mapping(target = "note", source = "entity")
+    NoteRevisionDTO toRevisionDto(Revision<Long, Note> revision);
 
-  @Named("revisionNumber")
-  default Long mapRevisionNumber(Revision<Long, ?> revision) {
-    return revision.getMetadata().getRevisionNumber().orElse(null);
-  }
-
-  @Named("revisionType")
-  default String mapRevisionType(Revision<Long, ?> revision) {
-    var type = revision.getMetadata().getRevisionType();
-    return type.name();
-  }
-
-  @Named("revisionInstant")
-  default Instant mapRevisionInstant(Revision<Long, ?> revision) {
-    return revision.getMetadata().getRevisionInstant().orElse(null);
-  }
-
-  @Named("revisionAuditor")
-  default String extractAuditor(Revision<Long, ?> revision) {
-    var delegate = revision.getMetadata().getDelegate();
-    if (delegate instanceof RevisionInfo info) {
-      return info.getUsername();
+    @Named("revisionNumber")
+    default Long mapRevisionNumber(Revision<Long, ?> revision) {
+        return revision.getMetadata().getRevisionNumber().orElse(null);
     }
-    return null;
-  }
+
+    @Named("revisionType")
+    default String mapRevisionType(Revision<Long, ?> revision) {
+        var type = revision.getMetadata().getRevisionType();
+        return type.name();
+    }
+
+    @Named("revisionInstant")
+    default Instant mapRevisionInstant(Revision<Long, ?> revision) {
+        return revision.getMetadata().getRevisionInstant().orElse(null);
+    }
+
+    @Named("revisionAuditor")
+    default String extractAuditor(Revision<Long, ?> revision) {
+        var delegate = revision.getMetadata().getDelegate();
+        if (delegate instanceof RevisionInfo info) {
+            return info.getUsername();
+        }
+        return null;
+    }
 }

@@ -31,149 +31,154 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-  @Setter(onMethod_ = @Autowired)
-  private MessageSource messageSource;
+    @Setter(onMethod_ = @Autowired)
+    private MessageSource messageSource;
 
-  @ExceptionHandler(ApiException.class)
-  public ResponseEntity<@NonNull Object> handleApiException(
-      @NonNull ApiException ex, @NonNull WebRequest request) {
-    return this.handleExceptionInternal(
-        ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
-  }
-
-  @Override
-  protected ResponseEntity<@NonNull Object> handleMethodArgumentNotValid(
-      @NonNull MethodArgumentNotValidException ex,
-      @NonNull HttpHeaders headers,
-      @NonNull HttpStatusCode status,
-      @NonNull WebRequest request) {
-    ProblemDetail body =
-        this.createProblemDetail(ex, status, "Validation failed", null, null, null, request);
-    List<Violation> violations =
-        Stream.concat(
-                ex.getBindingResult().getFieldErrors().stream().map(Violation::from),
-                ex.getBindingResult().getGlobalErrors().stream().map(Violation::from))
-            .toList();
-    body.setProperty("violations", violations);
-
-    return this.handleExceptionInternal(ex, body, headers, status, request);
-  }
-
-  @ExceptionHandler(AuthenticationException.class)
-  public ResponseEntity<@NonNull Object> handleAuth(
-      @NonNull AuthenticationException ex, @NonNull WebRequest request) {
-    if (ex instanceof DisabledException disabled) {
-      return handleDisabled(disabled, request);
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<@NonNull Object> handleApiException(
+            @NonNull ApiException ex, @NonNull WebRequest request) {
+        return this.handleExceptionInternal(
+                ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
     }
-    if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
-      return handleOAuth2Auth(oAuth2AuthenticationException, request);
+
+    @Override
+    protected ResponseEntity<@NonNull Object> handleMethodArgumentNotValid(
+            @NonNull MethodArgumentNotValidException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request) {
+        ProblemDetail body =
+                this.createProblemDetail(
+                        ex, status, "Validation failed", null, null, null, request);
+        List<Violation> violations =
+                Stream.concat(
+                                ex.getBindingResult().getFieldErrors().stream()
+                                        .map(Violation::from),
+                                ex.getBindingResult().getGlobalErrors().stream()
+                                        .map(Violation::from))
+                        .toList();
+        body.setProperty("violations", violations);
+
+        return this.handleExceptionInternal(ex, body, headers, status, request);
     }
-    return handleBadCredentials(ex, request);
-  }
 
-  private ResponseEntity<@NonNull Object> handleBadCredentials(
-      AuthenticationException ex, WebRequest request) {
-    ProblemDetail body =
-        this.createProblemDetail(
-            ex,
-            HttpStatus.UNAUTHORIZED,
-            "problemDetail.title.auth.badCredentials",
-            "Invalid credentials",
-            "problemDetail.auth.badCredentials",
-            null,
-            request);
-    return this.handleExceptionInternal(
-        ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
-  }
-
-  private ResponseEntity<@NonNull Object> handleOAuth2Auth(
-      OAuth2AuthenticationException ex, WebRequest request) {
-    ProblemDetail body =
-        this.createProblemDetail(
-            ex,
-            HttpStatus.UNAUTHORIZED,
-            "problemDetail.title.auth.invalidToken",
-            ex.getMessage(),
-            "problemDetail.auth.invalidToken",
-            null,
-            request);
-    return this.handleExceptionInternal(
-        ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
-  }
-
-  private ResponseEntity<@NonNull Object> handleDisabled(DisabledException ex, WebRequest request) {
-    ProblemDetail body =
-        this.createProblemDetail(
-            ex,
-            HttpStatus.UNAUTHORIZED,
-            "problemDetail.title.auth.disabled",
-            "Account is disabled",
-            "problemDetail.auth.disabled",
-            null,
-            request);
-    return this.handleExceptionInternal(
-        ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
-  }
-
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<@NonNull Object> handleAccessDenied(
-      @NonNull AccessDeniedException ex, @NonNull WebRequest request) {
-    ProblemDetail body =
-        this.createProblemDetail(
-            ex,
-            HttpStatus.FORBIDDEN,
-            "problemDetail.title.auth.accessDenied",
-            "Access is denied",
-            "problemDetail.auth.accessDenied",
-            null,
-            request);
-    return this.handleExceptionInternal(ex, body, HttpHeaders.EMPTY, HttpStatus.FORBIDDEN, request);
-  }
-
-  @ExceptionHandler(value = NoResourceFoundException.class, produces = MediaType.TEXT_HTML_VALUE)
-  public String handleNotFoundHtml(
-      NoResourceFoundException ex, Model model, HttpServletResponse response) {
-    response.setStatus(HttpStatus.NOT_FOUND.value());
-    model.addAttribute("errorMessage", ex.getMessage());
-    return "forward:/404";
-  }
-
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<@NonNull Object> handleUnhandled(
-      @NonNull Exception ex, @NonNull WebRequest request) {
-    return this.handleExceptionInternal(
-        ex,
-        this.createProblemDetail(
-            ex,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "problemDetail.title.internalServerError",
-            "An unexpected error occurred. Please try again later.",
-            "problemDetail.internalServerError",
-            null,
-            request),
-        HttpHeaders.EMPTY,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        request);
-  }
-
-  private ProblemDetail createProblemDetail(
-      Exception ex,
-      HttpStatusCode status,
-      String titleMessageCode,
-      String defaultDetail,
-      String detailMessageCode,
-      Object[] detailMessageArguments,
-      WebRequest request) {
-    ErrorResponse.Builder builder = ErrorResponse.builder(ex, status, defaultDetail);
-    if (detailMessageCode != null) {
-      builder.detailMessageCode(detailMessageCode);
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<@NonNull Object> handleAuth(
+            @NonNull AuthenticationException ex, @NonNull WebRequest request) {
+        if (ex instanceof DisabledException disabled) {
+            return handleDisabled(disabled, request);
+        }
+        if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
+            return handleOAuth2Auth(oAuth2AuthenticationException, request);
+        }
+        return handleBadCredentials(ex, request);
     }
-    if (detailMessageArguments != null) {
-      builder.detailMessageArguments(detailMessageArguments);
+
+    private ResponseEntity<@NonNull Object> handleBadCredentials(
+            AuthenticationException ex, WebRequest request) {
+        ProblemDetail body =
+                this.createProblemDetail(
+                        ex,
+                        HttpStatus.UNAUTHORIZED,
+                        "problemDetail.title.auth.badCredentials",
+                        "Invalid credentials",
+                        "problemDetail.auth.badCredentials",
+                        null,
+                        request);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
-    if (titleMessageCode != null) {
-      builder.titleMessageCode(titleMessageCode);
+
+    private ResponseEntity<@NonNull Object> handleOAuth2Auth(
+            OAuth2AuthenticationException ex, WebRequest request) {
+        ProblemDetail body =
+                this.createProblemDetail(
+                        ex,
+                        HttpStatus.UNAUTHORIZED,
+                        "problemDetail.title.auth.invalidToken",
+                        ex.getMessage(),
+                        "problemDetail.auth.invalidToken",
+                        null,
+                        request);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
-    return builder.build().updateAndGetBody(messageSource, LocaleContextHolder.getLocale());
-  }
+
+    private ResponseEntity<@NonNull Object> handleDisabled(
+            DisabledException ex, WebRequest request) {
+        ProblemDetail body =
+                this.createProblemDetail(
+                        ex,
+                        HttpStatus.UNAUTHORIZED,
+                        "problemDetail.title.auth.disabled",
+                        "Account is disabled",
+                        "problemDetail.auth.disabled",
+                        null,
+                        request);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<@NonNull Object> handleAccessDenied(
+            @NonNull AccessDeniedException ex, @NonNull WebRequest request) {
+        ProblemDetail body =
+                this.createProblemDetail(
+                        ex,
+                        HttpStatus.FORBIDDEN,
+                        "problemDetail.title.auth.accessDenied",
+                        "Access is denied",
+                        "problemDetail.auth.accessDenied",
+                        null,
+                        request);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = NoResourceFoundException.class, produces = MediaType.TEXT_HTML_VALUE)
+    public String handleNotFoundHtml(
+            NoResourceFoundException ex, Model model, HttpServletResponse response) {
+        response.setStatus(HttpStatus.NOT_FOUND.value());
+        model.addAttribute("errorMessage", ex.getMessage());
+        return "forward:/404";
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<@NonNull Object> handleUnhandled(
+            @NonNull Exception ex, @NonNull WebRequest request) {
+        return this.handleExceptionInternal(
+                ex,
+                this.createProblemDetail(
+                        ex,
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "problemDetail.title.internalServerError",
+                        "An unexpected error occurred. Please try again later.",
+                        "problemDetail.internalServerError",
+                        null,
+                        request),
+                HttpHeaders.EMPTY,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                request);
+    }
+
+    private ProblemDetail createProblemDetail(
+            Exception ex,
+            HttpStatusCode status,
+            String titleMessageCode,
+            String defaultDetail,
+            String detailMessageCode,
+            Object[] detailMessageArguments,
+            WebRequest request) {
+        ErrorResponse.Builder builder = ErrorResponse.builder(ex, status, defaultDetail);
+        if (detailMessageCode != null) {
+            builder.detailMessageCode(detailMessageCode);
+        }
+        if (detailMessageArguments != null) {
+            builder.detailMessageArguments(detailMessageArguments);
+        }
+        if (titleMessageCode != null) {
+            builder.titleMessageCode(titleMessageCode);
+        }
+        return builder.build().updateAndGetBody(messageSource, LocaleContextHolder.getLocale());
+    }
 }

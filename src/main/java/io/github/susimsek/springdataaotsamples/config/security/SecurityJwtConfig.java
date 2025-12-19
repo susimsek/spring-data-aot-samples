@@ -27,50 +27,50 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @RequiredArgsConstructor
 public class SecurityJwtConfig {
 
-  private final ApplicationProperties applicationProperties;
+    private final ApplicationProperties applicationProperties;
 
-  @Bean
-  public JwtDecoder jwtDecoder() {
-    var jwt = applicationProperties.getSecurity().getJwt();
-    NimbusJwtDecoder decoder =
-        NimbusJwtDecoder.withSecretKey(secretKey(jwt)).macAlgorithm(JWT_ALGORITHM).build();
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        var jwt = applicationProperties.getSecurity().getJwt();
+        NimbusJwtDecoder decoder =
+                NimbusJwtDecoder.withSecretKey(secretKey(jwt)).macAlgorithm(JWT_ALGORITHM).build();
 
-    var audienceValidator = new AudienceValidator(jwt.getAudience());
-    var withIssuer = JwtValidators.createDefaultWithIssuer(jwt.getIssuer());
-    var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        var audienceValidator = new AudienceValidator(jwt.getAudience());
+        var withIssuer = JwtValidators.createDefaultWithIssuer(jwt.getIssuer());
+        var withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
 
-    decoder.setJwtValidator(withAudience);
-    return decoder;
-  }
+        decoder.setJwtValidator(withAudience);
+        return decoder;
+    }
 
-  @Bean
-  public JwtEncoder jwtEncoder() {
-    var jwt = applicationProperties.getSecurity().getJwt();
-    return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(jwt)));
-  }
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        var jwt = applicationProperties.getSecurity().getJwt();
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey(jwt)));
+    }
 
-  private SecretKey secretKey(ApplicationProperties.Jwt jwt) {
-    byte[] keyBytes = jwt.getSecret().getBytes(StandardCharsets.UTF_8);
-    return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
-  }
+    private SecretKey secretKey(ApplicationProperties.Jwt jwt) {
+        byte[] keyBytes = jwt.getSecret().getBytes(StandardCharsets.UTF_8);
+        return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
+    }
 
-  @Bean
-  public JwtAuthenticationConverter jwtAuthenticationConverter() {
-    JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-    authoritiesConverter.setAuthoritiesClaimName(SecurityUtils.AUTHORITIES_CLAIM);
-    authoritiesConverter.setAuthorityPrefix("");
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        authoritiesConverter.setAuthoritiesClaimName(SecurityUtils.AUTHORITIES_CLAIM);
+        authoritiesConverter.setAuthorityPrefix("");
 
-    JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
-    authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
-    return authenticationConverter;
-  }
+        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
+        return authenticationConverter;
+    }
 
-  @Bean
-  public BearerTokenResolver bearerTokenResolver() {
-    CookieAwareBearerTokenResolver resolver = new CookieAwareBearerTokenResolver();
-    resolver.setAllowUriQueryParameter(false);
-    resolver.setAllowFormEncodedBodyParameter(false);
-    resolver.setAllowCookie(true);
-    return resolver;
-  }
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        CookieAwareBearerTokenResolver resolver = new CookieAwareBearerTokenResolver();
+        resolver.setAllowUriQueryParameter(false);
+        resolver.setAllowFormEncodedBodyParameter(false);
+        resolver.setAllowCookie(true);
+        return resolver;
+    }
 }

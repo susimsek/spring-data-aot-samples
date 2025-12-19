@@ -24,8 +24,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity
 @Table(name = "user_identity")
 @NamedEntityGraph(
-    name = "User.withAuthorities",
-    attributeNodes = @NamedAttributeNode("authorities"))
+        name = "User.withAuthorities",
+        attributeNodes = @NamedAttributeNode("authorities"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,28 +33,28 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class User extends AuditableEntity {
 
-  @Id
-  @SequenceGenerator(
-      name = "user_identity_seq",
-      sequenceName = "user_identity_seq",
-      allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_identity_seq")
-  private Long id;
+    @Id
+    @SequenceGenerator(
+            name = "user_identity_seq",
+            sequenceName = "user_identity_seq",
+            allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_identity_seq")
+    private Long id;
 
-  @Column(nullable = false, unique = true, length = 100)
-  private String username;
+    @Column(nullable = false, unique = true, length = 100)
+    private String username;
 
-  @Column(nullable = false, length = 255)
-  private String password;
+    @Column(nullable = false, length = 255)
+    private String password;
 
-  @Column(nullable = false)
-  private boolean enabled = true;
+    @Column(nullable = false)
+    private boolean enabled = true;
 
-  @ManyToMany
-  @JoinTable(
-      name = "user_authority",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "authority_id"))
-  @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-  private Set<Authority> authorities = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "user_authority",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id"))
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    private Set<Authority> authorities = new HashSet<>();
 }

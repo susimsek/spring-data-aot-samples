@@ -20,9 +20,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface TagValue {
 
-  String message() default "{app.validation.tagValue.message}";
+    String message() default "{app.validation.tagValue.message}";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 }

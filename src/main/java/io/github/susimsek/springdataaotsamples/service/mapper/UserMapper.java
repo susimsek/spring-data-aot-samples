@@ -14,14 +14,14 @@ import org.springframework.util.CollectionUtils;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
 
-  @Mapping(target = "authorities", source = "authorities", qualifiedByName = "authorityNames")
-  UserDTO toDto(User user);
+    @Mapping(target = "authorities", source = "authorities", qualifiedByName = "authorityNames")
+    UserDTO toDto(User user);
 
-  @Named("authorityNames")
-  default Set<String> authorityNames(Set<Authority> authorities) {
-    if (CollectionUtils.isEmpty(authorities)) {
-      return Set.of();
+    @Named("authorityNames")
+    default Set<String> authorityNames(Set<Authority> authorities) {
+        if (CollectionUtils.isEmpty(authorities)) {
+            return Set.of();
+        }
+        return authorities.stream().map(Authority::getName).collect(Collectors.toSet());
     }
-    return authorities.stream().map(Authority::getName).collect(Collectors.toSet());
-  }
 }

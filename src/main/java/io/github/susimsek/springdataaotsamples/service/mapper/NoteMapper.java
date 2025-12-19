@@ -19,39 +19,39 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = TagMapper.class)
 public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
 
-  @Mapping(target = "tags", ignore = true)
-  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
-  Note toEntity(NoteCreateRequest request);
+    @Mapping(target = "tags", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
+    Note toEntity(NoteCreateRequest request);
 
-  @Mapping(target = "tags", ignore = true)
-  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
-  void updateEntity(NoteUpdateRequest request, @MappingTarget Note note);
+    @Mapping(target = "tags", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
+    void updateEntity(NoteUpdateRequest request, @MappingTarget Note note);
 
-  @Mapping(target = "tags", ignore = true)
-  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-  void patchEntity(NotePatchRequest request, @MappingTarget Note note);
+    @Mapping(target = "tags", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void patchEntity(NotePatchRequest request, @MappingTarget Note note);
 
-  @Override
-  @Mapping(target = "version", ignore = true)
-  @Mapping(target = "tags", ignore = true)
-  Note toEntity(NoteDTO dto);
+    @Override
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "tags", ignore = true)
+    Note toEntity(NoteDTO dto);
 
-  @Override
-  @Mapping(target = "tags", source = "tags")
-  @Mapping(target = "owner", source = "owner")
-  @Mapping(target = "version", source = "version")
-  NoteDTO toDto(Note note);
+    @Override
+    @Mapping(target = "tags", source = "tags")
+    @Mapping(target = "owner", source = "owner")
+    @Mapping(target = "version", source = "version")
+    NoteDTO toDto(Note note);
 
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "tags", source = "tags", qualifiedByName = "cloneTags")
-  @Mapping(target = "deleted", constant = "false")
-  @Mapping(target = "deletedBy", expression = "java(null)")
-  @Mapping(target = "deletedDate", expression = "java(null)")
-  @Mapping(target = "version", ignore = true)
-  void applyRevision(Note source, @MappingTarget Note target);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "tags", source = "tags", qualifiedByName = "cloneTags")
+    @Mapping(target = "deleted", constant = "false")
+    @Mapping(target = "deletedBy", expression = "java(null)")
+    @Mapping(target = "deletedDate", expression = "java(null)")
+    @Mapping(target = "version", ignore = true)
+    void applyRevision(Note source, @MappingTarget Note target);
 
-  @Named("cloneTags")
-  static Set<Tag> cloneTags(Set<Tag> tags) {
-    return tags != null ? new LinkedHashSet<>(tags) : java.util.Set.of();
-  }
+    @Named("cloneTags")
+    static Set<Tag> cloneTags(Set<Tag> tags) {
+        return tags != null ? new LinkedHashSet<>(tags) : java.util.Set.of();
+    }
 }

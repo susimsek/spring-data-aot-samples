@@ -29,91 +29,101 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final ApplicationProperties applicationProperties;
+    private final ApplicationProperties applicationProperties;
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-    AccessDeniedHandlerImpl htmlAccessDenied = new AccessDeniedHandlerImpl();
-    htmlAccessDenied.setErrorPage("/403.html");
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        AccessDeniedHandlerImpl htmlAccessDenied = new AccessDeniedHandlerImpl();
+        htmlAccessDenied.setErrorPage("/403.html");
 
-    http.csrf(AbstractHttpConfigurer::disable)
-        .headers(
-            headers ->
-                headers
-                    .contentSecurityPolicy(
-                        csp ->
-                            csp.policyDirectives(
-                                applicationProperties.getSecurity().getContentSecurityPolicy()))
-                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                    .referrerPolicy(
-                        ref ->
-                            ref.policy(
-                                ReferrerPolicyHeaderWriter.ReferrerPolicy
-                                    .STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                    .permissionsPolicyHeader(
-                        permissions ->
-                            permissions.policy(
-                                "camera=(), fullscreen=(self), geolocation=(), microphone=()"))
-                    .httpStrictTransportSecurity(
-                        hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31_536_000)))
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            ex ->
-                ex.defaultAuthenticationEntryPointFor(
-                        new RedirectAwareAuthenticationEntryPoint("/login.html"),
-                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
-                    .defaultAccessDeniedHandlerFor(
-                        htmlAccessDenied, new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/api/auth/login", "/api/auth/refresh")
-                    .permitAll()
-                    .requestMatchers("/api/auth/logout", "/api/auth/me")
-                    .authenticated()
-                    .requestMatchers("/api/share/**")
-                    .permitAll()
-                    .requestMatchers("/api/admin/**")
-                    .hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
-                    .permitAll()
-                    .requestMatchers(
-                        "/actuator/health",
-                        "/actuator/health/**",
-                        "/actuator/info",
-                        "/actuator/prometheus")
-                    .permitAll()
-                    .requestMatchers("/actuator/**")
-                    .hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/",
-                        "/index.html",
-                        "/share.html",
-                        "/share/**",
-                        "/login.html",
-                        "/403.html",
-                        "/404.html",
-                        "/favicon.ico",
-                        "/favicon-16x16.png",
-                        "/favicon-32x32.png",
-                        "/favicon.svg",
-                        "/js/**",
-                        "/webjars/**")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
-        .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
-    return http.build();
-  }
+        http.csrf(AbstractHttpConfigurer::disable)
+                .headers(
+                        headers ->
+                                headers.contentSecurityPolicy(
+                                                csp ->
+                                                        csp.policyDirectives(
+                                                                applicationProperties
+                                                                        .getSecurity()
+                                                                        .getContentSecurityPolicy()))
+                                        .frameOptions(
+                                                HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                                        .referrerPolicy(
+                                                ref ->
+                                                        ref.policy(
+                                                                ReferrerPolicyHeaderWriter
+                                                                        .ReferrerPolicy
+                                                                        .STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                                        .permissionsPolicyHeader(
+                                                permissions ->
+                                                        permissions.policy(
+                                                                "camera=(), fullscreen=(self), geolocation=(), microphone=()"))
+                                        .httpStrictTransportSecurity(
+                                                hsts ->
+                                                        hsts.includeSubDomains(true)
+                                                                .maxAgeInSeconds(31_536_000)))
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(
+                        ex ->
+                                ex.defaultAuthenticationEntryPointFor(
+                                                new RedirectAwareAuthenticationEntryPoint(
+                                                        "/login.html"),
+                                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
+                                        .defaultAccessDeniedHandlerFor(
+                                                htmlAccessDenied,
+                                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+                .authorizeHttpRequests(
+                        auth ->
+                                auth.requestMatchers("/api/auth/login", "/api/auth/refresh")
+                                        .permitAll()
+                                        .requestMatchers("/api/auth/logout", "/api/auth/me")
+                                        .authenticated()
+                                        .requestMatchers("/api/share/**")
+                                        .permitAll()
+                                        .requestMatchers("/api/admin/**")
+                                        .hasAuthority(AuthoritiesConstants.ADMIN)
+                                        .requestMatchers(
+                                                "/v3/api-docs/**",
+                                                "/swagger-ui.html",
+                                                "/swagger-ui/**")
+                                        .permitAll()
+                                        .requestMatchers(
+                                                "/actuator/health",
+                                                "/actuator/health/**",
+                                                "/actuator/info",
+                                                "/actuator/prometheus")
+                                        .permitAll()
+                                        .requestMatchers("/actuator/**")
+                                        .hasAuthority(AuthoritiesConstants.ADMIN)
+                                        .requestMatchers(
+                                                HttpMethod.GET,
+                                                "/",
+                                                "/index.html",
+                                                "/share.html",
+                                                "/share/**",
+                                                "/login.html",
+                                                "/403.html",
+                                                "/404.html",
+                                                "/favicon.ico",
+                                                "/favicon-16x16.png",
+                                                "/favicon-32x32.png",
+                                                "/favicon.svg",
+                                                "/js/**",
+                                                "/webjars/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+        return http.build();
+    }
 
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
-    return configuration.getAuthenticationManager();
-  }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+        return configuration.getAuthenticationManager();
+    }
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
 }

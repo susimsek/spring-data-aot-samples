@@ -12,14 +12,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NoteShareTokenCleanupScheduler {
 
-  private final NoteShareTokenRepository noteShareTokenRepository;
-  private final CacheProvider cacheProvider;
+    private final NoteShareTokenRepository noteShareTokenRepository;
+    private final CacheProvider cacheProvider;
 
-  @Scheduled(cron = "0 30 1 * * ?")
-  public void purgeExpiredAndRevoked() {
-    noteShareTokenRepository.deleteByExpiresAtBefore(Instant.now());
-    noteShareTokenRepository.deleteByRevokedTrue();
-    cacheProvider.clearCaches(
-        NoteShareToken.class.getName(), NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
-  }
+    @Scheduled(cron = "0 30 1 * * ?")
+    public void purgeExpiredAndRevoked() {
+        noteShareTokenRepository.deleteByExpiresAtBefore(Instant.now());
+        noteShareTokenRepository.deleteByRevokedTrue();
+        cacheProvider.clearCaches(
+                NoteShareToken.class.getName(),
+                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+    }
 }

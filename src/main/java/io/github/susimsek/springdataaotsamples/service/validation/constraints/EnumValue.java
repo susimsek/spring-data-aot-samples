@@ -17,13 +17,13 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface EnumValue {
 
-  String message() default "{app.validation.enumValue.message}";
+    String message() default "{app.validation.enumValue.message}";
 
-  Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 
-  Class<? extends Enum<?>> enumClass();
+    Class<? extends Enum<?>> enumClass();
 
-  boolean ignoreCase() default true;
+    boolean ignoreCase() default true;
 }

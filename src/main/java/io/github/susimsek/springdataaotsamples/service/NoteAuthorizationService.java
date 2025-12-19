@@ -9,24 +9,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class NoteAuthorizationService {
 
-  public void ensureReadAccess(Note note) {
-    if (SecurityUtils.isCurrentUserAdmin()) {
-      return;
+    public void ensureReadAccess(Note note) {
+        if (SecurityUtils.isCurrentUserAdmin()) {
+            return;
+        }
+        ensureOwner(note);
     }
-    ensureOwner(note);
-  }
 
-  public void ensureEditAccess(Note note) {
-    ensureOwner(note);
-  }
-
-  private void ensureOwner(Note note) {
-    var username =
-        SecurityUtils.getCurrentUserLogin()
-            .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
-    var owner = note.getOwner();
-    if (!username.equals(owner)) {
-      throw new AccessDeniedException("You are not allowed to modify this note");
+    public void ensureEditAccess(Note note) {
+        ensureOwner(note);
     }
-  }
+
+    private void ensureOwner(Note note) {
+        var username =
+                SecurityUtils.getCurrentUserLogin()
+                        .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+        var owner = note.getOwner();
+        if (!username.equals(owner)) {
+            throw new AccessDeniedException("You are not allowed to modify this note");
+        }
+    }
 }
