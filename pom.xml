@@ -182,17 +182,16 @@
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>${spotless-maven-plugin.version}</version>
                 <configuration>
-	                    <java>
-	                        <googleJavaFormat>
-	                            <style>AOSP</style>
-	                            <reflowLongStrings>true</reflowLongStrings>
-	                        </googleJavaFormat>
-	                        <importOrder/>
-	                        <removeUnusedImports/>
-	                        <trimTrailingWhitespace/>
-	                        <endWithNewline/>
-	                    </java>
-	                </configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                        </googleJavaFormat>
+                        <removeUnusedImports/>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                    </java>
+                </configuration>
                 <executions>
                     <execution>
                         <id>spotless</id>

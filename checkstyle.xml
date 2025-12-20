@@ -11,11 +11,6 @@
     <!-- ========= FILE LEVEL ========= -->
 
     <module name="SuppressWarningsFilter"/>
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE:OFF"/>
-        <property name="onCommentFormat" value="CHECKSTYLE:ON"/>
-        <property name="checkFormat" value=".*"/>
-    </module>
 
     <module name="NewlineAtEndOfFile">
         <property name="lineSeparator" value="lf"/>
@@ -51,6 +46,11 @@
 
     <module name="TreeWalker">
         <module name="SuppressWarningsHolder"/>
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE:OFF"/>
+            <property name="onCommentFormat" value="CHECKSTYLE:ON"/>
+            <property name="checkFormat" value=".*"/>
+        </module>
 
         <!-- ===== IMPORTS ===== -->
 
