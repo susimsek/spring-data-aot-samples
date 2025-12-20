@@ -33,7 +33,11 @@ jobs:
           command: ./mvnw -B -ntp -Pprod verify
       - run:
           name: Analyze code with SonarQube
-          command: ./mvnw -ntp initialize sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=susimsek -Dsonar.token=${SONAR_TOKEN}
+          command: |
+            ./mvnw -ntp initialize sonar:sonar \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.organization=susimsek \
+              -Dsonar.token=${SONAR_TOKEN}
 
   docker-push:
     executor: jdk
