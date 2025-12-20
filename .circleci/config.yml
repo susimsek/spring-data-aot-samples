@@ -30,7 +30,7 @@ jobs:
       - save_cache:
           key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
-            - ~/.m2
+            - ~/.m2/repository
       - run:
           name: Test
           command: ./mvnw -B -ntp -Pprod verify
