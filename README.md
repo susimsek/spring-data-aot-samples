@@ -54,3 +54,12 @@
 ## 🧽 Code format (Spotless)
 - Auto-format: `./mvnw -DskipTests spotless:apply`
 - Auto-format on build: `./mvnw process-sources` (and any later phase like `./mvnw test`, `./mvnw package`)
+
+## 📊 Sonar (JHipster-style)
+- CircleCI env vars: `SONAR_TOKEN`, `SONAR_PROJECT_KEY` (optional: `SONAR_HOST_URL`, `SONAR_ORGANIZATION`)
+- Local run: `SONAR_TOKEN=... SONAR_PROJECT_KEY=... SONAR_ORGANIZATION=... SONAR_HOST_URL=https://sonarcloud.io ./mvnw -ntp -Pprod,sonar verify sonar:sonar`
+
+## 🧪 Tests & coverage (Sonar)
+- Unit tests: Surefire (default), reports in `target/surefire-reports`
+- Integration tests: Failsafe (`**/*IT.java`), reports in `target/failsafe-reports`
+- Coverage: JaCoCo XML reports in `target/site/jacoco/jacoco.xml` and `target/site/jacoco-it/jacoco.xml`

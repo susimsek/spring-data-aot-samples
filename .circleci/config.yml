@@ -19,8 +19,11 @@ jobs:
           name: Print Java Version
           command: java -version
       - run:
-          name: Build and test
-          command: mvn -ntp -Pprod verify
+          name: Test
+          command: mvn -B -ntp -Pprod verify
+      - run:
+          name: Analyze code with SonarQube
+          command: mvn -B -ntp initialize sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${SONAR_TOKEN}
       - save_cache:
           key: m2-{{ checksum "pom.xml" }}
           paths:
@@ -35,7 +38,7 @@ jobs:
             - m2-{{ checksum "pom.xml" }}
             - m2-
       - run:
-          name: Jib build & push (latest)
+          name: Publish docker image
           command: |
             mvn -ntp -Pprod -DskipTests verify jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \

@@ -34,13 +34,15 @@
         <bootstrap.version>5.3.0</bootstrap.version>
         <font-awesome.version>6.0.0</font-awesome.version>
         <webjars-locator.version>1.0.1</webjars-locator.version>
-        <hibernate.version>7.1.9.Final</hibernate.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <jib-maven-plugin.image>eclipse-temurin:21-jre-alpine</jib-maven-plugin.image>
         <jib-maven-plugin.architecture>amd64</jib-maven-plugin.architecture>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-        <checkstyle.version>12.2.0</checkstyle.version>
+        <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+        <sonar-maven-plugin.version>5.4.0.6343</sonar-maven-plugin.version>
         <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
+        <checkstyle.version>12.2.0</checkstyle.version>
     </properties>
     <dependencies>
         <dependency>
@@ -216,9 +218,9 @@
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
-                    <includes>pom.xml,README.md</includes>
-                    <excludes>.git/**/*,target/**/*</excludes>
-                    <sourceDirectories>./</sourceDirectories>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <excludes>**/.git/**,**/target/**,**/generated-sources/**,**/generated-test-sources/**,**/*_.java
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -257,7 +259,7 @@
                         </platforms>
                     </from>
                     <to>
-                        <image>spring-data-aot-samples:latest</image>
+                        <image>note-app:latest</image>
                     </to>
                     <container>
                         <ports>
@@ -265,6 +267,101 @@
                         </ports>
                     </container>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <runOrder>alphabetical</runOrder>
+                    <excludes>
+                        <exclude>**/*IT*</exclude>
+                        <exclude>**/*IntTest*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
+                <configuration>
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <runOrder>alphabetical</runOrder>
+                    <includes>
+                        <include>**/*IT*</include>
+                        <include>**/*IntTest*</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>pre-unit-tests</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>pre-integration-tests</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-integration-tests</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>sonar-project.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
