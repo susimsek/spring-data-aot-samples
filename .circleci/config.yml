@@ -10,7 +10,11 @@ jobs:
   build:
     executor: jdk
     steps:
-      - checkout
+      - git-shallow-clone/checkout_advanced:
+          clone_options: '--filter=blob:none'
+      - run:
+          name: Git fetch
+          command: git fetch --no-filter --refetch
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
