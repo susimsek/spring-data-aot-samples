@@ -13,34 +13,40 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - m2-{{ checksum "pom.xml" }}
-            - m2-
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-
       - run:
           name: Print Java Version
           command: java -version
-      - run:
-          name: Test
-          command: mvn -B -ntp -Pprod verify
-      - run:
-          name: Analyze code with SonarQube
-          command: mvn -B -ntp initialize sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${SONAR_TOKEN}
       - save_cache:
-          key: m2-{{ checksum "pom.xml" }}
+          key: v1-dependencies-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2/repository
+      - run:
+          name: Give Executable Power
+          command: chmod +x mvnw
+      - run:
+          name: Test
+          command: ./mvnw -B -ntp -Pprod verify
+      - run:
+          name: Analyze code with SonarQube
+          command: ./mvnw -ntp initialize sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=susimsek -Dsonar.token=${SONAR_TOKEN}
 
   docker-push:
     executor: jdk
     steps:
       - checkout
+      - run:
+          name: Give Executable Power
+          command: chmod +x mvnw
       - restore_cache:
           keys:
-            - m2-{{ checksum "pom.xml" }}
-            - m2-
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-
       - run:
           name: Publish docker image
           command: |
-            mvn -ntp -Pprod -DskipTests verify jib:build \
+            ./mvnw -ntp -Pprod -DskipTests verify jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
               -Djib.to.tags=latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
