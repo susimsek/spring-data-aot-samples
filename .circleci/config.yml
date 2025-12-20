@@ -10,11 +10,10 @@ jobs:
   build:
     executor: jdk
     steps:
-      - git-shallow-clone/checkout_advanced:
-          clone_options: '--filter=blob:none'
+      - checkout
       - run:
           name: Git fetch
-          command: git fetch --no-filter --refetch
+          command: git fetch --prune --tags --no-filter --refetch
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
@@ -40,13 +39,13 @@ jobs:
     executor: jdk
     steps:
       - checkout
-      - run:
-          name: Give Executable Power
-          command: chmod +x mvnw
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
             - v1-dependencies-
+      - run:
+          name: Give Executable Power
+          command: chmod +x mvnw
       - run:
           name: Publish docker image
           command: |
