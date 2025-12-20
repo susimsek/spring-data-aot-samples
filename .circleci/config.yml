@@ -60,7 +60,7 @@ jobs:
       - run:
           name: Publish docker image
           command: |
-            ./mvnw -ntp -Pprod -DskipTests verify jib:build \
+            ./mvnw -ntp -Pprod -DskipTests package jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
               -Djib.to.tags=latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
