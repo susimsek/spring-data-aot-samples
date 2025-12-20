@@ -40,7 +40,7 @@
         <jib-maven-plugin.architecture>amd64</jib-maven-plugin.architecture>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-        <sonar-maven-plugin.version>5.4.0.6343</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>
         <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
         <checkstyle.version>12.2.0</checkstyle.version>
     </properties>
