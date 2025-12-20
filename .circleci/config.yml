@@ -21,13 +21,16 @@ jobs:
       - run:
           name: Print Java Version
           command: java -version
-      - save_cache:
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-          paths:
-            - ~/.m2/repository
       - run:
           name: Give Executable Power
           command: chmod +x mvnw
+      - run:
+          name: Install Maven dependencies
+          command: ./mvnw -ntp -Pprod dependency:go-offline
+      - save_cache:
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2
       - run:
           name: Test
           command: ./mvnw -B -ntp -Pprod verify
