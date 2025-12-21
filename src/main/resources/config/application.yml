@@ -3,6 +3,10 @@ spring:
     name: spring-data-aot-samples
   profiles:
     active: '@spring.profiles.active@'
+  docker:
+    compose:
+      lifecycle-management: start-only
+      file: src/main/docker/services.yml
   cache:
     type: caffeine
   main:

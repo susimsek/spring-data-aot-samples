@@ -462,6 +462,17 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>docker-compose</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-docker-compose</artifactId>
+                    <scope>runtime</scope>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 
 </project>

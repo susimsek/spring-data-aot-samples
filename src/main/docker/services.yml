@@ -1,0 +1,10 @@
+# Dev purpose only. Harden for production usage.
+name: note-app
+
+services:
+  postgresql:
+    extends:
+      file: ./postgresql.yml
+      service: postgresql
+    profiles:
+      - prod
