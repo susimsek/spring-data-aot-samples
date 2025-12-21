@@ -12,8 +12,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   jpa:
-    hibernate:
-      ddl-auto: none
+    open-in-view: false
     properties:
       hibernate.jdbc.time_zone: Europe/Istanbul
       hibernate.cache.use_second_level_cache: true
@@ -23,7 +22,11 @@ spring:
       hibernate.order_inserts: true
       hibernate.order_updates: true
       hibernate.jdbc.fetch_size: 50
-    open-in-view: false
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        implicit-strategy: org.springframework.boot.hibernate.SpringImplicitNamingStrategy
   mvc:
     problemdetails:
       enabled: true
@@ -36,6 +39,9 @@ spring:
         max-page-size: 100
         one-indexed-parameters: false
         serialization-mode: via_dto
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
   messages:
     basename: i18n/messages
   jackson:
@@ -47,3 +53,62 @@ spring:
   threads:
     virtual:
       enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - configprops
+          - env
+          - health
+          - info
+          - logfile
+          - loggers
+          - prometheus
+          - threaddump
+          - caches
+          - liquibase
+  endpoint:
+    health:
+      show-details: when_authorized
+      roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
+  info:
+    git:
+      mode: full
+    env:
+      enabled: false
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 60
+  observations:
+    key-values:
+      application: ${spring.application.name}
+  metrics:
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      process: true
+      system: true
+    distribution:
+      percentiles-histogram:
+        all: true
+      percentiles:
+        all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
+    data:
+      repository:
+        autotime:
+          enabled: true
+    tags:
+      application: ${spring.application.name}
+
