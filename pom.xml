@@ -39,6 +39,7 @@
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <jib-maven-plugin.image>eclipse-temurin:21-jre-alpine</jib-maven-plugin.image>
         <jib-maven-plugin.architecture>amd64</jib-maven-plugin.architecture>
+        <jib-spring-boot-extension-maven.version>0.1.0</jib-spring-boot-extension-maven.version>
         <maven.version>3.9.0</maven.version>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
@@ -212,11 +213,15 @@
                 <configuration>
                     <rules>
                         <requireMavenVersion>
-                            <message>You are running an older version of Maven. This project requires at least Maven ${maven.version}.</message>
+                            <message>You are running an older version of Maven. This project requires at least Maven
+                                ${maven.version}.
+                            </message>
                             <version>[${maven.version},)</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                            <message>You are running an incompatible version of Java. This project requires Java ${java.version}+.</message>
+                            <message>You are running an incompatible version of Java. This project requires Java
+                                ${java.version}+.
+                            </message>
                             <version>[${java.version},)</version>
                         </requireJavaVersion>
                     </rules>
@@ -310,7 +315,21 @@
                             <port>8080</port>
                         </ports>
                     </container>
+                    <pluginExtensions>
+                        <pluginExtension>
+                            <implementation>
+                                com.google.cloud.tools.jib.maven.extension.springboot.JibSpringBootExtension
+                            </implementation>
+                        </pluginExtension>
+                    </pluginExtensions>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-spring-boot-extension-maven</artifactId>
+                        <version>${jib-spring-boot-extension-maven.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
