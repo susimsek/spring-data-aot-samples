@@ -55,3 +55,8 @@ logging:
     root: info
     org.hibernate.SQL: info
     io.github.susimsek.springdataaotsamples: info
+
+management:
+  tracing:
+    sampling:
+      probability: 0.1

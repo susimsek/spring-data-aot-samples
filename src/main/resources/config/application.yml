@@ -1,6 +1,6 @@
 spring:
   application:
-    name: spring-data-aot-samples
+    name: note-app
   profiles:
     active: '@spring.profiles.active@'
   docker:
@@ -85,11 +85,6 @@ management:
       mode: full
     env:
       enabled: false
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-        step: 60
   observations:
     key-values:
       application: ${spring.application.name}

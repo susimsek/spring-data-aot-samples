@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.susimsek</groupId>
@@ -26,15 +26,17 @@
         <tag/>
         <url/>
     </scm>
-    <properties>
-        <java.version>21</java.version>
-        <maven.version>3.2.5</maven.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <springdoc-openapi-starter.version>3.0.0</springdoc-openapi-starter.version>
-        <bootstrap.version>5.3.0</bootstrap.version>
-        <font-awesome.version>6.0.0</font-awesome.version>
-        <webjars-locator.version>1.0.1</webjars-locator.version>
+	    <properties>
+	        <java.version>21</java.version>
+	        <maven.version>3.2.5</maven.version>
+	        <mapstruct.version>1.6.3</mapstruct.version>
+	        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+	        <springdoc-openapi-starter.version>3.0.0</springdoc-openapi-starter.version>
+	        <opentelemetry-logback-appender.version>2.23.0-alpha</opentelemetry-logback-appender.version>
+	        <datasource-micrometer-spring-boot.version>2.0.1</datasource-micrometer-spring-boot.version>
+	        <bootstrap.version>5.3.0</bootstrap.version>
+	        <font-awesome.version>6.0.0</font-awesome.version>
+	        <webjars-locator.version>1.0.1</webjars-locator.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <jib-maven-plugin.image>eclipse-temurin:21-jre-alpine</jib-maven-plugin.image>
@@ -103,10 +105,19 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
         </dependency>
+	        <dependency>
+	            <groupId>io.opentelemetry.instrumentation</groupId>
+	            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+	            <version>${opentelemetry-logback-appender.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>net.ttddyy.observation</groupId>
+	            <artifactId>datasource-micrometer-spring-boot</artifactId>
+	            <version>${datasource-micrometer-spring-boot.version}</version>
+	        </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>

@@ -1,0 +1,29 @@
+# Dev purpose only. DO NOT use in production.
+name: note-app
+
+services:
+  grafana-lgtm:
+    image: grafana/otel-lgtm:0.13.0
+    container_name: grafana-lgtm
+    ports:
+      - "127.0.0.1:3000:3000" # Grafana UI
+      - "127.0.0.1:4317:4317" # OTLP gRPC
+      - "127.0.0.1:4318:4318" # OTLP HTTP
+      - "127.0.0.1:9090:9090" # Prometheus
+    # volumes:
+    #   - grafana_data:/data/grafana
+    #   - prometheus_data:/data/prometheus
+    #   - loki_data:/data/loki
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+    restart: unless-stopped
+
+# volumes:
+#   grafana_data:
+#   prometheus_data:
+#   loki_data:
