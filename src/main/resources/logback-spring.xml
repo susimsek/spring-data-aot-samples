@@ -3,10 +3,6 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <!-- This is the new OpenTelemetry appender -->
-    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
-    </appender>
-
     <!-- Noisy frameworks trimmed down to WARN to keep dev console readable -->
     <logger name="com.zaxxer" level="WARN"/>
     <logger name="org.apache" level="WARN"/>
@@ -19,10 +15,11 @@
     <logger name="LiquibaseSchemaResolver" level="INFO"/>
     <logger name="io.swagger.v3" level="INFO"/>
     <logger name="_org.springframework.web.servlet.HandlerMapping.Mappings" level="INFO"/>
+    <logger name="net.ttddyy.observation.tracing.DataSourceObservationListener" level="INFO"/>
+    <logger name="io.micrometer.tracing.otel.propagation.BaggageTextMapPropagator" level="INFO"/>
 
     <springProperty name="log.level" source="logging.level.root" defaultValue="INFO"/>
     <root level="${log.level}">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="OTEL"/>
     </root>
 </configuration>

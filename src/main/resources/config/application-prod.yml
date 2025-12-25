@@ -29,6 +29,11 @@ spring:
           cache-public: true
 
 application:
+  cache:
+    caffeine:
+      ttl: PT1H
+      initial-capacity: 500
+      maximum-size: 1000
   security:
     jwt:
       # Generate at least a 256-bit secret, e.g. openssl rand -base64 32
@@ -38,11 +43,6 @@ application:
       access-token-ttl: PT15M
       refresh-token-ttl: PT30M
       refresh-token-ttl-for-remember-me: P7D
-  cache:
-    caffeine:
-      ttl: PT1H
-      initial-capacity: 500
-      maximum-size: 1000
 
 springdoc:
   api-docs:

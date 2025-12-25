@@ -27,6 +27,11 @@ spring:
           cache-public: false
 
 application:
+  cache:
+    caffeine:
+      ttl: PT1H
+      initial-capacity: 50
+      maximum-size: 100
   api-docs:
     title: Note API
     description: Note endpoints with CRUD operations.
@@ -40,11 +45,6 @@ application:
       access-token-ttl: PT30M
       refresh-token-ttl: PT2H
       refresh-token-ttl-for-remember-me: P30D
-  cache:
-    caffeine:
-      ttl: PT1H
-      initial-capacity: 50
-      maximum-size: 100
 
 springdoc:
   swagger-ui:
@@ -66,12 +66,19 @@ logging:
     io.github.susimsek.springdataaotsamples: debug
 
 management:
+  logging:
+    export:
+      enabled: false
   tracing:
     sampling:
       probability: 1.0
+    export:
+      otlp:
+        enabled: false
   otlp:
     metrics:
       export:
+        enabled: false
         url: http://localhost:4318/v1/metrics
   opentelemetry:
     tracing:
