@@ -57,6 +57,26 @@ logging:
     io.github.susimsek.springdataaotsamples: info
 
 management:
+  logging:
+    export:
+      enabled: false
   tracing:
     sampling:
       probability: 0.1
+    export:
+      otlp:
+        enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false
+        url: http://localhost:4318/v1/metrics
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
