@@ -919,23 +919,23 @@ function renderNotes(data) {
         pageInfo.hidden = false;
     }
 
-    if (!notes.length) {
-        const emptyMsg = state.query
-            ? 'No notes match your search.'
-            : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
-        const emptyIcon = state.query
-            ? 'fa-magnifying-glass'
-            : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
-        totalLabel.hidden = true;
-        noteGrid.innerHTML = `
-                <div class="col-12">
-                    <div class="list-group w-100">
-                        <div class="list-group-item text-muted small d-flex align-items-center gap-2">
-                            <i class="fa-solid ${emptyIcon}"></i>
-                            <span>${emptyMsg}</span>
-                        </div>
-                    </div>
-                </div>`;
+	    if (!notes.length) {
+	        const emptyMsg = state.query
+	            ? 'No notes match your search.'
+	            : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
+	        const emptyIcon = state.query
+	            ? 'fa-circle-info'
+	            : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
+	        totalLabel.hidden = true;
+	        noteGrid.innerHTML = `
+	                <div class="col-12">
+	                    <div class="list-group w-100">
+	                        <div class="list-group-item text-muted small d-flex align-items-center gap-2">
+	                            <i class="fa-solid ${emptyIcon}"></i>
+	                            <span>${emptyMsg}</span>
+	                        </div>
+	                    </div>
+	                </div>`;
         bulkRow?.classList.add('d-none');
         controlsRow?.classList.add('d-none');
         clearSelection();
