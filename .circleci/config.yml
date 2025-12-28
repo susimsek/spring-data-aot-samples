@@ -104,7 +104,7 @@ jobs:
           name: Build GraalVM native executable
           command: |
             ./mvnw -ntp -Pprod,native -DskipTests \
-              -Dnative-build-args="--verbose --static --libc=musl -J-Xmx6g" \
+              -Dnative-build-args="--verbose -Os --static --libc=musl -J-Xmx6g" \
               native:compile
       - run:
           name: Compress native executable with UPX
