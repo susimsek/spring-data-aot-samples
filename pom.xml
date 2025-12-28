@@ -519,27 +519,6 @@
                 </dependency>
             </dependencies>
         </profile>
-        <profile>
-            <id>fully-static</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.graalvm.buildtools</groupId>
-                        <artifactId>native-maven-plugin</artifactId>
-                        <configuration>
-                            <imageName>native-executable</imageName>
-                            <buildArgs>
-                                <buildArg>--no-fallback</buildArg>
-                                <buildArg>-Os</buildArg>
-                                <buildArg>--static</buildArg>
-                                <buildArg>--libc=musl</buildArg>
-                                <buildArg>${native-build-args}</buildArg>
-                            </buildArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>
