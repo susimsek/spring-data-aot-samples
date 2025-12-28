@@ -109,6 +109,15 @@ jobs:
       - run:
           name: Compress native executable with UPX
           command: upx --lzma --best target/native-executable
+      - run:
+          name: Publish docker image
+          command: |
+            ./mvnw -ntp -Pprod,native -DskipTests \
+              jib:build \
+              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
+              -Djib.to.tags=latest-native \
+              -Djib.to.auth.username="${DOCKER_USERNAME}" \
+              -Djib.to.auth.password="${DOCKER_PASSWORD}"
 
 workflows:
   build-and-push:

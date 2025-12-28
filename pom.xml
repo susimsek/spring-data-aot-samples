@@ -356,13 +356,6 @@
                             <port>8080</port>
                         </ports>
                     </container>
-                    <pluginExtensions>
-                        <pluginExtension>
-                            <implementation>
-                                com.google.cloud.tools.jib.maven.extension.springboot.JibSpringBootExtension
-                            </implementation>
-                        </pluginExtension>
-                    </pluginExtensions>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -513,6 +506,43 @@
                     <optional>true</optional>
                 </dependency>
             </dependencies>
+        </profile>
+        <profile>
+            <id>native</id>
+            <properties>
+                <jib-maven-plugin.image>scratch</jib-maven-plugin.image>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <configuration>
+                            <pluginExtensions>
+                                <pluginExtension>
+                                    <implementation>
+                                        com.google.cloud.tools.jib.maven.extension.nativeimage.JibNativeImageExtension
+                                    </implementation>
+                                    <properties>
+                                        <imageName>${native-image-name}</imageName>
+                                    </properties>
+                                </pluginExtension>
+                            </pluginExtensions>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.google.cloud.tools</groupId>
+                                <artifactId>jib-native-image-extension-maven</artifactId>
+                                <version>${jib-native-image-extension-maven.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
