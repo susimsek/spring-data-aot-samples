@@ -6,6 +6,11 @@ executors:
       - image: cimg/openjdk:25.0
     resource_class: medium
 
+  graalvm:
+    docker:
+      - image: ghcr.io/graalvm/graalvm-community:25
+    resource_class: large
+
 jobs:
   build:
     executor: jdk
@@ -65,12 +70,12 @@ jobs:
           command: |
             ./mvnw -ntp -Pprod -DskipTests jib:build \
               -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
-              -Djib.to.tags=${CIRCLE_SHA1:0:7},latest \
+              -Djib.to.tags=latest \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
               -Djib.to.auth.password="${DOCKER_PASSWORD}"
 
   docker-push-native:
-    executor: jdk
+    executor: graalvm
     steps:
       - checkout
       - restore_cache:
@@ -80,16 +85,17 @@ jobs:
       - run:
           name: Give Executable Power
           command: chmod +x mvnw
-      - setup_remote_docker:
-          docker_layer_caching: true
       - run:
-          name: Build & Publish native docker image
+          name: Prepare GraalVM native-image
           command: |
-            ./mvnw -ntp -Pprod,native -DskipTests spring-boot:build-image \
-              -Dspring-boot.build-image.imageName=docker.io/${DOCKER_USERNAME}/note-app:latest-native \
-              -Dspring-boot.build-image.publish=true \
-              -Ddocker.publishRegistry.username=${DOCKER_USERNAME} \
-              -Ddocker.publishRegistry.password=${DOCKER_PASSWORD}
+            java -version
+            gu --version
+            gu install native-image
+            native-image --version
+      - run:
+          name: Build GraalVM native executable
+          command: |
+            ./mvnw -ntp -Pprod,native -DskipTests native:compile
 
 workflows:
   build-and-push:
@@ -101,9 +107,16 @@ workflows:
           filters:
             branches:
               only: main
-      - docker-push-native:
+      - approve-native:
+          type: approval
           requires:
             - build
+          filters:
+            branches:
+              only: main
+      - docker-push-native:
+          requires:
+            - approve-native
           filters:
             branches:
               only: main
