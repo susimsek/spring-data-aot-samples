@@ -8,7 +8,7 @@ executors:
 
   graalvm:
     docker:
-      - image: ghcr.io/graalvm/graalvm-community:25
+      - image: ghcr.io/graalvm/native-image-community:25
     resource_class: large
 
 jobs:
@@ -86,11 +86,9 @@ jobs:
           name: Give Executable Power
           command: chmod +x mvnw
       - run:
-          name: Prepare GraalVM native-image
+          name: Print GraalVM Version
           command: |
             java -version
-            gu --version
-            gu install native-image
             native-image --version
       - run:
           name: Build GraalVM native executable
