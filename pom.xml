@@ -300,29 +300,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-maven-plugin</artifactId>
-                <version>${hibernate.version}</version>
-                <executions>
-                    <execution>
-                        <id>enhance</id>
-                        <goals>
-                            <goal>enhance</goal>
-                        </goals>
-                        <configuration>
-                            <enableAssociationManagement>true</enableAssociationManagement>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.graalvm.buildtools</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <configuration>
-                    <imageName>${native-image-name}</imageName>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
@@ -515,8 +492,27 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.hibernate.orm</groupId>
+                        <artifactId>hibernate-maven-plugin</artifactId>
+                        <version>${hibernate.version}</version>
+                        <executions>
+                            <execution>
+                                <id>enhance</id>
+                                <goals>
+                                    <goal>enhance</goal>
+                                </goals>
+                                <configuration>
+                                    <enableAssociationManagement>true</enableAssociationManagement>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
+                        <configuration>
+                            <imageName>${native-image-name}</imageName>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>com.google.cloud.tools</groupId>
