@@ -1,4 +1,4 @@
-# Dev purpose only. Harden for production usage.
+# Dev purpose only. DO NOT use in production.
 name: note-app
 
 services:

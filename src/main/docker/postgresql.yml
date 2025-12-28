@@ -1,4 +1,5 @@
 # Dev purpose only. DO NOT use in production.
+name: note-app
 services:
   postgresql:
     image: postgres:18-alpine

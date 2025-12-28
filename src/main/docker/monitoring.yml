@@ -1,6 +1,5 @@
 # Dev purpose only. DO NOT use in production.
 name: note-app
-
 services:
   grafana-lgtm:
     image: grafana/otel-lgtm:0.13.0
