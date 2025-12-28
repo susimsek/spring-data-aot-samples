@@ -7,15 +7,14 @@ import org.springframework.validation.ObjectError;
 
 @Schema(name = "Violation", description = "Details of a single validation failure")
 public record Violation(
-        @JsonProperty("code")
-                @Schema(description = "Validation rule code that failed", example = "size")
+        @JsonProperty @Schema(description = "Validation rule code that failed", example = "size")
                 String code,
         @JsonProperty("object")
                 @Schema(
                         description = "Name of the validated object",
                         example = "generateArticleRequest")
                 String objectName,
-        @JsonProperty("object") @Schema(description = "Value that was rejected", example = "x")
+        @JsonProperty @Schema(description = "Field name that failed validation", example = "title")
                 String field,
         @JsonProperty @Schema(description = "Value that was rejected", example = "x")
                 Object rejectedValue,

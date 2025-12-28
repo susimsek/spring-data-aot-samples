@@ -31,6 +31,9 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @Setter(onMethod_ = @Autowired)
     private MessageSource messageSource;
 
@@ -146,6 +149,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<@NonNull Object> handleUnhandled(
             @NonNull Exception ex, @NonNull WebRequest request) {
+        log.error("Unhandled exception", ex);
         return this.handleExceptionInternal(
                 ex,
                 this.createProblemDetail(
