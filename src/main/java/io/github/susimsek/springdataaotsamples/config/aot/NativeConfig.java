@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.config.aot;
 
 import io.github.susimsek.springdataaotsamples.config.audit.RevisionInfoListener;
 import io.github.susimsek.springdataaotsamples.web.error.Violation;
+import java.time.Instant;
 import liquibase.change.core.AddDefaultValueChange;
 import liquibase.change.core.LoadDataChange;
 import liquibase.change.core.LoadDataColumnConfig;
@@ -15,8 +16,6 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.data.envers.repository.support.EnversRevisionRepositoryFactoryBean;
 import org.springframework.data.envers.repository.support.EnversRevisionRepositoryImpl;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-
-import java.time.Instant;
 
 @Configuration(proxyBeanMethods = false)
 @ImportRuntimeHints(NativeConfig.class)

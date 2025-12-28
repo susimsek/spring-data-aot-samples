@@ -48,6 +48,7 @@
         <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
         <checkstyle.version>12.2.0</checkstyle.version>
         <spring.profiles.active>dev</spring.profiles.active>
+        <native-build-args>--verbose</native-build-args>
     </properties>
     <dependencies>
         <dependency>
@@ -316,6 +317,12 @@
             <plugin>
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
+                <configuration>
+                    <buildArgs>
+                        <buildArg>--no-fallback</buildArg>
+                        <buildArg>${native-build-args}</buildArg>
+                    </buildArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
