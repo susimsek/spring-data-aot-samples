@@ -520,13 +520,16 @@
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
                         <configuration>
+                            <container>
+                                <workingDirectory>/tmp</workingDirectory>
+                            </container>
                             <pluginExtensions>
                                 <pluginExtension>
                                     <implementation>
                                         com.google.cloud.tools.jib.maven.extension.nativeimage.JibNativeImageExtension
                                     </implementation>
                                     <properties>
-                                        <imageName>${native-image-name}</imageName>
+                                        <imageName>${native-image-name}-upx</imageName>
                                     </properties>
                                 </pluginExtension>
                             </pluginExtensions>
