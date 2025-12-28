@@ -114,8 +114,7 @@ jobs:
           command: |
             ./mvnw -ntp -Pprod,native -DskipTests \
               jib:build \
-              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app \
-              -Djib.to.tags=latest-native \
+              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest-native \
               -Djib.to.auth.username="${DOCKER_USERNAME}" \
               -Djib.to.auth.password="${DOCKER_PASSWORD}"
 
