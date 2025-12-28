@@ -43,13 +43,13 @@
         <jib-maven-plugin.architecture>arm64</jib-maven-plugin.architecture>
         <jib-spring-boot-extension-maven.version>0.1.0</jib-spring-boot-extension-maven.version>
         <jib-native-image-extension-maven.version>0.1.0</jib-native-image-extension-maven.version>
+        <native-image-name>native-executable</native-image-name>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>
         <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>
         <checkstyle.version>12.2.0</checkstyle.version>
         <spring.profiles.active>dev</spring.profiles.active>
-        <native-build-args>--verbose</native-build-args>
     </properties>
     <dependencies>
         <dependency>
@@ -319,12 +319,7 @@
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
                 <configuration>
-                    <imageName>native-executable</imageName>
-                    <buildArgs>
-                        <buildArg>--no-fallback</buildArg>
-                        <buildArg>-Os</buildArg>
-                        <buildArg>${native-build-args}</buildArg>
-                    </buildArgs>
+                    <imageName>${native-image-name}</imageName>
                 </configuration>
             </plugin>
             <plugin>
