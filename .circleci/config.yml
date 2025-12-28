@@ -77,6 +77,15 @@ jobs:
   docker-push-native:
     executor: graalvm
     steps:
+      - run:
+          name: Enable 10GB swap
+          command: |
+            fallocate -l 10G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=10240
+            chmod 600 /swapfile
+            mkswap /swapfile
+            swapon /swapfile
+            free -h
+            swapon --show
       - checkout
       - restore_cache:
           keys:
