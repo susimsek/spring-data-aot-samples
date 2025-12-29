@@ -17,8 +17,7 @@ spring:
         active: prod
   datasource:
     url: jdbc:postgresql://localhost:5432/note
-    username: note
-    password:
+    username: ${SPRING_DATASOURCE_USERNAME}
   liquibase:
     contexts: prod
   web:
