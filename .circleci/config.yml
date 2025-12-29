@@ -105,6 +105,7 @@ jobs:
             ./mvnw -ntp -Pprod,native -DskipTests \
               -DbuildArgs="--no-fallback,-Os,--static,--libc=musl,--verbose,-J-Xmx6g" \
               native:compile
+          no_output_timeout: 40m
       - run:
           name: Compress native executable with UPX
           command: |
