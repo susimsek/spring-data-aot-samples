@@ -69,9 +69,9 @@ jobs:
           name: Publish docker image
           command: |
             ./mvnw -ntp -Pprod -DskipTests jib:build \
-              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest \
-              -Djib.to.auth.username="${DOCKER_USERNAME}" \
-              -Djib.to.auth.password="${DOCKER_PASSWORD}"
+              -Djib.to.image=ghcr.io/${GHCR_USERNAME}/note-app:latest \
+              -Djib.to.auth.username="${GHCR_USERNAME}" \
+              -Djib.to.auth.password="${GHCR_TOKEN}"
 
   docker-push-native:
     executor: graalvm
@@ -116,9 +116,9 @@ jobs:
           command: |
             ./mvnw -ntp -Pprod,native -DskipTests \
               jib:build \
-              -Djib.to.image=docker.io/${DOCKER_USERNAME}/note-app:latest-native \
-              -Djib.to.auth.username="${DOCKER_USERNAME}" \
-              -Djib.to.auth.password="${DOCKER_PASSWORD}"
+              -Djib.to.image=ghcr.io/${GHCR_USERNAME}/note-app:latest-native \
+              -Djib.to.auth.username="${GHCR_USERNAME}" \
+              -Djib.to.auth.password="${GHCR_TOKEN}"
 
 workflows:
   build-and-push:
