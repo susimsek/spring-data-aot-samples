@@ -9,7 +9,7 @@ executors:
   graalvm:
     docker:
       - image:  ghcr.io/graalvm/native-image-community:25-muslib
-    resource_class: large
+    resource_class: medium
 
 jobs:
   build:
@@ -103,7 +103,7 @@ jobs:
           name: Build GraalVM native executable
           command: |
             ./mvnw -ntp -Pprod,native -DskipTests \
-              -DbuildArgs="--no-fallback,-Os,--static,--libc=musl,--verbose,-J-Xmx6g" \
+              -DbuildArgs="--no-fallback,-Os,--static,--libc=musl,--verbose,-J-Xmx4g" \
               native:compile
           no_output_timeout: 40m
       - run:
