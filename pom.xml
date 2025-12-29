@@ -529,7 +529,7 @@
                                         com.google.cloud.tools.jib.maven.extension.nativeimage.JibNativeImageExtension
                                     </implementation>
                                     <properties>
-                                        <imageName>${native-image-name}-upx</imageName>
+                                        <imageName>${native-image-name}</imageName>
                                     </properties>
                                 </pluginExtension>
                             </pluginExtensions>

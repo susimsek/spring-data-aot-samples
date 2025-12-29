@@ -109,7 +109,6 @@ jobs:
           name: Compress native executable with UPX
           command: |
             upx --lzma --best \
-              -o target/native-executable-upx \
               target/native-executable
       - run:
           name: Publish docker image
