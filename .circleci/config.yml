@@ -11,12 +11,6 @@ jobs:
     executor: graalvm
     steps:
       - checkout
-      - run:
-          name: Install Git
-          command: microdnf -y install git
-      - run:
-          name: Git fetch
-          command: git fetch --prune --tags --no-filter --refetch
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "pom.xml" }}
