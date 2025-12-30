@@ -1,19 +1,14 @@
 version: 2.1
 
 executors:
-  jdk:
-    docker:
-      - image: cimg/openjdk:25.0
-    resource_class: medium
-
   graalvm:
     docker:
-      - image:  ghcr.io/graalvm/native-image-community:25-muslib
+      - image: ghcr.io/graalvm/native-image-community:25-muslib
     resource_class: large
 
 jobs:
-  build:
-    executor: jdk
+  build-and-push:
+    executor: graalvm
     steps:
       - checkout
       - run:
@@ -50,40 +45,6 @@ jobs:
             else
               echo "SONAR_TOKEN not set, skipping Sonar analysis."
             fi
-
-  docker-push:
-    executor: jdk
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            - v1-dependencies-
-      - run:
-          name: Give Executable Power
-          command: chmod +x mvnw
-      - run:
-          name: Package application
-          command: ./mvnw -ntp -Pprod -DskipTests package
-      - run:
-          name: Publish docker image
-          command: |
-            ./mvnw -ntp -Pprod -DskipTests jib:build \
-              -Djib.to.image=ghcr.io/${GHCR_USERNAME}/note-app:latest \
-              -Djib.to.auth.username="${GHCR_USERNAME}" \
-              -Djib.to.auth.password="${GHCR_TOKEN}"
-
-  docker-push-native:
-    executor: graalvm
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            - v1-dependencies-
-      - run:
-          name: Give Executable Power
-          command: chmod +x mvnw
       - run:
           name: Install UPX
           command: |
@@ -114,6 +75,11 @@ jobs:
       - run:
           name: Publish docker image
           command: |
+            if [ "${CIRCLE_BRANCH}" != "main" ]; then
+              echo "Not on main (${CIRCLE_BRANCH}); skipping docker image push."
+              exit 0
+            fi
+
             ./mvnw -ntp -Pprod,native -DskipTests \
               jib:build \
               -Djib.to.image=ghcr.io/${GHCR_USERNAME}/note-app:latest-native \
@@ -123,23 +89,7 @@ jobs:
 workflows:
   build-and-push:
     jobs:
-      - build
-      - docker-push:
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
-      - approve-native:
-          type: approval
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
-      - docker-push-native:
-          requires:
-            - approve-native
+      - build-and-push:
           filters:
             branches:
               only: main
