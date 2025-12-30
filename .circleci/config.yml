@@ -7,10 +7,13 @@ executors:
     resource_class: large
 
 jobs:
-  build-and-push:
+  build:
     executor: graalvm
     steps:
       - checkout
+      - run:
+          name: Install Git
+          command: microdnf -y install git
       - run:
           name: Git fetch
           command: git fetch --prune --tags --no-filter --refetch
@@ -89,7 +92,4 @@ jobs:
 workflows:
   build-and-push:
     jobs:
-      - build-and-push:
-          filters:
-            branches:
-              only: main
+      - build
