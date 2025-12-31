@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "note-app.fullname" . }}-config
+  labels:
+    {{ include "note-app.labels" . | nindent 4 }}
+data:
+  application.yml: |
+    spring:
+      profiles:
+        active: {{ .Values.spring.profiles.active | quote }}
+      datasource:
+        url: {{ .Values.spring.datasource.url | quote }}
