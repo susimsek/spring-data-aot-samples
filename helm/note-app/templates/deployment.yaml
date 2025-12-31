@@ -82,7 +82,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: {{ include "note-app.fullname" . }}-config
+            name: {{ include "note-app.fullname" . }}
             items:
               - key: application.yml
                 path: application.yml
