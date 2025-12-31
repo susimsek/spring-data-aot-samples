@@ -15,10 +15,13 @@ spec:
       {{ include "note-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret-database: {{ include (print $.Template.BasePath "/secret-database.yaml") . | sha256sum }}
+        checksum/secret-jwt: {{ include (print $.Template.BasePath "/secret-jwt.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{ toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{ include "note-app.selectorLabels" . | nindent 8 }}
     spec:
@@ -29,6 +32,39 @@ spec:
       serviceAccountName: {{ include "note-app.serviceAccountName" . }}
       securityContext:
         {{ toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-db
+          image: "{{ .Values.initContainers.waitForDb.image.repository }}:{{ .Values.initContainers.waitForDb.image.tag }}"
+          imagePullPolicy: {{ .Values.initContainers.waitForDb.image.pullPolicy }}
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              DATABASE_URL="{{ .Values.spring.datasource.url }}"
+
+              # Extract host:port from JDBC URL (e.g. jdbc:postgresql://host:5432/db)
+              NCTARGET=$(echo "$DATABASE_URL" | awk -F ';|/' '{print $3}')
+              echo "Checking database socket for JDBC URL: $DATABASE_URL"
+
+              if echo "$NCTARGET" | grep -q ":"; then
+                DB_HOST=${NCTARGET%:*}
+                DB_PORT=${NCTARGET##*:}
+              else
+                DB_HOST="$NCTARGET"
+                DB_PORT="5432"
+                echo "No port in JDBC URL; defaulting port to $DB_PORT"
+              fi
+
+              echo "Waiting for DB $DB_HOST:$DB_PORT"
+              while true; do
+                nc -z -w 1 "$DB_HOST" "$DB_PORT"
+                if [ $? -eq 0 ]; then
+                  echo "DB is UP"
+                  break
+                fi
+                echo "DB is not yet reachable; sleep for 5s before retry"
+                sleep 5
+              done
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

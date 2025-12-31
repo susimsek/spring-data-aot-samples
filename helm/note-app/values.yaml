@@ -16,6 +16,13 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest-native"
 
+initContainers:
+  waitForDb:
+    image:
+      repository: busybox
+      pullPolicy: IfNotPresent
+      tag: "1.37.0"
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
