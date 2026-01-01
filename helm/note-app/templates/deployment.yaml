@@ -42,29 +42,28 @@ spec:
             - |
               DATABASE_URL="{{ .Values.spring.datasource.url }}"
 
-              # Extract host:port from JDBC URL (e.g. jdbc:postgresql://host:5432/db)
-              NCTARGET=$(echo "$DATABASE_URL" | awk -F ';|/' '{print $3}')
               echo "Checking database socket for JDBC URL: $DATABASE_URL"
 
-              if echo "$NCTARGET" | grep -q ":"; then
-                DB_HOST=${NCTARGET%:*}
-                DB_PORT=${NCTARGET##*:}
-              else
-                DB_HOST="$NCTARGET"
-                DB_PORT="5432"
-                echo "No port in JDBC URL; defaulting port to $DB_PORT"
-              fi
+              case "$DATABASE_URL" in
+                jdbc:*://*:*/*)
+                  HP=${DATABASE_URL#jdbc:*://}
+                  HP=${HP%%/*}
+                  DB_HOST=${HP%%:*}
+                  DB_PORT=${HP##*:}
+                  ;;
+                *)
+                  echo "SKIP: JDBC URL must be in format jdbc:xxx://host:port/..."
+                  echo "Given: $DATABASE_URL"
+                  exit 0
+                  ;;
+              esac
 
               echo "Waiting for DB $DB_HOST:$DB_PORT"
-              while true; do
-                nc -z -w 1 "$DB_HOST" "$DB_PORT"
-                if [ $? -eq 0 ]; then
-                  echo "DB is UP"
-                  break
-                fi
-                echo "DB is not yet reachable; sleep for 5s before retry"
+              until nc -z -w 1 "$DB_HOST" "$DB_PORT"; do
                 sleep 5
               done
+
+              echo "DB is UP"
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
