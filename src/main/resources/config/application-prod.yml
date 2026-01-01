@@ -18,6 +18,9 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/note
     username: ${SPRING_DATASOURCE_USERNAME}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
   liquibase:
     contexts: prod
   web:
