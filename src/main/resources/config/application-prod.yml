@@ -20,7 +20,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     hikari:
       maximum-pool-size: 10
-      minimum-idle: 2
+      minimum-idle: 5
   liquibase:
     contexts: prod
   web:
