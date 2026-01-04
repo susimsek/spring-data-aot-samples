@@ -1,4 +1,4 @@
-name: Build Native (GraalVM) and Push GHCR
+name: Build Native
 
 on:
   push:
