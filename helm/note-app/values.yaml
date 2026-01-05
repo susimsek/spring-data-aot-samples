@@ -44,6 +44,35 @@ security:
   jwt:
     secret: "GOnGieF8gvSk01KtlZUwkpQB8U4tZWTrSt/BJm0+2Mk="
 
+management:
+  logging:
+    export:
+      otlp:
+        enabled: false
+
+  tracing:
+    sampling:
+      probability: 0.1
+    export:
+      otlp:
+        enabled: false
+
+  otlp:
+    metrics:
+      export:
+        enabled: false
+        url: http://lgtm.default.svc:4318/v1/metrics
+
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://lgtm.default.svc:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://lgtm.default.svc:4318/v1/logs
+
 # Recommended: store secrets in an existing Kubernetes Secret and reference it from templates.
 # The templates should mount all keys from this Secret via envFrom.
 existingSecret:

@@ -11,3 +11,28 @@ data:
         active: {{ .Values.spring.profiles.active | quote }}
       datasource:
         url: {{ .Values.spring.datasource.url | quote }}
+    management:
+      logging:
+        export:
+          otlp:
+            enabled: {{ .Values.management.logging.export.otlp.enabled }}
+      tracing:
+        sampling:
+          probability: {{ .Values.management.tracing.sampling.probability }}
+        export:
+          otlp:
+            enabled: {{ .Values.management.tracing.export.otlp.enabled }}
+      otlp:
+        metrics:
+          export:
+            enabled: {{ .Values.management.otlp.metrics.export.enabled }}
+            url: {{ .Values.management.otlp.metrics.export.url | quote }}
+      opentelemetry:
+        tracing:
+          export:
+            otlp:
+              endpoint: {{ .Values.management.opentelemetry.tracing.export.otlp.endpoint | quote }}
+        logging:
+          export:
+            otlp:
+              endpoint: {{ .Values.management.opentelemetry.logging.export.otlp.endpoint | quote }}
