@@ -61,7 +61,8 @@ logging:
 management:
   logging:
     export:
-      enabled: true
+      otlp:
+        enabled: true
   tracing:
     sampling:
       probability: 0.1
