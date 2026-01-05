@@ -61,17 +61,17 @@ logging:
 management:
   logging:
     export:
-      enabled: false
+      enabled: true
   tracing:
     sampling:
       probability: 0.1
     export:
       otlp:
-        enabled: false
+        enabled: true
   otlp:
     metrics:
       export:
-        enabled: false
+        enabled: true
         url: http://localhost:4318/v1/metrics
   opentelemetry:
     tracing:
