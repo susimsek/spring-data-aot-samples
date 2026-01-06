@@ -3,10 +3,12 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.EnumValue;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 public class EnumValueValidator implements ConstraintValidator<EnumValue, String> {
 
@@ -23,7 +25,7 @@ public class EnumValueValidator implements ConstraintValidator<EnumValue, String
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(@Nullable String value, ConstraintValidatorContext context) {
         if (value == null) {
             return true;
         }

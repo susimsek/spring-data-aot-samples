@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -29,10 +30,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
-    private static final org.slf4j.Logger log =
-            org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @Setter(onMethod_ = @Autowired)
     private MessageSource messageSource;
