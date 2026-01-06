@@ -112,8 +112,8 @@ class NoteControllerTest {
                                 .param("size", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Filtered note"))
-                .andExpect(jsonPath("$.page.number").value(1))
-                .andExpect(jsonPath("$.page.size").value(5));
+                .andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.size").value(5));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         ArgumentCaptor<Set<String>> tagsCaptor = ArgumentCaptor.forClass(Set.class);
@@ -213,7 +213,7 @@ class NoteControllerTest {
                                 .param("size", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Deleted note"))
-                .andExpect(jsonPath("$.page.size").value(3));
+                .andExpect(jsonPath("$.size").value(3));
 
         verify(noteTrashService)
                 .findDeletedForCurrentUser(

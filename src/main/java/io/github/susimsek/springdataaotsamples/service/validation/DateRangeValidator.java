@@ -3,9 +3,8 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.DateRange;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.jspecify.annotations.Nullable;
-
 import java.time.Instant;
+import org.jspecify.annotations.Nullable;
 
 public class DateRangeValidator implements ConstraintValidator<DateRange, Instant> {
 
@@ -22,7 +21,7 @@ public class DateRangeValidator implements ConstraintValidator<DateRange, Instan
     }
 
     @Override
-    public boolean isValid(@Nullable  Instant value, ConstraintValidatorContext context) {
+    public boolean isValid(@Nullable Instant value, ConstraintValidatorContext context) {
         if (value == null) {
             return true;
         }

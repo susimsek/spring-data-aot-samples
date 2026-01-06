@@ -30,4 +30,3 @@ class UsernameValidatorTest {
         assertThat(validator.isValid("alice name", null)).isFalse();
     }
 }
-

@@ -30,4 +30,3 @@ class TagValueValidatorTest {
         assertThat(validator.isValid("tag@", null)).isFalse();
     }
 }
-

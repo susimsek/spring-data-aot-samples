@@ -30,4 +30,3 @@ class HexColorValidatorTest {
         assertThat(validator.isValid("#12 34 56", null)).isFalse();
     }
 }
-

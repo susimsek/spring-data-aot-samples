@@ -18,14 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class NoteShareTokenCleanupSchedulerTest {
 
-    @Mock
-    private NoteShareTokenRepository noteShareTokenRepository;
+    @Mock private NoteShareTokenRepository noteShareTokenRepository;
 
-    @Mock
-    private CacheProvider cacheProvider;
+    @Mock private CacheProvider cacheProvider;
 
-    @InjectMocks
-    private NoteShareTokenCleanupScheduler scheduler;
+    @InjectMocks private NoteShareTokenCleanupScheduler scheduler;
 
     @Test
     void purgeExpiredAndRevokedShouldDeleteAndClearCaches() {
@@ -53,4 +50,3 @@ class NoteShareTokenCleanupSchedulerTest {
         verify(noteShareTokenRepository).deleteByRevokedTrue();
     }
 }
-

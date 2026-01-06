@@ -3,12 +3,11 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.EnumValue;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.jspecify.annotations.Nullable;
 
 public class EnumValueValidator implements ConstraintValidator<EnumValue, String> {
 

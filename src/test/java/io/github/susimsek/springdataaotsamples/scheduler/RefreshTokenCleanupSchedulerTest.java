@@ -18,14 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RefreshTokenCleanupSchedulerTest {
 
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    @Mock private RefreshTokenRepository refreshTokenRepository;
 
-    @Mock
-    private CacheProvider cacheProvider;
+    @Mock private CacheProvider cacheProvider;
 
-    @InjectMocks
-    private RefreshTokenCleanupScheduler scheduler;
+    @InjectMocks private RefreshTokenCleanupScheduler scheduler;
 
     @Test
     void purgeExpiredAndRevokedShouldDeleteAndClearCache() {
@@ -50,4 +47,3 @@ class RefreshTokenCleanupSchedulerTest {
         verify(refreshTokenRepository).deleteByRevokedTrue();
     }
 }
-

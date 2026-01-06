@@ -3,16 +3,16 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.EnumValue;
 import jakarta.validation.ConstraintValidatorContext;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -44,8 +44,10 @@ class EnumValueValidatorTest {
         EnumValueValidator validator = validatorFor(SampleEnum.class);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
-        HibernateConstraintValidatorContext hContext = mock(HibernateConstraintValidatorContext.class);
-        HibernateConstraintViolationBuilder builder = mock(HibernateConstraintViolationBuilder.class);
+        HibernateConstraintValidatorContext hContext =
+                mock(HibernateConstraintValidatorContext.class);
+        HibernateConstraintViolationBuilder builder =
+                mock(HibernateConstraintViolationBuilder.class);
 
         when(context.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(hContext);
         when(hContext.addMessageParameter(eq("allowedValues"), anyString())).thenReturn(hContext);
