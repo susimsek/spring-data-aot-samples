@@ -1,14 +1,9 @@
 package io.github.susimsek.springdataaotsamples.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.github.susimsek.springdataaotsamples.config.AuditingTestConfig;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +15,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(AuditingTestConfig.class)
