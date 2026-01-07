@@ -1,8 +1,8 @@
-import State from '/js/state.js';
-import Api from '/js/api.js';
-import Helpers from '/js/helpers.js';
-import Validation from '/js/validation.js';
-import Theme from '/js/theme.js';
+import State from './state.js';
+import Api from './api.js';
+import Helpers from './helpers.js';
+import Validation from './validation.js';
+import Theme from './theme.js';
 
 const {clearToken, setCurrentUser} = State;
 const {showToast} = Helpers;

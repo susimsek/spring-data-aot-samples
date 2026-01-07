@@ -1,11 +1,11 @@
-import Helpers from '/js/helpers.js';
-import State from '/js/state.js';
-import Api from '/js/api.js';
-import Render from '/js/render.js';
-import Ui from '/js/ui.js';
-import Validation from '/js/validation.js';
-import Diff from '/js/diff.js';
-import Theme from '/js/theme.js';
+import Helpers from './helpers.js';
+import State from './state.js';
+import Api from './api.js';
+import Render from './render.js';
+import Ui from './ui.js';
+import Validation from './validation.js';
+import Diff from './diff.js';
+import Theme from './theme.js';
 
 const {state, currentAuditor, clearToken, currentUsername, setCurrentUser, isAdmin} = State;
 const {escapeHtml, formatDate, showToast, debounce} = Helpers;

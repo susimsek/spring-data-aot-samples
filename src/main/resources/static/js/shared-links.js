@@ -1,7 +1,7 @@
-import Api from '/js/api.js';
-import Theme from '/js/theme.js';
-import State from '/js/state.js';
-import Helpers from '/js/helpers.js';
+import Api from './api.js';
+import Theme from './theme.js';
+import State from './state.js';
+import Helpers from './helpers.js';
 
 const {escapeHtml, formatDate, showToast, debounce} = Helpers;
 

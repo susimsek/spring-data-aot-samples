@@ -1,4 +1,4 @@
-import State from '/js/state.js';
+import State from './state.js';
 
 // API client for note operations
 const Api = (() => {

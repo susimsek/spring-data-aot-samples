@@ -1,6 +1,6 @@
-import Api from '/js/api.js';
-import Theme from '/js/theme.js';
-import State from '/js/state.js';
+import Api from './api.js';
+import Theme from './theme.js';
+import State from './state.js';
 
 const shareToken = extractTokenFromPath() || new URLSearchParams(window.location.search).get('share_token');
 let noteId = null;
