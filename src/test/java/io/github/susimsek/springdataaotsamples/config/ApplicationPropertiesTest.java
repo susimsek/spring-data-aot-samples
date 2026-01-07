@@ -45,7 +45,8 @@ class ApplicationPropertiesTest {
         props.getCache().getCaffeine().setMaximumSize(42);
         props.getApiDocs().setTitle("Custom");
 
-        assertThat(props.getSecurity().getJwt().getAccessTokenTtl()).isEqualTo(Duration.ofMinutes(5));
+        assertThat(props.getSecurity().getJwt().getAccessTokenTtl())
+                .isEqualTo(Duration.ofMinutes(5));
         assertThat(props.getSecurity().getJwt().getAudience()).containsExactly("api");
         assertThat(props.getCache().getCaffeine().getMaximumSize()).isEqualTo(42);
         assertThat(props.getApiDocs().getTitle()).isEqualTo("Custom");

@@ -1,7 +1,6 @@
 package io.github.susimsek.springdataaotsamples.config.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import org.junit.jupiter.api.Test;

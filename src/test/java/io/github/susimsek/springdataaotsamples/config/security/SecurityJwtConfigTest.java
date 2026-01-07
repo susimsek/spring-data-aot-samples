@@ -3,7 +3,6 @@ package io.github.susimsek.springdataaotsamples.config.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +41,9 @@ class SecurityJwtConfigTest {
     @Test
     void bearerTokenResolverShouldBeCookieAware() {
         BearerTokenResolver resolver = config.bearerTokenResolver();
-        assertThat(resolver).isInstanceOf(io.github.susimsek.springdataaotsamples.security.CookieAwareBearerTokenResolver.class);
+        assertThat(resolver)
+                .isInstanceOf(
+                        io.github.susimsek.springdataaotsamples.security
+                                .CookieAwareBearerTokenResolver.class);
     }
 }

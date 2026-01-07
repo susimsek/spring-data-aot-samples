@@ -2,10 +2,12 @@ package io.github.susimsek.springdataaotsamples.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.InitializingBean;
 
 class OpenTelemetryConfigTest {
@@ -15,10 +17,13 @@ class OpenTelemetryConfigTest {
         OpenTelemetryConfig config = new OpenTelemetryConfig();
         OpenTelemetry telemetry = mock(OpenTelemetry.class);
 
-        InitializingBean bean = config.openTelemetryAppenderInitializer(telemetry);
-        bean.afterPropertiesSet();
+        try (MockedStatic<OpenTelemetryAppender> appender =
+                Mockito.mockStatic(OpenTelemetryAppender.class)) {
+            InitializingBean bean = config.openTelemetryAppenderInitializer(telemetry);
+            bean.afterPropertiesSet();
 
-        // No exception thrown; OpenTelemetryAppender.install is static, so just ensure bean is non-null.
-        assertThat(bean).isNotNull();
+            appender.verify(() -> OpenTelemetryAppender.install(telemetry));
+            assertThat(bean).isNotNull();
+        }
     }
 }

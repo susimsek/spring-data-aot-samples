@@ -1,13 +1,13 @@
 package io.github.susimsek.springdataaotsamples.config.apidoc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.method.HandlerMethod;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class OpenApiConfigTest {
 

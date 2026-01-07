@@ -34,8 +34,12 @@ class CacheConfigTest {
     private ApplicationProperties buildProps() {
         ApplicationProperties props = new ApplicationProperties();
         props.getCache().getCaffeine().setTtl(ApplicationDefaults.Cache.Caffeine.ttl);
-        props.getCache().getCaffeine().setInitialCapacity(ApplicationDefaults.Cache.Caffeine.initialCapacity);
-        props.getCache().getCaffeine().setMaximumSize(ApplicationDefaults.Cache.Caffeine.maximumSize);
+        props.getCache()
+                .getCaffeine()
+                .setInitialCapacity(ApplicationDefaults.Cache.Caffeine.initialCapacity);
+        props.getCache()
+                .getCaffeine()
+                .setMaximumSize(ApplicationDefaults.Cache.Caffeine.maximumSize);
         return props;
     }
 }
