@@ -807,7 +807,7 @@ function resolveShareExpiry() {
     if (val === 'never') {
         return null;
     }
-    const hours = parseInt(val, 10);
+    const hours = Number.parseInt(val, 10);
     if (Number.isNaN(hours)) {
         return null;
     }
@@ -1166,7 +1166,7 @@ function renderNotes(data) {
 function bindSelectionCheckboxes() {
     document.querySelectorAll('.selection-checkbox').forEach(cb => {
         cb.addEventListener('change', (e) => {
-            const id = parseInt(e.target.getAttribute('data-note-id'), 10);
+            const id = Number.parseInt(e.target.getAttribute('data-note-id'), 10);
             toggleSelection(id, e.target.checked);
         });
     });
@@ -1285,7 +1285,7 @@ function renderPinnedDiff(oldPinned, newPinned, additionsOnly = false) {
                 </div>`;
 }
 
-function renderTagsDiff(oldTags, newTags) {
+function renderTagsDiff(oldTags, newTags, additionsOnly = false) {
     const normalize = (list) => (list || [])
         .map(tagLabel)
         .filter(t => t && t.trim().length > 0);
@@ -1298,10 +1298,12 @@ function renderTagsDiff(oldTags, newTags) {
         `<span class="badge ${cls} d-inline-flex align-items-center gap-1">${prefix ? prefix + ' ' : ''}${escapeHtml(t)}</span>`
     ).join('');
 
-    const badges = [
-        renderBadges(removed, 'bg-danger-subtle text-danger border border-danger-subtle', '−'),
-        renderBadges(added, 'bg-success-subtle text-success border border-success-subtle', '+')
-    ].filter(Boolean).join(' ');
+    const badges = additionsOnly
+        ? renderBadges(added, 'bg-success-subtle text-success border border-success-subtle', '+')
+        : [
+            renderBadges(removed, 'bg-danger-subtle text-danger border border-danger-subtle', '−'),
+            renderBadges(added, 'bg-success-subtle text-success border border-success-subtle', '+')
+        ].filter(Boolean).join(' ');
 
     if (!added.length && !removed.length) {
         return '<span class="text-muted small">No tag changes.</span>';
@@ -1643,7 +1645,7 @@ function syncSelectAllCheckbox() {
 
 function syncCheckboxStates() {
     document.querySelectorAll('.selection-checkbox').forEach(cb => {
-        const id = parseInt(cb.getAttribute('data-note-id'), 10);
+        const id = Number.parseInt(cb.getAttribute('data-note-id'), 10);
         cb.checked = state.selected.has(id);
     });
 }
@@ -2464,7 +2466,7 @@ function changePage(page) {
 }
 
 pageSize.addEventListener('change', () => {
-    state.size = parseInt(pageSize.value, 10) || 10;
+    state.size = Number.parseInt(pageSize.value, 10) || 10;
     state.page = 0;
     loadNotes();
 });
@@ -2700,7 +2702,7 @@ if (pagination) {
         const target = e.target.closest('[data-page]');
         if (!target) return;
         e.preventDefault();
-        const page = parseInt(target.getAttribute('data-page'), 10);
+        const page = Number.parseInt(target.getAttribute('data-page'), 10);
         if (Number.isNaN(page)) return;
         changePage(page);
     });
@@ -2788,7 +2790,7 @@ if (revisionList) {
     revisionList.addEventListener('click', (e) => {
         const diffBtn = e.target.closest('[data-action="revision-diff"]');
         if (diffBtn) {
-            const idx = parseInt(diffBtn.getAttribute('data-rev-index'), 10);
+            const idx = Number.parseInt(diffBtn.getAttribute('data-rev-index'), 10);
             showRevisionDiff(idx);
             return;
         }
@@ -2801,7 +2803,7 @@ if (revisionList) {
         }
         const loadMore = e.target.closest('[data-action="revision-load-more"]');
         if (loadMore) {
-            const noteId = parseInt(loadMore.getAttribute('data-note-id'), 10);
+            const noteId = Number.parseInt(loadMore.getAttribute('data-note-id'), 10);
             const row = loadMore.closest('.list-group-item');
             if (row) {
                 row.querySelector('[data-revision-load-spinner="true"]')?.classList.remove('d-none');

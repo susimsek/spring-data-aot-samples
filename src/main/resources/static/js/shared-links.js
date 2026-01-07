@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ? 'See every link you’ve issued, check status, and revoke when needed.'
             : 'See every link you’ve issued, check status, and revoke when needed.';
         if (pageSizeSelect) {
-            const val = parseInt(pageSizeSelect.value, 10);
+            const val = Number.parseInt(pageSizeSelect.value, 10);
             pageSize = Number.isNaN(val) ? pageSize : val;
         }
         if (sortSelect) {
@@ -118,7 +118,7 @@ function bindEvents() {
         const link = e.target.closest('a[data-page]');
         if (!link) return;
         e.preventDefault();
-        const target = parseInt(link.getAttribute('data-page'), 10);
+        const target = Number.parseInt(link.getAttribute('data-page'), 10);
         if (Number.isNaN(target) || target === page || target < 0 || target >= totalPages || loading) return;
         loadLinks(target);
     });
@@ -138,7 +138,7 @@ function bindEvents() {
         loadLinks(0);
     });
     pageSizeSelect?.addEventListener('change', () => {
-        const val = parseInt(pageSizeSelect.value, 10);
+        const val = Number.parseInt(pageSizeSelect.value, 10);
         pageSize = Number.isNaN(val) ? 10 : val;
         page = 0;
         loadLinks(0);

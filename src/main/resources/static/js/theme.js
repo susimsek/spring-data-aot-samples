@@ -69,6 +69,12 @@ const Theme = (() => {
         }
     }
 
+    // Apply theme immediately on module load to avoid inline scripts (CSP friendly).
+    const stored = getStoredTheme();
+    const prefers = systemPrefersDark() ? 'dark' : 'light';
+    const initial = document.documentElement.getAttribute('data-bs-theme') || stored || prefers;
+    applyTheme(initial);
+
     return {init, toggleTheme, applyTheme};
 })();
 

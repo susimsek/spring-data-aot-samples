@@ -4,19 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Shared Links</title>
-    <script>
-        (() => {
-            const THEME_KEY = 'theme';
-            let stored;
-            try {
-                stored = localStorage.getItem(THEME_KEY);
-            } catch (e) {
-                stored = null;
-            }
-            const theme = stored || 'light';
-            document.documentElement.setAttribute('data-bs-theme', theme);
-        })();
-    </script>
+    <script type="module" src="/js/theme.js"></script>
     <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/webjars/font-awesome/css/all.min.css">
 </head>
