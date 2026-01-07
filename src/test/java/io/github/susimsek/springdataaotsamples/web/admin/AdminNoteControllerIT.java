@@ -1,5 +1,15 @@
 package io.github.susimsek.springdataaotsamples.web.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.susimsek.springdataaotsamples.IntegrationTest;
 import io.github.susimsek.springdataaotsamples.domain.Note;
@@ -10,6 +20,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.OwnerChangeRequest;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +30,6 @@ import org.springframework.data.history.RevisionSort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @AutoConfigureMockMvc
@@ -72,9 +71,7 @@ class AdminNoteControllerIT {
         mockMvc.perform(get("/api/admin/notes").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(
-                        jsonPath("$.content[*].owner")
-                                .value(containsInAnyOrder("alice", "bob")))
+                .andExpect(jsonPath("$.content[*].owner").value(containsInAnyOrder("alice", "bob")))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(10));
     }
@@ -93,11 +90,7 @@ class AdminNoteControllerIT {
         Note note = createNote("Admin old title", "alice");
         NoteUpdateRequest request =
                 new NoteUpdateRequest(
-                        "Admin updated title",
-                        "Updated content",
-                        false,
-                        "#123456",
-                        Set.of());
+                        "Admin updated title", "Updated content", false, "#123456", Set.of());
 
         mockMvc.perform(
                         put("/api/admin/notes/{id}", note.getId())
@@ -280,5 +273,4 @@ class AdminNoteControllerIT {
         var content = revisions.getContent();
         return content.getFirst().getMetadata().getRevisionNumber().orElseThrow();
     }
-
 }

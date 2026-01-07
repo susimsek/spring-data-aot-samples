@@ -157,7 +157,8 @@ class AdminNoteControllerTest {
                 sampleNote(
                         "Patched title", "Hello auditing world", true, "#2563eb", Set.of("audit"));
 
-        when(noteCommandService.patch(eq(10L), any(NotePatchRequest.class))).thenReturn(patchedNote);
+        when(noteCommandService.patch(eq(10L), any(NotePatchRequest.class)))
+                .thenReturn(patchedNote);
 
         mockMvc.perform(
                         patch("/api/admin/notes/{id}", 10L)
@@ -195,7 +196,8 @@ class AdminNoteControllerTest {
         NoteDTO note = sampleNote("Deleted note", "Deleted content", false, "#123456", Set.of());
         PageImpl<NoteDTO> page = new PageImpl<>(List.of(note), PageRequest.of(0, 3), 1);
 
-        when(noteTrashService.findDeleted(any(Pageable.class), eq("q"), any(), eq("#123456"), eq(false)))
+        when(noteTrashService.findDeleted(
+                        any(Pageable.class), eq("q"), any(), eq("#123456"), eq(false)))
                 .thenReturn(page);
 
         mockMvc.perform(
@@ -222,7 +224,8 @@ class AdminNoteControllerTest {
 
     @Test
     void restoreShouldReturnNoContent() throws Exception {
-        mockMvc.perform(post("/api/admin/notes/{id}/restore", 4L)).andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/admin/notes/{id}/restore", 4L))
+                .andExpect(status().isNoContent());
 
         verify(noteTrashService).restore(4L);
     }

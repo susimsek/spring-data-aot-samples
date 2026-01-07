@@ -2,7 +2,6 @@ package io.github.susimsek.springdataaotsamples.security;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;

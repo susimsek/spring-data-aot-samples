@@ -31,10 +31,15 @@ class AdminUserControllerTest {
     @Test
     void searchShouldDelegateToService() throws Exception {
         Page<UserSearchDTO> page =
-                new PageImpl<>(List.of(new UserSearchDTO(1L, "alice", true)), PageRequest.of(0, 5), 1);
+                new PageImpl<>(
+                        List.of(new UserSearchDTO(1L, "alice", true)), PageRequest.of(0, 5), 1);
         when(userQueryService.searchUsernames(any(), any())).thenReturn(page);
 
-        mockMvc.perform(get("/api/admin/users/search").param("q", "ali").param("page", "0").param("size", "5"))
+        mockMvc.perform(
+                        get("/api/admin/users/search")
+                                .param("q", "ali")
+                                .param("page", "0")
+                                .param("size", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].username").value("alice"));
 

@@ -3,7 +3,9 @@ package io.github.susimsek.springdataaotsamples.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
@@ -17,13 +19,11 @@ import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
-import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 
 @ExtendWith(MockitoExtension.class)
@@ -103,7 +104,8 @@ class NoteShareServiceTest {
         token.setTokenHash("abc");
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(),
+                        any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
@@ -111,10 +113,13 @@ class NoteShareServiceTest {
             Page<NoteShareDTO> result =
                     noteShareService.listAllForCurrentUser(pageable, null, null, null, null);
 
-            assertThat(result.getContent()).singleElement().satisfies(dto -> {
-                assertThat(dto.noteId()).isEqualTo(3L);
-                assertThat(dto.noteTitle()).isEqualTo("t");
-            });
+            assertThat(result.getContent())
+                    .singleElement()
+                    .satisfies(
+                            dto -> {
+                                assertThat(dto.noteId()).isEqualTo(3L);
+                                assertThat(dto.noteTitle()).isEqualTo("t");
+                            });
         }
     }
 
@@ -131,8 +136,7 @@ class NoteShareServiceTest {
 
         assertThat(token.isRevoked()).isTrue();
         verify(noteShareTokenRepository).save(token);
-        verify(cacheProvider)
-                .clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        verify(cacheProvider).clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
     }
 
     @Test
@@ -168,8 +172,7 @@ class NoteShareServiceTest {
 
         assertThat(result.getUseCount()).isEqualTo(1);
         assertThat(result.isRevoked()).isTrue();
-        verify(cacheProvider)
-                .clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        verify(cacheProvider).clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
     }
 
     @Test
@@ -181,7 +184,8 @@ class NoteShareServiceTest {
         token.setUseCount(0);
         when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse("raw"))
                 .thenReturn(Optional.empty());
-        when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(HashingUtils.sha256Hex("raw")))
+        when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(
+                        HashingUtils.sha256Hex("raw")))
                 .thenReturn(Optional.of(token));
 
         noteShareService.validateAndConsume("raw");
@@ -209,7 +213,8 @@ class NoteShareServiceTest {
         note.setId(1L);
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(),
+                        any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
 
         noteShareService.listForCurrentUser(1L, PageRequest.of(0, 5), null, null, null, null);

@@ -35,8 +35,7 @@ class AudienceValidatorTest {
     void validateShouldFailWhenTokenDoesNotContainRequiredAudience() {
         AudienceValidator validator = new AudienceValidator(List.of("note-api"));
 
-        OAuth2TokenValidatorResult result =
-                validator.validate(jwtWithAudiences(List.of("other")));
+        OAuth2TokenValidatorResult result = validator.validate(jwtWithAudiences(List.of("other")));
 
         assertThat(result.hasErrors()).isTrue();
         assertThat(result.getErrors())

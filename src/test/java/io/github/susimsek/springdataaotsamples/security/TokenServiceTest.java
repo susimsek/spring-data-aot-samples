@@ -1,5 +1,12 @@
 package io.github.susimsek.springdataaotsamples.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.config.ApplicationDefaults;
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
@@ -7,6 +14,10 @@ import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,18 +33,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TokenServiceTest {
@@ -128,8 +127,7 @@ class TokenServiceTest {
         user.setEnabled(false);
         when(userRepository.findOneWithAuthoritiesById(1L)).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> tokenService.refresh("raw"))
-                .isInstanceOf(DisabledException.class);
+        assertThatThrownBy(() -> tokenService.refresh("raw")).isInstanceOf(DisabledException.class);
     }
 
     @Test

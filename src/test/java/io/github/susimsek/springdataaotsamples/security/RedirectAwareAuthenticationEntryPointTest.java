@@ -1,10 +1,10 @@
 package io.github.susimsek.springdataaotsamples.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class RedirectAwareAuthenticationEntryPointTest {
 
@@ -20,8 +20,7 @@ class RedirectAwareAuthenticationEntryPointTest {
                 entryPoint.buildRedirectUrlToLoginPage(
                         request, new MockHttpServletResponse(), null);
 
-        assertThat(url)
-                .isEqualTo("/login.html?redirect=/api/notes?q=test");
+        assertThat(url).isEqualTo("/login.html?redirect=/api/notes?q=test");
     }
 
     @Test
@@ -34,5 +33,4 @@ class RedirectAwareAuthenticationEntryPointTest {
 
         assertThat(url).isEqualTo("/login.html");
     }
-
 }

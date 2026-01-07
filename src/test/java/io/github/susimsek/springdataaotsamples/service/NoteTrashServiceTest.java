@@ -1,10 +1,5 @@
 package io.github.susimsek.springdataaotsamples.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
@@ -16,8 +11,6 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
-import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +24,17 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoteTrashServiceTest {
@@ -52,7 +56,8 @@ class NoteTrashServiceTest {
     void findDeletedShouldDelegateToQueryServiceWithDeletedCriteria() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<NoteDTO> page = new PageImpl<>(Set.<NoteDTO>of().stream().toList());
-        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable))).thenReturn(page);
+        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable)))
+                .thenReturn(page);
 
         noteTrashService.findDeleted(pageable, "q", Set.of("t"), "#123", false);
 
@@ -66,10 +71,10 @@ class NoteTrashServiceTest {
     void findDeletedForCurrentUserShouldSetOwnerFromSecurityContext() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<NoteDTO> page = new PageImpl<>(Set.<NoteDTO>of().stream().toList());
-        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable))).thenReturn(page);
+        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable)))
+                .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
-            utils.when(SecurityUtils::getCurrentUserLogin)
-                    .thenReturn(Optional.of("alice"));
+            utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
 
             noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of("t"), "#123", false);
 
@@ -83,8 +88,7 @@ class NoteTrashServiceTest {
     void findDeletedForCurrentUserShouldThrowWhenUserMissing() {
         Pageable pageable = PageRequest.of(0, 5);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
-            utils.when(SecurityUtils::getCurrentUserLogin)
-                    .thenReturn(Optional.empty());
+            utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
             assertThatThrownBy(
                             () ->
@@ -108,7 +112,8 @@ class NoteTrashServiceTest {
         noteTrashService.restore(1L);
 
         verify(cacheProvider)
-                .clearCaches(Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+                .clearCaches(
+                        Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
     }
 
     @Test
@@ -122,7 +127,8 @@ class NoteTrashServiceTest {
 
         verify(noteAuthorizationService).ensureEditAccess(note);
         verify(cacheProvider)
-                .clearCaches(Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+                .clearCaches(
+                        Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
     }
 
     @Test
@@ -142,14 +148,14 @@ class NoteTrashServiceTest {
         verify(noteRepository).purgeDeleted();
         verify(tagCommandService).cleanupOrphanTagsAsync();
         verify(cacheProvider)
-                .clearCaches(Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+                .clearCaches(
+                        Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
     }
 
     @Test
     void emptyTrashForCurrentUserShouldUseCurrentUser() {
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
-            utils.when(SecurityUtils::getCurrentUserLogin)
-                    .thenReturn(Optional.of("alice"));
+            utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
 
             noteTrashService.emptyTrashForCurrentUser();
 
@@ -179,7 +185,8 @@ class NoteTrashServiceTest {
         verify(noteRepository).deleteById(1L);
         verify(tagCommandService).cleanupOrphanTagsAsync();
         verify(cacheProvider)
-                .clearCaches(Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+                .clearCaches(
+                        Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
     }
 
     @Test

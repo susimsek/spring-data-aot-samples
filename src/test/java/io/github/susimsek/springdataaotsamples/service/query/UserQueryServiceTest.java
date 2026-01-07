@@ -37,11 +37,11 @@ class UserQueryServiceTest {
         Page<User> page = new PageImpl<>(List.of(user));
 
         when(userRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<User>>any(), any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<User>>any(),
+                        any(Pageable.class)))
                 .thenReturn(page);
 
-        Page<UserSearchDTO> result =
-                userQueryService.searchUsernames("ali", PageRequest.of(0, 5));
+        Page<UserSearchDTO> result = userQueryService.searchUsernames("ali", PageRequest.of(0, 5));
 
         assertThat(result.getContent())
                 .singleElement()
@@ -54,7 +54,9 @@ class UserQueryServiceTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(userRepository)
-                .findAll(org.mockito.ArgumentMatchers.<Specification<User>>any(), pageableCaptor.capture());
+                .findAll(
+                        org.mockito.ArgumentMatchers.<Specification<User>>any(),
+                        pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(5);
         assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(0);
     }

@@ -1,11 +1,18 @@
 package io.github.susimsek.springdataaotsamples.service.query;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
 import jakarta.persistence.metamodel.SingularAttribute;
+import java.lang.reflect.Proxy;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,14 +25,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.lang.reflect.Proxy;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TagQueryServiceTest {
@@ -42,19 +41,21 @@ class TagQueryServiceTest {
         Tag tag = new Tag(1L, "java");
         Page<Tag> page = new PageImpl<>(List.of(tag));
         when(tagRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(), any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(1L, "java"));
 
         Page<TagDTO> result =
-                tagQueryService.suggestPrefixPage("ja",
-                    PageRequest.of(0, 5, Sort.unsorted()));
+                tagQueryService.suggestPrefixPage("ja", PageRequest.of(0, 5, Sort.unsorted()));
 
         assertThat(result.getContent()).singleElement().extracting(TagDTO::name).isEqualTo("java");
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
-                .findAll(org.mockito.ArgumentMatchers.<Specification<Tag>>any(), pageableCaptor.capture());
+                .findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        pageableCaptor.capture());
         Pageable used = pageableCaptor.getValue();
         assertThat(used.getSort().getOrderFor("name")).isNotNull();
         assertThat(used.getSort().getOrderFor("name").getDirection()).isEqualTo(Sort.Direction.ASC);
@@ -66,7 +67,8 @@ class TagQueryServiceTest {
         Tag tag = new Tag(2L, "spring");
         Page<Tag> page = new PageImpl<>(List.of(tag));
         when(tagRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(), any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(2L, "spring"));
 
@@ -77,7 +79,9 @@ class TagQueryServiceTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
-                .findAll(org.mockito.ArgumentMatchers.<Specification<Tag>>any(), pageableCaptor.capture());
+                .findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("createdDate")).isNotNull();
     }
 

@@ -1,5 +1,14 @@
 package io.github.susimsek.springdataaotsamples.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.github.susimsek.springdataaotsamples.IntegrationTest;
 import io.github.susimsek.springdataaotsamples.domain.Note;
@@ -8,6 +17,8 @@ import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +28,6 @@ import org.springframework.data.history.RevisionSort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
 @AutoConfigureMockMvc
@@ -50,11 +49,7 @@ class NoteControllerIT {
     void createShouldReturnCreatedNote() throws Exception {
         NoteCreateRequest request =
                 new NoteCreateRequest(
-                        "My first note",
-                        "Hello auditing world",
-                        true,
-                        "#2563eb",
-                        Set.of());
+                        "My first note", "Hello auditing world", true, "#2563eb", Set.of());
 
         mockMvc.perform(
                         post("/api/notes")
@@ -65,10 +60,12 @@ class NoteControllerIT {
                 .andExpect(jsonPath("$.pinned").value(true));
 
         List<Note> stored = noteRepository.findAll();
-        assertThat(stored).anySatisfy(note -> {
-            assertThat(note.getTitle()).isEqualTo("My first note");
-            assertThat(note.getOwner()).isEqualTo("alice");
-        });
+        assertThat(stored)
+                .anySatisfy(
+                        note -> {
+                            assertThat(note.getTitle()).isEqualTo("My first note");
+                            assertThat(note.getOwner()).isEqualTo("alice");
+                        });
     }
 
     @Test
@@ -98,11 +95,7 @@ class NoteControllerIT {
         Note note = createNote("Old title", "alice");
         NoteUpdateRequest request =
                 new NoteUpdateRequest(
-                        "Updated title",
-                        "Updated content",
-                        false,
-                        "#123456",
-                        Set.of());
+                        "Updated title", "Updated content", false, "#123456", Set.of());
 
         mockMvc.perform(
                         put("/api/notes/{id}", note.getId())
@@ -130,8 +123,7 @@ class NoteControllerIT {
     void deleteShouldReturnNoContent() throws Exception {
         Note note = createNote("Delete note", "alice");
 
-        mockMvc.perform(delete("/api/notes/{id}", note.getId()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/notes/{id}", note.getId())).andExpect(status().isNoContent());
 
         Note deleted = noteRepository.findById(note.getId()).orElseThrow();
         assertThat(deleted.isDeleted()).isTrue();
@@ -186,8 +178,7 @@ class NoteControllerIT {
         Note bobNote = createNote("Bulk bob", "bob");
 
         BulkActionRequest request =
-                new BulkActionRequest(
-                        "DELETE_SOFT", Set.of(aliceNote.getId(), bobNote.getId()));
+                new BulkActionRequest("DELETE_SOFT", Set.of(aliceNote.getId(), bobNote.getId()));
 
         mockMvc.perform(
                         post("/api/notes/bulk")

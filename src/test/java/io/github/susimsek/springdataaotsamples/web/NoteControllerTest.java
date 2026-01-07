@@ -1,33 +1,5 @@
 package io.github.susimsek.springdataaotsamples.web;
 
-import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
-import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
-import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
-import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
-import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.json.JsonMapper;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -41,6 +13,33 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
+import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
+import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
+import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(controllers = NoteController.class)
 @AutoConfigureMockMvc(addFilters = false)

@@ -3,10 +3,10 @@ package io.github.susimsek.springdataaotsamples.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.security.MessageDigest;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import java.security.MessageDigest;
 
 class HashingUtilsTest {
 

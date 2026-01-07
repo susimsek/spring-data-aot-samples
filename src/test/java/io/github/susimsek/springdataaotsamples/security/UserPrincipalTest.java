@@ -1,13 +1,12 @@
 package io.github.susimsek.springdataaotsamples.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.User;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class UserPrincipalTest {
 

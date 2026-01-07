@@ -1,5 +1,13 @@
 package io.github.susimsek.springdataaotsamples.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
@@ -8,6 +16,9 @@ import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,18 +30,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -63,8 +62,7 @@ class AuthenticationServiceTest {
 
         assertThat(result).isEqualTo(token);
         verify(authenticationManager)
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken("alice", "pwd"));
+                .authenticate(new UsernamePasswordAuthenticationToken("alice", "pwd"));
     }
 
     @Test
@@ -73,7 +71,8 @@ class AuthenticationServiceTest {
         user.setId(1L);
         user.setUsername("alice");
         UserDTO dto = new UserDTO(1L, "alice", Set.of("ROLE_USER"));
-        when(userRepository.findOneWithAuthoritiesByUsername("alice")).thenReturn(Optional.of(user));
+        when(userRepository.findOneWithAuthoritiesByUsername("alice"))
+                .thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(dto);
 
         try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
