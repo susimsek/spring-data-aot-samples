@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @WithMockUser(username = "alice")
 class NoteControllerIT {
 
