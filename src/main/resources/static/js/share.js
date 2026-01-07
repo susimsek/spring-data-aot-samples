@@ -6,6 +6,7 @@ const shareToken = extractTokenFromPath() || new URLSearchParams(window.location
 let noteId = null;
 const alertBox = document.getElementById('alert');
 const card = document.getElementById('card');
+const spinner = document.getElementById('shareSpinner');
 const titleEl = document.getElementById('title');
 const contentEl = document.getElementById('content');
 const tagsEl = document.getElementById('tags');
@@ -31,6 +32,7 @@ const homeLink = document.getElementById('homeLink');
 const sharedLinksNav = document.getElementById('sharedLinksNav');
 
 function showError(msg) {
+    if (spinner) spinner.classList.add('d-none');
     if (alertBox) {
         alertBox.textContent = msg || 'Could not load note.';
         alertBox.classList.remove('d-none');
@@ -41,6 +43,8 @@ function showError(msg) {
 }
 
 async function loadNote() {
+    if (spinner) spinner.classList.remove('d-none');
+    if (card) card.classList.add('d-none');
     if (!shareToken) {
         showError('Invalid share link.');
         return;
@@ -75,6 +79,7 @@ async function loadNote() {
         }
         if (card) card.classList.remove('d-none');
         if (alertBox) alertBox.classList.add('d-none');
+        if (spinner) spinner.classList.add('d-none');
     } catch (err) {
         if (err?.status === 401 || err?.status === 403) {
             showError('This share link is no longer available. Please request a new link.');

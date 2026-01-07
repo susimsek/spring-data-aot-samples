@@ -1325,7 +1325,7 @@ function diffWords(oldText, newText) {
     const b = (newText || '').split(/\s+/);
     const m = a.length;
     const n = b.length;
-    const lcs = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+    const lcs = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
     for (let i = m - 1; i >= 0; i--) {
         for (let j = n - 1; j >= 0; j--) {
             if (a[i] === b[j]) {

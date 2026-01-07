@@ -9,7 +9,7 @@ const Diff = (() => {
         const b = (newText || '').split(/\r?\n/);
         const m = a.length;
         const n = b.length;
-        const lcs = Array.from({length: m + 1}, () => Array(n + 1).fill(0));
+        const lcs = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
         for (let i = m - 1; i >= 0; i--) {
             for (let j = n - 1; j >= 0; j--) {
                 if (a[i] === b[j]) {
@@ -57,11 +57,11 @@ const Diff = (() => {
     function escapeHtml(str) {
         if (str == null) return '';
         return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
     }
 
     return {diffLines, diffLinesDetailed};
