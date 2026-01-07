@@ -17,6 +17,7 @@ import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
+import org.springframework.data.jpa.domain.Specification;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -102,8 +103,7 @@ class NoteShareServiceTest {
         token.setTokenHash("abc");
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<org.springframework.data.jpa.domain.Specification<io.github.susimsek.springdataaotsamples.domain.NoteShareToken>>any(),
-                        any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
@@ -209,8 +209,7 @@ class NoteShareServiceTest {
         note.setId(1L);
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<org.springframework.data.jpa.domain.Specification<io.github.susimsek.springdataaotsamples.domain.NoteShareToken>>any(),
-                        any(Pageable.class)))
+                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
 
         noteShareService.listForCurrentUser(1L, PageRequest.of(0, 5), null, null, null, null);

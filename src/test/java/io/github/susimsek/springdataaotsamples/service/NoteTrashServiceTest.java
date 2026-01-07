@@ -9,6 +9,7 @@ import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
+import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteCriteria;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
@@ -66,9 +67,8 @@ class NoteTrashServiceTest {
         Pageable pageable = PageRequest.of(0, 5);
         Page<NoteDTO> page = new PageImpl<>(Set.<NoteDTO>of().stream().toList());
         when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable))).thenReturn(page);
-        try (MockedStatic<io.github.susimsek.springdataaotsamples.security.SecurityUtils> utils =
-                mockStatic(io.github.susimsek.springdataaotsamples.security.SecurityUtils.class)) {
-            utils.when(io.github.susimsek.springdataaotsamples.security.SecurityUtils::getCurrentUserLogin)
+        try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
+            utils.when(SecurityUtils::getCurrentUserLogin)
                     .thenReturn(Optional.of("alice"));
 
             noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of("t"), "#123", false);
@@ -82,9 +82,8 @@ class NoteTrashServiceTest {
     @Test
     void findDeletedForCurrentUserShouldThrowWhenUserMissing() {
         Pageable pageable = PageRequest.of(0, 5);
-        try (MockedStatic<io.github.susimsek.springdataaotsamples.security.SecurityUtils> utils =
-                mockStatic(io.github.susimsek.springdataaotsamples.security.SecurityUtils.class)) {
-            utils.when(io.github.susimsek.springdataaotsamples.security.SecurityUtils::getCurrentUserLogin)
+        try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
+            utils.when(SecurityUtils::getCurrentUserLogin)
                     .thenReturn(Optional.empty());
 
             assertThatThrownBy(
@@ -148,9 +147,8 @@ class NoteTrashServiceTest {
 
     @Test
     void emptyTrashForCurrentUserShouldUseCurrentUser() {
-        try (MockedStatic<io.github.susimsek.springdataaotsamples.security.SecurityUtils> utils =
-                mockStatic(io.github.susimsek.springdataaotsamples.security.SecurityUtils.class)) {
-            utils.when(io.github.susimsek.springdataaotsamples.security.SecurityUtils::getCurrentUserLogin)
+        try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
+            utils.when(SecurityUtils::getCurrentUserLogin)
                     .thenReturn(Optional.of("alice"));
 
             noteTrashService.emptyTrashForCurrentUser();

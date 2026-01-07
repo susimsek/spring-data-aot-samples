@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.query;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
+import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
@@ -81,8 +82,8 @@ class TagQueryServiceTest {
     }
 
     private static void ensureJpaMetamodelInitialized() {
-        if (io.github.susimsek.springdataaotsamples.domain.Tag_.name == null) {
-            io.github.susimsek.springdataaotsamples.domain.Tag_.name = namedSingularAttribute("name");
+        if (Tag_.name == null) {
+            Tag_.name = namedSingularAttribute("name");
         }
     }
 
