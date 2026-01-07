@@ -89,9 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isAdmin = admin;
         scopeGroup?.classList.add('d-none');
         if (sharedLinksTitle) sharedLinksTitle.textContent = admin ? 'Shared Links' : 'My Shared Links';
-        if (sharedLinksSubtitle) sharedLinksSubtitle.textContent = admin
-            ? 'See every link you’ve issued, check status, and revoke when needed.'
-            : 'See every link you’ve issued, check status, and revoke when needed.';
+        if (sharedLinksSubtitle) sharedLinksSubtitle.textContent = 'See every link you’ve issued, check status, and revoke when needed.';
         if (pageSizeSelect) {
             const val = Number.parseInt(pageSizeSelect.value, 10);
             pageSize = Number.isNaN(val) ? pageSize : val;
@@ -441,7 +439,7 @@ async function loadLinks(targetPage = 0) {
         onFinally: () => setLoading(false)
     });
     if (!res) return;
-    hideAlert?.();
+    hideAlert();
 
     const content = Array.isArray(res) ? res : (res.content ?? []);
     const meta = res.page ?? res;
