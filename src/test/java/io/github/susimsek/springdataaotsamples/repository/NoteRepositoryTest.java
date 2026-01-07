@@ -22,7 +22,10 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@DataJpaTest(properties = {
+    "spring.liquibase.enabled=false",
+    "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 @Import(AuditingTestConfig.class)
 class NoteRepositoryTest {
 

@@ -1,5 +1,33 @@
 package io.github.susimsek.springdataaotsamples.web;
 
+import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
+import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
+import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
+import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
+import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -14,45 +42,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.susimsek.springdataaotsamples.config.JacksonTestConfig;
-import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
-import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
-import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.BulkActionResult;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteCreateRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
-import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteRevisionDTO;
-import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
-import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
-import java.time.Instant;
-import java.util.List;
-import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 @WebMvcTest(controllers = NoteController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(JacksonTestConfig.class)
 class NoteControllerTest {
 
     private static final Instant DEFAULT_TIMESTAMP = Instant.parse("2024-01-01T10:15:30Z");
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired private JsonMapper jsonMapper;
 
     @MockitoBean private NoteCommandService noteCommandService;
 
@@ -77,7 +75,7 @@ class NoteControllerTest {
         mockMvc.perform(
                         post("/api/notes")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
+                                .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("My first note"))
@@ -146,7 +144,7 @@ class NoteControllerTest {
         mockMvc.perform(
                         put("/api/notes/{id}", 10L)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
+                                .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated title"))
                 .andExpect(jsonPath("$.pinned").value(false));
@@ -167,7 +165,7 @@ class NoteControllerTest {
         mockMvc.perform(
                         patch("/api/notes/{id}", 10L)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
+                                .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Patched title"));
 
@@ -251,7 +249,7 @@ class NoteControllerTest {
         mockMvc.perform(
                         post("/api/notes/bulk")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
+                                .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.processedCount").value(1))
                 .andExpect(jsonPath("$.failedIds[0]").value(2));
