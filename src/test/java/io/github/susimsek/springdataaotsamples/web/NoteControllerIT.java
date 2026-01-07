@@ -42,7 +42,7 @@ class NoteControllerIT {
     @Autowired private NoteRepository noteRepository;
 
     @AfterEach
-    void clearSecurityContext() {
+    void cleanup() {
         noteRepository.deleteAll();
     }
 
