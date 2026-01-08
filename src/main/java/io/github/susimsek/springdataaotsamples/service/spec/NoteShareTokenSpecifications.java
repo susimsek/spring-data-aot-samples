@@ -5,10 +5,12 @@ import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken_;
 import io.github.susimsek.springdataaotsamples.domain.Note_;
 import java.time.Instant;
+import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+@UtilityClass
 public class NoteShareTokenSpecifications {
 
     public static Specification<NoteShareToken> ownedBy(String owner) {

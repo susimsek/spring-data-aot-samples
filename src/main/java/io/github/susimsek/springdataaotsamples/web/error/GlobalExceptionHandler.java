@@ -2,8 +2,6 @@ package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -29,6 +27,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -50,8 +51,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
         ProblemDetail body =
-                this.createProblemDetail(
-                        ex, status, "Validation failed", null, null, null, request);
+                this.buildProblemDetail(ex, status, "Validation failed", null, null, null);
         List<Violation> violations =
                 Stream.concat(
                                 ex.getBindingResult().getFieldErrors().stream()
@@ -79,14 +79,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<@NonNull Object> handleBadCredentials(
             AuthenticationException ex, WebRequest request) {
         ProblemDetail body =
-                this.createProblemDetail(
+                this.buildProblemDetail(
                         ex,
                         HttpStatus.UNAUTHORIZED,
                         "problemDetail.title.auth.badCredentials",
                         "Invalid credentials",
                         "problemDetail.auth.badCredentials",
-                        null,
-                        request);
+                        null);
         return this.handleExceptionInternal(
                 ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
@@ -94,14 +93,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<@NonNull Object> handleOAuth2Auth(
             OAuth2AuthenticationException ex, WebRequest request) {
         ProblemDetail body =
-                this.createProblemDetail(
+                this.buildProblemDetail(
                         ex,
                         HttpStatus.UNAUTHORIZED,
                         "problemDetail.title.auth.invalidToken",
                         ex.getMessage(),
                         "problemDetail.auth.invalidToken",
-                        null,
-                        request);
+                        null);
         return this.handleExceptionInternal(
                 ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
@@ -109,14 +107,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<@NonNull Object> handleDisabled(
             DisabledException ex, WebRequest request) {
         ProblemDetail body =
-                this.createProblemDetail(
+                this.buildProblemDetail(
                         ex,
                         HttpStatus.UNAUTHORIZED,
                         "problemDetail.title.auth.disabled",
                         "Account is disabled",
                         "problemDetail.auth.disabled",
-                        null,
-                        request);
+                        null);
         return this.handleExceptionInternal(
                 ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
@@ -125,14 +122,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<@NonNull Object> handleAccessDenied(
             @NonNull AccessDeniedException ex, @NonNull WebRequest request) {
         ProblemDetail body =
-                this.createProblemDetail(
+                this.buildProblemDetail(
                         ex,
                         HttpStatus.FORBIDDEN,
                         "problemDetail.title.auth.accessDenied",
                         "Access is denied",
                         "problemDetail.auth.accessDenied",
-                        null,
-                        request);
+                        null);
         return this.handleExceptionInternal(
                 ex, body, HttpHeaders.EMPTY, HttpStatus.FORBIDDEN, request);
     }
@@ -151,27 +147,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Unhandled exception", ex);
         return this.handleExceptionInternal(
                 ex,
-                this.createProblemDetail(
+                this.buildProblemDetail(
                         ex,
                         HttpStatus.INTERNAL_SERVER_ERROR,
                         "problemDetail.title.internalServerError",
                         "An unexpected error occurred. Please try again later.",
                         "problemDetail.internalServerError",
-                        null,
-                        request),
+                        null),
                 HttpHeaders.EMPTY,
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 request);
     }
 
-    private ProblemDetail createProblemDetail(
+    private ProblemDetail buildProblemDetail(
             Exception ex,
             HttpStatusCode status,
             String titleMessageCode,
             String defaultDetail,
             String detailMessageCode,
-            Object[] detailMessageArguments,
-            WebRequest request) {
+            Object[] detailMessageArguments) {
         ErrorResponse.Builder builder = ErrorResponse.builder(ex, status, defaultDetail);
         if (detailMessageCode != null) {
             builder.detailMessageCode(detailMessageCode);
