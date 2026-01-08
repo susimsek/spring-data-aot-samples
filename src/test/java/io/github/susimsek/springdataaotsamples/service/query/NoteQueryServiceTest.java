@@ -21,6 +21,7 @@ import java.lang.reflect.Proxy;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
