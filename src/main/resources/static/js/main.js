@@ -374,8 +374,12 @@ async function handleShareLinksClick(event) {
             await navigator.clipboard.writeText(link);
             showInlineCopied(btn);
         } catch (err) {
-            fallbackCopyText(link);
-            showInlineCopied(btn);
+            const copied = await fallbackCopyText(link);
+            if (copied) {
+                showInlineCopied(btn);
+            } else {
+                showToast('Could not copy link. Copy manually.', 'warning');
+            }
         }
         return;
     }
@@ -763,6 +767,7 @@ async function copyShareLink() {
         await navigator.clipboard.writeText(shareLink.value);
         showCopiedFeedback();
     } catch (err) {
+        console.warn('Copy share link failed', err);
         showToast('Could not copy link. Copy manually.', 'warning');
     }
 }
@@ -787,19 +792,17 @@ function showInlineCopied(btn) {
     }, 1200);
 }
 
-function fallbackCopyText(text) {
+async function fallbackCopyText(text) {
     try {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = text;
-        tempInput.readOnly = true;
-        tempInput.style.position = 'absolute';
-        tempInput.style.left = '-9999px';
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        tempInput.remove();
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+        console.warn('Clipboard API not available for fallback copy');
+        return false;
     } catch (e) {
         console.warn('Fallback copy failed', e);
+        return false;
     }
 }
 
@@ -1456,7 +1459,7 @@ function renderInlineDiff(oldText, newText, additionsOnly = false) {
         if (additionsOnly && op.type === 'del') {
             return;
         }
-        const last = segments[segments.length - 1];
+        const last = segments.at(-1);
         if (last && last.type === op.type) {
             last.value += ' ' + op.value;
         } else {
@@ -2048,8 +2051,8 @@ const loadTagSuggestions = debounce(async (query) => {
             opt.value = tag;
             filterTagsSuggestions.appendChild(opt);
         });
-    } catch (_) {
-        // ignore suggestions errors
+    } catch (e) {
+        console.warn('Failed to load filter tag suggestions', e);
     }
 }, 200);
 
@@ -2067,7 +2070,8 @@ const loadNoteTagSuggestions = debounce(async (query) => {
             opt.value = tag;
             tagSuggestions.appendChild(opt);
         });
-    } catch (_) {
+    } catch (e) {
+        console.warn('Failed to load tag suggestions', e);
         tagSuggestions.innerHTML = '';
     }
 }, 200);
