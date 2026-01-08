@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.config.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,6 @@ class RevisionInfoListenerTest {
     @Test
     void newRevisionShouldIgnoreNonRevisionInfo() {
         RevisionInfoListener listener = new RevisionInfoListener();
-        listener.newRevision(new Object()); // should not throw
+        assertThatCode(() -> listener.newRevision(new Object())).doesNotThrowAnyException();
     }
 }

@@ -12,7 +12,7 @@ public abstract class ApiException extends RuntimeException implements ErrorResp
     private final HttpStatusCode status;
     private final HttpHeaders headers;
     private final ProblemDetail body;
-    private final Object[] args;
+    private final transient Object[] args;
 
     protected ApiException(HttpStatusCode status, String title, String detail, Object... args) {
         super(detail);

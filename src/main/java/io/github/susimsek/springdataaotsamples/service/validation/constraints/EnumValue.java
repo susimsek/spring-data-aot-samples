@@ -23,6 +23,7 @@ public @interface EnumValue {
 
     Class<? extends Payload>[] payload() default {};
 
+    @SuppressWarnings("java:S1452")
     Class<? extends Enum<?>> enumClass();
 
     boolean ignoreCase() default true;

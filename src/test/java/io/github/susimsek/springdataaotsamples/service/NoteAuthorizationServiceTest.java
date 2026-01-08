@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.service;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.susimsek.springdataaotsamples.domain.Note;
@@ -21,7 +22,7 @@ class NoteAuthorizationServiceTest {
         try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::isCurrentUserAdmin).thenReturn(true);
 
-            service.ensureReadAccess(note);
+            assertThatCode(() -> service.ensureReadAccess(note)).doesNotThrowAnyException();
 
             utils.verify(SecurityUtils::isCurrentUserAdmin);
             utils.verifyNoMoreInteractions();
@@ -58,7 +59,8 @@ class NoteAuthorizationServiceTest {
         try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
 
-            service.ensureEditAccess(note);
+            assertThatCode(() -> service.ensureEditAccess(note)).doesNotThrowAnyException();
+            utils.verify(SecurityUtils::getCurrentUserLogin);
         }
     }
 }

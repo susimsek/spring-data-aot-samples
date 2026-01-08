@@ -310,44 +310,61 @@ async function loadShareLinks(append = false) {
     if (!shareNoteId || shareLinksLoading) return;
     const page = append ? shareLinksPage + 1 : 0;
     setShareLinksLoading(true);
-    if (append && shareLinksLoadMoreSpinner) {
-        shareLinksLoadMoreSpinner.classList.remove('d-none');
-        if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Loading...';
-    }
+    toggleLoadMoreLoading(append, true);
     const res = await handleApi(Api.fetchShareLinks(shareNoteId, page, SHARE_LINKS_PAGE_SIZE), {
         fallback: 'Could not load share links',
         silent: true,
         onFinally: () => setShareLinksLoading(false)
     });
-    if (!res) {
-        if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Load more';
-        return;
-    }
-    const content = Array.isArray(res) ? res : (res.content ?? []);
-    const meta = res.page ?? res;
+    toggleLoadMoreLoading(append, false);
+    if (!res) return;
+    const {content, meta} = normalizeShareLinksResponse(res);
     shareLinksPage = page;
-    shareLinksHasMore = !!meta && typeof meta.totalPages === 'number'
-        ? shareLinksPage + 1 < meta.totalPages
-        : content.length === SHARE_LINKS_PAGE_SIZE;
-    if (!append) {
-        shareLinksCache = content;
-    } else {
-        shareLinksCache = [...shareLinksCache, ...content];
-    }
+    shareLinksHasMore = computeHasMore(meta, content.length, shareLinksPage);
+    updateShareLinksCache(content, append);
     renderShareLinks(content, append);
-    if (shareLinksLoadMoreBtn) {
-        shareLinksLoadMoreBtn.classList.toggle('d-none', !shareLinksHasMore);
-        shareLinksLoadMoreBtn.disabled = !shareLinksHasMore;
-        if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Load more';
+    updateLoadMoreControls();
+}
+
+function toggleLoadMoreLoading(append, loading) {
+    if (!append || !shareLinksLoadMoreSpinner) return;
+    shareLinksLoadMoreSpinner.classList.toggle('d-none', !loading);
+    if (shareLinksLoadMoreLabel) {
+        shareLinksLoadMoreLabel.textContent = loading ? 'Loading...' : 'Load more';
     }
+}
+
+function normalizeShareLinksResponse(res) {
+    return {
+        content: Array.isArray(res) ? res : (res.content ?? []),
+        meta: res.page ?? res
+    };
+}
+
+function computeHasMore(meta, contentLength, currentPage) {
+    if (meta && typeof meta.totalPages === 'number') {
+        return currentPage + 1 < meta.totalPages;
+    }
+    return contentLength === SHARE_LINKS_PAGE_SIZE;
+}
+
+function updateShareLinksCache(content, append) {
+    shareLinksCache = append ? [...shareLinksCache, ...content] : content;
+}
+
+function updateLoadMoreControls() {
+    if (!shareLinksLoadMoreBtn) return;
+    shareLinksLoadMoreBtn.classList.toggle('d-none', !shareLinksHasMore);
+    shareLinksLoadMoreBtn.disabled = !shareLinksHasMore;
+    if (shareLinksLoadMoreLabel) shareLinksLoadMoreLabel.textContent = 'Load more';
 }
 
 async function handleShareLinksClick(event) {
     const btn = event.target.closest('[data-share-action]');
     if (!btn) return;
-    const action = btn.getAttribute('data-share-action');
+    const action = btn.dataset.shareAction;
     if (action === 'copy') {
-        const token = btn.getAttribute('data-token');
+        const token = btn.dataset.token;
         if (!token) return;
         const link = `${window.location.origin}/share/${encodeURIComponent(token)}`;
         try {
@@ -360,7 +377,7 @@ async function handleShareLinksClick(event) {
         return;
     }
     if (action === 'revoke') {
-        const id = btn.getAttribute('data-id');
+        const id = btn.dataset.id;
         if (!id) return;
         btn.disabled = true;
         const success = await handleApi(Api.revokeShareLink(id), {
@@ -421,36 +438,44 @@ function isAuthenticated() {
 function updateAuthUi() {
     const username = currentUsername();
     const signedIn = isAuthenticated();
-    if (signOutBtn) {
-        signOutBtn.classList.toggle('d-none', !signedIn);
-    }
-    if (authBtn) {
-        authBtn.classList.toggle('d-none', !signedIn);
-        authBtn.classList.toggle('dropdown-toggle', signedIn);
-        if (signedIn) {
-            authBtn.setAttribute('data-bs-toggle', 'dropdown');
-            if (authBtnLabel) {
-                authBtnLabel.textContent = username || 'User';
-            }
-        } else {
-            authBtn.removeAttribute('data-bs-toggle');
-            if (authBtnLabel) {
-                authBtnLabel.textContent = '';
-            }
+    toggleSignOutControls(signedIn);
+    updateAuthButton(signedIn, username);
+    updateUserLabel(signedIn, username);
+    toggleElement(authMenu, signedIn);
+    toggleElement(signOutDivider, signedIn);
+    toggleElement(navbarSharedLinks, signedIn);
+}
+
+function toggleSignOutControls(signedIn) {
+    toggleElement(signOutBtn, signedIn);
+}
+
+function updateAuthButton(signedIn, username) {
+    if (!authBtn) return;
+    authBtn.classList.toggle('d-none', !signedIn);
+    authBtn.classList.toggle('dropdown-toggle', signedIn);
+    if (signedIn) {
+        authBtn.setAttribute('data-bs-toggle', 'dropdown');
+        if (authBtnLabel) {
+            authBtnLabel.textContent = username || 'User';
         }
+        return;
     }
-    if (authUserLabel) {
-        authUserLabel.classList.toggle('d-none', !signedIn);
-        authUserLabel.textContent = signedIn ? `Signed in as ${username || ''}` : '';
+    authBtn.removeAttribute('data-bs-toggle');
+    if (authBtnLabel) {
+        authBtnLabel.textContent = '';
     }
-    if (authMenu) {
-        authMenu.classList.toggle('d-none', !signedIn);
-    }
-    if (signOutDivider) {
-        signOutDivider.classList.toggle('d-none', !signedIn);
-    }
-    if (navbarSharedLinks) {
-        navbarSharedLinks.classList.toggle('d-none', !signedIn);
+}
+
+function updateUserLabel(signedIn, username) {
+    if (!authUserLabel) return;
+    authUserLabel.classList.toggle('d-none', !signedIn);
+    authUserLabel.textContent = signedIn ? `Signed in as ${username || ''}` : '';
+}
+
+function toggleElement(el, show) {
+    if (el) {
+        el.classList.toggle('d-none', !show);
     }
 }
 
@@ -898,54 +923,14 @@ function setLoading() {
 
 function renderNotes(data) {
     noteCache.clear();
-    const notes = data?.content || [];
+    const {notes, meta} = normalizeNotes(data);
     const showOwner = isAdmin?.() || false;
-    const meta = data?.page ?? data;
-    state.total = meta?.totalElements ?? notes.length;
-    if (notes.length === 0) {
-        totalLabel.hidden = true;
-    } else {
-        totalLabel.hidden = false;
-        totalLabel.textContent = `Total: ${state.total}`;
-        totalLabel.classList.remove('invisible');
+    if (!updateTotalsAndCheckEmpty(meta, notes.length)) {
+        renderEmptyNotes();
+        return;
     }
     const totalPages = meta?.totalPages ?? 1;
     const current = meta?.number ?? 0;
-    state.page = current;
-    state.totalPages = totalPages;
-    updateEmptyTrashButton();
-    if (pageInfo) {
-        pageInfo.textContent = `Page ${current + 1} of ${Math.max(totalPages, 1)}`;
-        pageInfo.hidden = false;
-    }
-
-	    if (!notes.length) {
-	        const emptyMsg = state.query
-	            ? 'No notes match your search.'
-	            : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
-	        const emptyIcon = state.query
-	            ? 'fa-circle-info'
-	            : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
-	        totalLabel.hidden = true;
-	        noteGrid.innerHTML = `
-	                <div class="col-12">
-	                    <div class="list-group w-100">
-	                        <div class="list-group-item text-muted small d-flex align-items-center gap-2">
-	                            <i class="fa-solid ${emptyIcon}"></i>
-	                            <span>${emptyMsg}</span>
-	                        </div>
-	                    </div>
-	                </div>`;
-        bulkRow?.classList.add('d-none');
-        controlsRow?.classList.add('d-none');
-        clearSelection();
-        pager.hidden = true;
-        pagination.innerHTML = '';
-        if (pageInfo) {
-            pageInfo.hidden = true;
-        }
-        return;
-    }
 
     bulkRow?.classList.remove('d-none');
     controlsRow?.classList.remove('d-none');
@@ -1161,6 +1146,57 @@ function renderNotes(data) {
         </li>`);
     pagination.innerHTML = items.join('');
     bindSelectionCheckboxes();
+}
+
+function normalizeNotes(data) {
+    const notes = data?.content || [];
+    const meta = data?.page ?? data ?? {};
+    state.total = meta.totalElements ?? notes.length;
+    state.page = meta.number ?? 0;
+    state.totalPages = meta.totalPages ?? 1;
+    return {notes, meta};
+}
+
+function updateTotalsAndCheckEmpty(meta, count) {
+    totalLabel.hidden = count === 0;
+    if (count > 0) {
+        totalLabel.textContent = `Total: ${state.total}`;
+        totalLabel.classList.remove('invisible');
+    }
+    updateEmptyTrashButton();
+    if (pageInfo) {
+        pageInfo.textContent =
+                `Page ${(meta?.number ?? 0) + 1} of ${Math.max(meta?.totalPages ?? 1, 1)}`;
+        pageInfo.hidden = count === 0;
+    }
+    return count > 0;
+}
+
+function renderEmptyNotes() {
+    const emptyMsg = state.query
+        ? 'No notes match your search.'
+        : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
+    const emptyIcon = state.query
+        ? 'fa-circle-info'
+        : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
+    totalLabel.hidden = true;
+    noteGrid.innerHTML = `
+            <div class="col-12">
+                <div class="list-group w-100">
+                    <div class="list-group-item text-muted small d-flex align-items-center gap-2">
+                        <i class="fa-solid ${emptyIcon}"></i>
+                        <span>${emptyMsg}</span>
+                    </div>
+                </div>
+            </div>`;
+    bulkRow?.classList.add('d-none');
+    controlsRow?.classList.add('d-none');
+    clearSelection();
+    pager.hidden = true;
+    pagination.innerHTML = '';
+    if (pageInfo) {
+        pageInfo.hidden = true;
+    }
 }
 
 function bindSelectionCheckboxes() {

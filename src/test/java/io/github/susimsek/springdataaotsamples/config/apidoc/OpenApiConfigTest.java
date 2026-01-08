@@ -38,5 +38,7 @@ class OpenApiConfigTest {
     }
 
     // no annotation so security responses are added by default
-    void securedMethod() {}
+    void securedMethod() {
+        // intentionally empty: invoked only to provide a HandlerMethod without security annotations
+    }
 }

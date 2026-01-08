@@ -37,6 +37,8 @@ import org.springframework.web.method.HandlerMethod;
         matchIfMissing = true)
 public class OpenApiConfig {
 
+    private static final String PROBLEM_DETAIL_REF = "#/components/schemas/ProblemDetail";
+
     private final ApplicationProperties applicationProperties;
 
     @Bean
@@ -87,7 +89,7 @@ public class OpenApiConfig {
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(
-                                                                                        "#/components/schemas/ProblemDetail"))
+                                                                                        PROBLEM_DETAIL_REF))
                                                                 .example(
                                                                         getUnauthorizedExample()))));
         operation
@@ -105,7 +107,7 @@ public class OpenApiConfig {
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(
-                                                                                        "#/components/schemas/ProblemDetail"))
+                                                                                        PROBLEM_DETAIL_REF))
                                                                 .example(
                                                                         getAccessDeniedExample()))));
     }
@@ -126,7 +128,7 @@ public class OpenApiConfig {
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(
-                                                                                        "#/components/schemas/ProblemDetail"))
+                                                                                        PROBLEM_DETAIL_REF))
                                                                 .example(
                                                                         getDefaultErrorExample()))));
     }

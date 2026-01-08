@@ -10,6 +10,8 @@ import org.springframework.web.util.WebUtils;
 @UtilityClass
 public class CookieUtils {
 
+    private static final String SAME_SITE_STRICT = "Strict";
+
     public String getCookieValue(HttpServletRequest request, String name) {
         var cookie = WebUtils.getCookie(request, name);
         String val = cookie != null ? cookie.getValue() : null;
@@ -22,7 +24,7 @@ public class CookieUtils {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("Strict")
+                .sameSite(SAME_SITE_STRICT)
                 .maxAge(maxAge)
                 .build();
     }
@@ -32,7 +34,7 @@ public class CookieUtils {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("Strict")
+                .sameSite(SAME_SITE_STRICT)
                 .maxAge(0)
                 .build();
     }
@@ -43,7 +45,7 @@ public class CookieUtils {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("Strict")
+                .sameSite(SAME_SITE_STRICT)
                 .maxAge(maxAge)
                 .build();
     }
@@ -53,7 +55,7 @@ public class CookieUtils {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .sameSite("Strict")
+                .sameSite(SAME_SITE_STRICT)
                 .maxAge(0)
                 .build();
     }
