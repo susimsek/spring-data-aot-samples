@@ -21,10 +21,10 @@ import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundExc
 import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
 import java.util.Optional;
 import java.util.Set;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -91,9 +91,10 @@ class NoteTrashServiceTest {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
             ThrowingCallable call =
-                    () -> noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of(), null, null);
-            assertThatThrownBy(call)
-                    .isInstanceOf(UsernameNotFoundException.class);
+                    () ->
+                            noteTrashService.findDeletedForCurrentUser(
+                                    pageable, "q", Set.of(), null, null);
+            assertThatThrownBy(call).isInstanceOf(UsernameNotFoundException.class);
         }
     }
 

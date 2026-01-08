@@ -21,10 +21,10 @@ import java.lang.reflect.Proxy;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -132,11 +132,11 @@ class NoteQueryServiceTest {
     @Test
     void findAllForCurrentUserShouldThrowWhenCurrentUserMissing() {
         ensureJpaMetamodelInitialized();
-        ThrowingCallable call =
-                () -> noteQueryService.findAllForCurrentUser(PageRequest.of(0, 10), null, null, null, null);
-        assertThrows(
-                UsernameNotFoundException.class,
-                call);
+        Executable call =
+                () ->
+                        noteQueryService.findAllForCurrentUser(
+                                PageRequest.of(0, 10), null, null, null, null);
+        assertThrows(UsernameNotFoundException.class, call);
         verifyNoInteractions(noteRepository);
     }
 

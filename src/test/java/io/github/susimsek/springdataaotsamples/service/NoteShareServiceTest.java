@@ -227,8 +227,8 @@ class NoteShareServiceTest {
     void listForAdminShouldThrowWhenNoteMissing() {
         when(noteRepository.findById(1L)).thenReturn(Optional.empty());
         Pageable pageable = PageRequest.of(0, 5);
-        ThrowingCallable call = () -> noteShareService.listForAdmin(1L, pageable, null, null, null, null);
-        assertThatThrownBy(call)
-                .isInstanceOf(NoteNotFoundException.class);
+        ThrowingCallable call =
+                () -> noteShareService.listForAdmin(1L, pageable, null, null, null, null);
+        assertThatThrownBy(call).isInstanceOf(NoteNotFoundException.class);
     }
 }
