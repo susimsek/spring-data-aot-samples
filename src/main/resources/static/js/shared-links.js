@@ -434,28 +434,38 @@ async function loadLinks(targetPage = 0) {
     setLoading(true);
     totalLabel?.classList.add('d-none');
     pageInfo?.classList.add('d-none');
-    const res = await handleApi(Api.fetchMyShareLinks(targetPage, pageSize, sort, search, status, createdFrom, createdTo), {
-        fallback: 'Could not load shared links.',
-        onFinally: () => setLoading(false)
-    });
+    const res = await handleApi(
+        Api.fetchMyShareLinks(targetPage, pageSize, sort, search, status, createdFrom, createdTo),
+        {
+            fallback: 'Could not load shared links.',
+            onFinally: () => setLoading(false)
+        });
     if (!res) return;
     hideAlert();
 
+    const {content, meta, totalElements} = normalizeLinksResponse(res, targetPage);
+    renderLinksList(content);
+    renderLinksTotals(totalElements, content.length > 0);
+    renderLinksPagination(meta, content.length > 0);
+}
+
+function normalizeLinksResponse(res, targetPage) {
     const content = Array.isArray(res) ? res : (res.content ?? []);
     const meta = res.page ?? res;
     page = typeof meta?.number === 'number' ? meta.number : targetPage;
-    const derivedTotalPages = typeof meta?.totalPages === 'number' ? Math.max(1, meta.totalPages) : Math.max(1, page + 1);
+    const derivedTotalPages = typeof meta?.totalPages === 'number'
+        ? Math.max(1, meta.totalPages)
+        : Math.max(1, page + 1);
     totalPages = derivedTotalPages;
     const totalElements = typeof meta?.totalElements === 'number' ? meta.totalElements : content.length;
+    return {content, meta, totalElements};
+}
 
+function renderLinksList(content) {
     if (listEl) {
         listEl.innerHTML = '';
-        if (emptyEl) {
-            listEl.appendChild(emptyEl);
-        }
-        if (loadingRow) {
-            listEl.appendChild(loadingRow);
-        }
+        if (emptyEl) listEl.appendChild(emptyEl);
+        if (loadingRow) listEl.appendChild(loadingRow);
     }
     const hasItems = content.length > 0;
     emptyEl?.classList.toggle('d-none', hasItems);
@@ -463,28 +473,20 @@ async function loadLinks(targetPage = 0) {
     content.forEach(link => {
         listEl?.insertAdjacentHTML('beforeend', buildRow(link));
     });
+}
 
-    if (totalLabel) {
-        totalLabel.textContent = `Total: ${totalElements}`;
-        totalLabel.classList.toggle('d-none', !hasItems);
-    }
+function renderLinksTotals(totalElements, hasItems) {
+    if (!totalLabel) return;
+    totalLabel.textContent = `Total: ${totalElements}`;
+    totalLabel.classList.toggle('d-none', !hasItems);
+}
+
+function renderLinksPagination(meta, hasItems) {
     if (pagination) {
         if (!hasItems) {
             pagination.innerHTML = '';
         } else {
-            const items = [];
-            items.push(`<li class="page-item ${page === 0 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${page - 1}" aria-label="Previous">&laquo;</a>
-            </li>`);
-            for (let i = 0; i < totalPages; i++) {
-                items.push(`<li class="page-item ${i === page ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
-                </li>`);
-            }
-            items.push(`<li class="page-item ${page >= totalPages - 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${page + 1}" aria-label="Next">&raquo;</a>
-            </li>`);
-            pagination.innerHTML = items.join('');
+            pagination.innerHTML = buildPaginationItems(page, totalPages);
         }
     }
     if (pageInfo) {
@@ -495,6 +497,22 @@ async function loadLinks(targetPage = 0) {
     if (pager) {
         pager.hidden = totalPages < 1 || !hasItems;
     }
+}
+
+function buildPaginationItems(currentPage, totalPagesCount) {
+    const items = [];
+    items.push(`<li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">&laquo;</a>
+        </li>`);
+    for (let i = 0; i < totalPagesCount; i++) {
+        items.push(`<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+            </li>`);
+    }
+    items.push(`<li class="page-item ${currentPage >= totalPagesCount - 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">&raquo;</a>
+        </li>`);
+    return items.join('');
 }
 
 async function handleListClick(event) {

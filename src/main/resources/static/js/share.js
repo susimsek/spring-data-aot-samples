@@ -43,50 +43,74 @@ function showError(msg) {
 }
 
 async function loadNote() {
-    if (spinner) spinner.classList.remove('d-none');
-    if (card) card.classList.add('d-none');
-    if (!shareToken) {
-        showError('Invalid share link.');
-        return;
-    }
+    showLoadingState();
+    if (!shareToken) return showError('Invalid share link.');
     try {
         const note = await Api.fetchNoteWithShareTokenViaShareApi(shareToken);
-        noteId = note.id;
-        if (titleEl) titleEl.textContent = note.title || 'Untitled';
-        if (contentEl) contentEl.textContent = note.content || '';
-        if (ownerText) ownerText.textContent = `Owner: ${note.owner || '—'}`;
-        if (createdByText) createdByText.textContent = `Created by: ${note.createdBy || '—'}`;
-        if (updatedByText) updatedByText.textContent = `Updated by: ${note.lastModifiedBy || '—'}`;
-        const createdParts = splitDateTime(note.createdDate);
-        const updatedParts = splitDateTime(note.lastModifiedDate);
-        if (createdDateEl) createdDateEl.textContent = createdParts.date;
-        if (createdTimeEl) createdTimeEl.textContent = createdParts.time;
-        if (updatedDateEl) updatedDateEl.textContent = updatedParts.date;
-        if (updatedTimeEl) updatedTimeEl.textContent = updatedParts.time;
-        if (colorDot) {
-            if (note.color) {
-                colorDot.innerHTML = `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${note.color};color:${note.color}"><i class="fa-solid fa-circle" style="color:${note.color}"></i></span>`;
-            } else {
-                colorDot.textContent = '';
-            }
-        }
-        if (pinnedIcon) {
-            pinnedIcon.classList.toggle('d-none', !note.pinned);
-        }
-        if (tagsEl) {
-            const tags = Array.isArray(note.tags) ? note.tags : [];
-            tagsEl.innerHTML = tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${t}</span>`).join('');
-        }
-        if (card) card.classList.remove('d-none');
-        if (alertBox) alertBox.classList.add('d-none');
-        if (spinner) spinner.classList.add('d-none');
+        renderNoteContent(note);
+        showNoteCard();
     } catch (err) {
-        if (err?.status === 401 || err?.status === 403) {
-            showError('This share link is no longer available. Please request a new link.');
-            return;
-        }
-        showError(err?.message || 'Could not load note.');
+        handleNoteError(err);
     }
+}
+
+function showLoadingState() {
+    spinner?.classList.remove('d-none');
+    card?.classList.add('d-none');
+}
+
+function renderNoteContent(note) {
+    noteId = note.id;
+    updateTextContent(titleEl, note.title || 'Untitled');
+    updateTextContent(contentEl, note.content || '');
+    updateTextContent(ownerText, `Owner: ${note.owner || '—'}`);
+    updateTextContent(createdByText, `Created by: ${note.createdBy || '—'}`);
+    updateTextContent(updatedByText, `Updated by: ${note.lastModifiedBy || '—'}`);
+    const createdParts = splitDateTime(note.createdDate);
+    const updatedParts = splitDateTime(note.lastModifiedDate);
+    updateTextContent(createdDateEl, createdParts.date);
+    updateTextContent(createdTimeEl, createdParts.time);
+    updateTextContent(updatedDateEl, updatedParts.date);
+    updateTextContent(updatedTimeEl, updatedParts.time);
+    updateColorDot(note.color);
+    togglePinnedIcon(note.pinned);
+    renderTagsList(Array.isArray(note.tags) ? note.tags : []);
+}
+
+function updateTextContent(el, value) {
+    if (el) el.textContent = value;
+}
+
+function updateColorDot(color) {
+    if (!colorDot) return;
+    if (color) {
+        colorDot.innerHTML = `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${color};color:${color}"><i class="fa-solid fa-circle" style="color:${color}"></i></span>`;
+    } else {
+        colorDot.textContent = '';
+    }
+}
+
+function togglePinnedIcon(pinned) {
+    pinnedIcon?.classList.toggle('d-none', !pinned);
+}
+
+function renderTagsList(tags) {
+    if (!tagsEl) return;
+    tagsEl.innerHTML = tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${t}</span>`).join('');
+}
+
+function showNoteCard() {
+    card?.classList.remove('d-none');
+    alertBox?.classList.add('d-none');
+    spinner?.classList.add('d-none');
+}
+
+function handleNoteError(err) {
+    if (err?.status === 401 || err?.status === 403) {
+        showError('This share link is no longer available. Please request a new link.');
+        return;
+    }
+    showError(err?.message || 'Could not load note.');
 }
 
 function extractTokenFromPath() {
@@ -132,36 +156,36 @@ function bindSignOut() {
 }
 
 function updateAuthUi(username, signedIn) {
-    if (authBtn) {
-        authBtn.classList.toggle('d-none', !signedIn);
-        authBtn.classList.toggle('dropdown-toggle', signedIn);
-        if (signedIn) {
-            authBtn.dataset.bsToggle = 'dropdown';
-            if (authBtnLabel) {
-                authBtnLabel.textContent = username;
-            }
-        } else {
-            delete authBtn.dataset.bsToggle;
-            if (authBtnLabel) {
-                authBtnLabel.textContent = '';
-            }
-        }
+    updateAuthButton(username, signedIn);
+    updateAuthLabel(username, signedIn);
+    toggleAuthElement(authMenu, signedIn);
+    toggleAuthElement(signOutDivider, signedIn);
+    toggleAuthElement(signOutBtn, signedIn);
+    toggleAuthElement(homeLink, signedIn);
+    toggleAuthElement(sharedLinksNav, signedIn);
+}
+
+function updateAuthButton(username, signedIn) {
+    if (!authBtn) return;
+    authBtn.classList.toggle('d-none', !signedIn);
+    authBtn.classList.toggle('dropdown-toggle', signedIn);
+    if (signedIn) {
+        authBtn.dataset.bsToggle = 'dropdown';
+        if (authBtnLabel) authBtnLabel.textContent = username;
+        return;
     }
-    if (authUserLabel) {
-        authUserLabel.classList.toggle('d-none', !signedIn);
-        authUserLabel.textContent = signedIn ? `Signed in as ${username}` : '';
-    }
-    if (authMenu) {
-        authMenu.classList.toggle('d-none', !signedIn);
-    }
-    if (signOutDivider) {
-        signOutDivider.classList.toggle('d-none', !signedIn);
-    }
-    if (signOutBtn) {
-        signOutBtn.classList.toggle('d-none', !signedIn);
-    }
-    if (homeLink) homeLink.classList.toggle('d-none', !signedIn);
-    if (sharedLinksNav) sharedLinksNav.classList.toggle('d-none', !signedIn);
+    delete authBtn.dataset.bsToggle;
+    if (authBtnLabel) authBtnLabel.textContent = '';
+}
+
+function updateAuthLabel(username, signedIn) {
+    if (!authUserLabel) return;
+    authUserLabel.classList.toggle('d-none', !signedIn);
+    authUserLabel.textContent = signedIn ? `Signed in as ${username}` : '';
+}
+
+function toggleAuthElement(el, show) {
+    if (el) el.classList.toggle('d-none', !show);
 }
 
 function splitDateTime(value) {

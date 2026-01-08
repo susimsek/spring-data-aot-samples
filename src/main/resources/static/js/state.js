@@ -54,7 +54,10 @@ const State = (() => {
         return state.currentUser?.username || '';
     }
 
-    function saveToken() {
+    function saveToken(token) {
+        if (!token) return;
+        // Persist token to sessionStorage for use by other modules (e.g., fetch headers)
+        sessionStorage.setItem('AUTH_TOKEN', token);
     }
 
     function clearToken() {

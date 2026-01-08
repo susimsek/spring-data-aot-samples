@@ -1548,61 +1548,88 @@ function toggleRevisionLoadSpinner(show) {
 }
 
 async function loadRevisionPage(noteId, append = false) {
-    if (!revisionList || !revisionNoteId) return;
-    if (revisionNoteId !== noteId) return;
-    if (isLoadingRevisions || (!revisionHasMore && append)) return;
+    if (shouldSkipRevisionLoad(noteId, append)) return;
+    prepareRevisionList(append);
+    const activeNoteId = revisionNoteId;
+    const startedAt = Date.now();
+    toggleRevisionIndicators(append, true);
+    try {
+        await fetchAndRenderRevisions(noteId, append, activeNoteId);
+    } catch (e) {
+        showRevisionError(getErrorMessage(e, 'Failed to load revisions'));
+    } finally {
+        finalizeRevisionLoad(append, activeNoteId, startedAt);
+    }
+}
+
+function shouldSkipRevisionLoad(noteId, append) {
+    return !revisionList || !revisionNoteId || revisionNoteId !== noteId || isLoadingRevisions || (!revisionHasMore && append);
+}
+
+function prepareRevisionList(append) {
     if (!append) {
         revisionList.innerHTML = '';
     }
     clearRevisionError();
     isLoadingRevisions = true;
-    const activeNoteId = revisionNoteId;
-    const startedAt = Date.now();
+}
+
+async function fetchAndRenderRevisions(noteId, append, activeNoteId) {
+    const pageData = await Api.fetchRevisions(noteId, revisionPage, revisionPageSize);
+    const content = pageData?.content ?? pageData ?? [];
+    const meta = pageData?.page ?? pageData;
+    const startIndex = revisionCache.length;
+    revisionCache = revisionCache.concat(content);
+    updateRevisionTotals(meta, content.length, append);
+    const totalPages = meta?.totalPages;
+    revisionHasMore = typeof totalPages === 'number'
+        ? revisionPage + 1 < totalPages
+        : Boolean(content.length);
+    if (revisionNoteId === activeNoteId) {
+        renderRevisionItems(content, noteId, startIndex, append);
+        revisionPage += 1;
+    }
+}
+
+function updateRevisionTotals(meta, newCount, append) {
+    const totalElements = meta?.totalElements;
+    if (typeof totalElements === 'number') {
+        revisionTotal = totalElements;
+        return;
+    }
+    if (!append) {
+        revisionTotal = newCount;
+        return;
+    }
+    revisionTotal = Math.max(revisionTotal, revisionCache.length);
+}
+
+function toggleRevisionIndicators(append, show) {
     if (append) {
-        toggleRevisionLoadSpinner(true);
-    } else {
+        toggleRevisionLoadSpinner(show);
+    } else if (show) {
         revisionSpinner?.classList.remove('d-none');
+    } else {
+        revisionSpinner?.classList.add('d-none');
     }
-    try {
-        const pageData = await Api.fetchRevisions(noteId, revisionPage, revisionPageSize);
-        const content = pageData?.content ?? pageData ?? [];
-        const meta = pageData?.page ?? pageData;
-        const totalElements = meta?.totalElements;
-        const startIndex = revisionCache.length;
-        revisionCache = revisionCache.concat(content);
-        if (typeof totalElements === 'number') {
-            revisionTotal = totalElements;
-        } else if (!append) {
-            revisionTotal = content.length;
+}
+
+function finalizeRevisionLoad(append, activeNoteId, startedAt) {
+    if (revisionNoteId !== activeNoteId) {
+        return;
+    }
+    if (append) {
+        const elapsed = Date.now() - startedAt;
+        const hide = () => toggleRevisionLoadSpinner(false);
+        if (elapsed < 120) {
+            setTimeout(hide, 120 - elapsed);
         } else {
-            revisionTotal = Math.max(revisionTotal, revisionCache.length);
+            hide();
         }
-        const totalPages = meta?.totalPages;
-        revisionHasMore = typeof totalPages === 'number'
-            ? revisionPage + 1 < totalPages
-            : Boolean(content.length);
-        if (revisionNoteId === activeNoteId) {
-            renderRevisionItems(content, noteId, startIndex, append);
-            revisionPage += 1;
-        }
-    } catch (e) {
-        showRevisionError(getErrorMessage(e, 'Failed to load revisions'));
-    } finally {
-        if (revisionNoteId === activeNoteId) {
-            if (append) {
-                const elapsed = Date.now() - startedAt;
-                const hide = () => toggleRevisionLoadSpinner(false);
-                if (elapsed < 120) {
-                    setTimeout(hide, 120 - elapsed);
-                } else {
-                    hide();
-                }
-            } else {
-                revisionSpinner?.classList.add('d-none');
-            }
-            isLoadingRevisions = false;
-        }
+    } else {
+        toggleRevisionIndicators(false, false);
     }
+    isLoadingRevisions = false;
 }
 
 async function openRevisionModal(noteId) {
