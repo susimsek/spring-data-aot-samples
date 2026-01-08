@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 @NoRepositoryBean
-@SuppressWarnings("java:S2326")
+@SuppressWarnings({"java:S2326", "java:S119"})
 public interface SoftDeleteRepository<T extends SoftDeletableEntity, ID> {
 
     @Modifying

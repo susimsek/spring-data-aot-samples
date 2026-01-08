@@ -21,19 +21,15 @@ const Api = (() => {
 
     let refreshInFlight = null;
     const redirectToLogin = () => {
-        const path = window.location.pathname || '';
+        const path = globalThis.location.pathname || '';
         if (path.includes('/login')) {
             return;
         }
         State.clearToken();
-        const redirect = encodeURIComponent(`${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`);
-        try {
-            document.body.style.transition = 'opacity 120ms ease-in';
-            document.body.style.opacity = '0';
-            setTimeout(() => window.location.replace(`/login.html?redirect=${redirect}`), 130);
-        } catch (e) {
-            window.location.replace(`/login.html?redirect=${redirect}`);
-        }
+        const redirect = encodeURIComponent(`${globalThis.location.pathname || '/'}${globalThis.location.search || ''}${globalThis.location.hash || ''}`);
+        document.body.style.transition = 'opacity 120ms ease-in';
+        document.body.style.opacity = '0';
+        setTimeout(() => globalThis.location.replace(`/login.html?redirect=${redirect}`), 130);
     };
 
     const parseResponse = async (res) => {
@@ -192,7 +188,7 @@ const Api = (() => {
         });
     };
 
-    const fetchRevisions = async (id, page = 0, size = 5, sort) => {
+    const fetchRevisions = async (id, sort, page = 0, size = 5) => {
         const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
         return request(`${noteBase()}/${id}/revisions?page=${page}&size=${size}${sortParam}`, {
             headers: jsonHeaders()
@@ -213,7 +209,7 @@ const Api = (() => {
     };
 
     const fetchTags = async (query) => {
-        const url = new URL('/api/tags/suggest', window.location.origin);
+        const url = new URL('/api/tags/suggest', globalThis.location.origin);
         url.searchParams.set('page', 0);
         url.searchParams.set('size', 10);
         if (query) {

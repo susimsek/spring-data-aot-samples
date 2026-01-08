@@ -5,13 +5,14 @@ const Theme = (() => {
     let label;
 
     function systemPrefersDark() {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return globalThis.matchMedia && globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
     }
 
     function getStoredTheme() {
         try {
             return localStorage.getItem(THEME_KEY);
         } catch (e) {
+            console.warn('Could not read stored theme', e);
             return null;
         }
     }
@@ -20,7 +21,7 @@ const Theme = (() => {
         try {
             localStorage.setItem(THEME_KEY, theme);
         } catch (e) {
-            // ignore
+            console.error('Failed to persist theme preference', e);
         }
     }
 

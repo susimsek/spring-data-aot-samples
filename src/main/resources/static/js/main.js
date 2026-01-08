@@ -248,7 +248,7 @@ function buildShareLinkCard(link) {
     const oneTimeBadge = link.oneTime
         ? '<span class="badge bg-secondary-subtle text-secondary border">One-time</span>'
         : '';
-    const linkUrl = link.token ? `${window.location.origin}/share/${encodeURIComponent(link.token)}` : '';
+    const linkUrl = link.token ? `${globalThis.location.origin}/share/${encodeURIComponent(link.token)}` : '';
     const copyDisabled = !linkUrl || link.revoked;
     const revokeDisabled = link.revoked;
 
@@ -366,7 +366,7 @@ async function handleShareLinksClick(event) {
     if (action === 'copy') {
         const token = btn.dataset.token;
         if (!token) return;
-        const link = `${window.location.origin}/share/${encodeURIComponent(token)}`;
+        const link = `${globalThis.location.origin}/share/${encodeURIComponent(token)}`;
         try {
             await navigator.clipboard.writeText(link);
             showInlineCopied(btn);
@@ -407,11 +407,11 @@ if (addNoteBtn) {
 Theme.init({button: themeToggle, icon: themeToggleIcon, label: themeToggleLabel});
 
 function redirectToLogin() {
-    const path = window.location.pathname || '';
+    const path = globalThis.location.pathname || '';
     if (path.includes('/login')) {
         return;
     }
-    window.location.replace('/login.html');
+    globalThis.location.replace('/login.html');
 }
 
 function setColorFilterActive(active) {
@@ -486,7 +486,7 @@ function handleLogout(event) {
             clearToken();
             updateAuthUi();
             showToast('Signed out', 'info');
-            window.location.href = '/login.html';
+            globalThis.location.href = '/login.html';
         });
 }
 
@@ -651,7 +651,7 @@ function handleOwnerInput() {
 }
 
 function openShareModal(noteId) {
-    const modalInstance = shareModal || (shareModalEl && window.bootstrap?.Modal ? window.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
+    const modalInstance = shareModal || (shareModalEl && globalThis.bootstrap?.Modal ? globalThis.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
     const useFallback = !modalInstance;
     const id = Number(noteId);
     const note = noteCache.get(id);
@@ -674,7 +674,7 @@ function openShareModal(noteId) {
 }
 
 function openShareLinksOnly(noteId) {
-    const modalInstance = shareModal || (shareModalEl && window.bootstrap?.Modal ? window.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
+    const modalInstance = shareModal || (shareModalEl && globalThis.bootstrap?.Modal ? globalThis.bootstrap.Modal.getOrCreateInstance(shareModalEl) : null);
     const useFallback = !modalInstance;
     const id = Number(noteId);
     const note = noteCache.get(id);
@@ -733,7 +733,7 @@ async function submitShare(event) {
         setShareLoading(false);
         return;
     }
-    const link = `${window.location.origin}/share/${encodeURIComponent(result.token)}`;
+    const link = `${globalThis.location.origin}/share/${encodeURIComponent(result.token)}`;
     if (shareLink) shareLink.value = link;
     if (sharePermissionBadge) sharePermissionBadge.textContent = `${result.permission || 'READ'} access`;
     if (shareExpiryLabel) {
@@ -796,7 +796,7 @@ function fallbackCopyText(text) {
         document.execCommand('copy');
         document.body.removeChild(tempInput);
     } catch (e) {
-        // ignore
+        console.warn('Fallback copy failed', e);
     }
 }
 
@@ -1575,7 +1575,7 @@ function prepareRevisionList(append) {
 }
 
 async function fetchAndRenderRevisions(noteId, append, activeNoteId) {
-    const pageData = await Api.fetchRevisions(noteId, revisionPage, revisionPageSize);
+    const pageData = await Api.fetchRevisions(noteId, null, revisionPage, revisionPageSize);
     const content = pageData?.content ?? pageData ?? [];
     const meta = pageData?.page ?? pageData;
     const startIndex = revisionCache.length;
@@ -1857,6 +1857,7 @@ async function loadNotes() {
         totalLabel.classList.add('invisible');
         pager.hidden = true;
         updateEmptyTrashButton();
+        throw e;
     }
 }
 
@@ -2416,6 +2417,7 @@ async function copyNote(id) {
         await navigator.clipboard.writeText(textToCopy);
         showToast('Content copied to clipboard', 'success');
     } catch (e) {
+        console.error('Clipboard copy failed', e);
         showToast('Copy failed', 'danger');
     }
 }
@@ -2539,6 +2541,7 @@ async function confirmDelete() {
         }
     } catch (e) {
         showToast(getErrorMessage(e, 'Delete failed'), 'danger');
+        console.error('Delete failed', e);
     } finally {
         if (deleteBtn) {
             deleteBtn.disabled = false;
@@ -2838,8 +2841,8 @@ if (copyShareLinkBtn) {
     copyShareLinkBtn.addEventListener('click', copyShareLink);
 }
 if (shareModalEl) {
-    if (window.bootstrap?.Modal) {
-        shareModal = window.bootstrap.Modal.getOrCreateInstance(shareModalEl);
+    if (globalThis.bootstrap?.Modal) {
+        shareModal = globalThis.bootstrap.Modal.getOrCreateInstance(shareModalEl);
         shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);
     } else {
         shareModalEl.addEventListener('hidden.bs.modal', resetShareModal);

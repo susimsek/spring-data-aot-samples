@@ -2,7 +2,7 @@ import Api from './api.js';
 import Theme from './theme.js';
 import State from './state.js';
 
-const shareToken = extractTokenFromPath() || new URLSearchParams(window.location.search).get('share_token');
+const shareToken = extractTokenFromPath() || new URLSearchParams(globalThis.location.search).get('share_token');
 let noteId = null;
 const alertBox = document.getElementById('alert');
 const card = document.getElementById('card');
@@ -114,7 +114,7 @@ function handleNoteError(err) {
 }
 
 function extractTokenFromPath() {
-    const path = window.location.pathname || '';
+    const path = globalThis.location.pathname || '';
     const parts = path.split('/').filter(Boolean);
     if (parts.length >= 2 && parts[0] === 'share') {
         return parts[1];
@@ -147,10 +147,10 @@ function bindSignOut() {
     signOutBtn.addEventListener('click', async () => {
         try {
             await Api.logout();
-            window.location.reload();
+            globalThis.location.reload();
         } catch (err) {
             // ignore errors
-            window.location.reload();
+            globalThis.location.reload();
         }
     });
 }

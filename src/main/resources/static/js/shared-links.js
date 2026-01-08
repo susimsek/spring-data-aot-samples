@@ -25,7 +25,7 @@ const customDateModalEl = document.getElementById('customDateModal');
 const customDateSave = document.getElementById('customDateSave');
 const customDateCancel = document.getElementById('customDateCancel');
 const customDateError = document.getElementById('customDateError');
-const bootstrapModal = window.bootstrap?.Modal;
+const bootstrapModal = globalThis.bootstrap?.Modal;
 const customDateModal = customDateModalEl && bootstrapModal ? new bootstrapModal(customDateModalEl) : null;
 let customModalOpen = false;
 const authBtn = document.getElementById('authBtn');
@@ -200,7 +200,7 @@ function bindEvents() {
             await Api.logout();
         } finally {
             State.clearToken();
-            window.location.replace('/login.html');
+            globalThis.location.replace('/login.html');
         }
     });
 }
@@ -322,7 +322,7 @@ async function initAuth() {
         return State.isAdmin?.();
     } catch (e) {
         updateAuthUi('');
-        window.location.replace('/login.html');
+        globalThis.location.replace('/login.html');
         return false;
     }
 }
@@ -369,7 +369,7 @@ function buildRow(link) {
     const noteTitle = link.noteTitle || '—';
     const noteOwner = link.noteOwner || '—';
     const tokenShort = link.token ? `${escapeHtml(link.token.substring(0, 6))}…${escapeHtml(link.token.slice(-4))}` : `#${link.id}`;
-    const linkUrl = link.token ? `${window.location.origin}/share/${encodeURIComponent(link.token)}` : '';
+    const linkUrl = link.token ? `${globalThis.location.origin}/share/${encodeURIComponent(link.token)}` : '';
     const copyDisabled = !linkUrl || link.revoked;
     const revokeDisabled = link.revoked;
     const expiresText = link.expiresAt ? escapeHtml(formatDate(link.expiresAt) || '') : 'No expiry';
@@ -522,7 +522,7 @@ async function handleListClick(event) {
     if (action === 'copy') {
         const token = btn.dataset.token;
         if (!token) return;
-        const url = `${window.location.origin}/share/${encodeURIComponent(token)}`;
+        const url = `${globalThis.location.origin}/share/${encodeURIComponent(token)}`;
         try {
             await navigator.clipboard.writeText(url);
             inlineCopied(btn);

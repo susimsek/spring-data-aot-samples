@@ -6,7 +6,7 @@ import Theme from './theme.js';
 
 const {clearToken, setCurrentUser} = State;
 const {showToast} = Helpers;
-const urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams(globalThis.location.search);
 const rawRedirect = urlParams.get('redirect');
 const redirectTarget = rawRedirect && !rawRedirect.includes('/login') ? rawRedirect : '/';
 
@@ -114,7 +114,7 @@ async function handleSubmit(event) {
     form.reset();
     clearValidation();
     showToast('Signed in', 'success');
-    window.location.replace(redirectTarget);
+    globalThis.location.replace(redirectTarget);
 }
 
 function init() {
