@@ -26,7 +26,7 @@ const Theme = (() => {
 
     function applyTheme(theme) {
         const next = theme === 'dark' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-bs-theme', next);
+        document.documentElement.dataset.bsTheme = next;
         if (icon) {
             icon.classList.toggle('fa-moon', next === 'light');
             icon.classList.toggle('fa-sun', next === 'dark');
@@ -42,7 +42,7 @@ const Theme = (() => {
     }
 
     function toggleTheme() {
-        const current = (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'dark' : 'light';
+        const current = (document.documentElement.dataset.bsTheme === 'dark') ? 'dark' : 'light';
         applyTheme(current === 'dark' ? 'light' : 'dark');
     }
 
@@ -61,7 +61,7 @@ const Theme = (() => {
 
         const stored = getStoredTheme();
         const prefers = systemPrefersDark() ? 'dark' : 'light';
-        const initial = document.documentElement.getAttribute('data-bs-theme') || stored || prefers;
+        const initial = document.documentElement.dataset.bsTheme || stored || prefers;
         applyTheme(initial);
 
         if (btn) {
@@ -72,7 +72,7 @@ const Theme = (() => {
     // Apply theme immediately on module load to avoid inline scripts (CSP friendly).
     const stored = getStoredTheme();
     const prefers = systemPrefersDark() ? 'dark' : 'light';
-    const initial = document.documentElement.getAttribute('data-bs-theme') || stored || prefers;
+    const initial = document.documentElement.dataset.bsTheme || stored || prefers;
     applyTheme(initial);
 
     return {init, toggleTheme, applyTheme};

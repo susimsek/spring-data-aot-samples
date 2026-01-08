@@ -455,13 +455,13 @@ function updateAuthButton(signedIn, username) {
     authBtn.classList.toggle('d-none', !signedIn);
     authBtn.classList.toggle('dropdown-toggle', signedIn);
     if (signedIn) {
-        authBtn.setAttribute('data-bs-toggle', 'dropdown');
+            authBtn.dataset.bsToggle = 'dropdown';
         if (authBtnLabel) {
             authBtnLabel.textContent = username || 'User';
         }
         return;
     }
-    authBtn.removeAttribute('data-bs-toggle');
+            delete authBtn.dataset.bsToggle;
     if (authBtnLabel) {
         authBtnLabel.textContent = '';
     }
@@ -526,7 +526,7 @@ function clearOwnerModal() {
         ownerInput.value = '';
         ownerInput.classList.remove('is-invalid');
     }
-    ownerSubmit?.setAttribute('disabled', 'disabled');
+    if (ownerSubmit) ownerSubmit.disabled = true;
     ownerSubmitSpinner?.classList.add('d-none');
     ownerSearchPage = 0;
     ownerSearchHasMore = false;
@@ -542,7 +542,7 @@ function openOwnerModal(noteId) {
     if (!ownerModal || !isAdmin?.()) return;
     ownerNoteId = noteId;
     const note = noteCache.get(noteId);
-    ownerSuggestions?.setAttribute('data-current-owner', note?.owner || '');
+    if (ownerSuggestions) ownerSuggestions.dataset.currentOwner = note?.owner || '';
     if (ownerNoteTitleText) {
         ownerNoteTitleText.textContent = note?.title
             ? `Change owner for "${note.title}"`
@@ -564,7 +564,7 @@ function openOwnerModal(noteId) {
 function renderOwnerSuggestions(users, append = false) {
     if (!ownerSuggestions) return;
     const rows = Array.isArray(users) ? users : [];
-    const currentOwner = ownerSuggestions.getAttribute('data-current-owner') || '';
+    const currentOwner = ownerSuggestions?.dataset.currentOwner || '';
     const selectedValue = ownerInput?.value?.trim() || '';
     if (!append) {
         ownerSuggestions.innerHTML = '';
@@ -605,7 +605,7 @@ async function loadOwnerSuggestions(query, append = false) {
     ownerSearchLoading = true;
     if (append && ownerLoadMoreBtn) {
         ownerLoadMoreBtn.querySelector('[data-owner-load-more-spinner="true"]')?.classList.remove('d-none');
-        ownerLoadMoreBtn.setAttribute('disabled', 'disabled');
+        ownerLoadMoreBtn.disabled = true;
     }
     const page = append ? ownerSearchPage + 1 : 0;
     const result = await handleApi(Api.searchUsers(query, page, OWNER_SEARCH_PAGE_SIZE), {
@@ -631,7 +631,7 @@ function handleOwnerInput() {
     ownerInput.classList.remove('is-invalid');
     ownerAlert?.classList.add('d-none');
     const val = ownerInput.value?.trim() || '';
-    ownerSuggestions?.setAttribute('data-selected-owner', val);
+    if (ownerSuggestions) ownerSuggestions.dataset.selectedOwner = val;
     ownerSearchQuery = val;
     ownerSearchPage = 0;
     ownerSearchHasMore = false;
@@ -788,7 +788,7 @@ function fallbackCopyText(text) {
     try {
         const tempInput = document.createElement('textarea');
         tempInput.value = text;
-        tempInput.setAttribute('readonly', '');
+        tempInput.readOnly = true;
         tempInput.style.position = 'absolute';
         tempInput.style.left = '-9999px';
         document.body.appendChild(tempInput);
@@ -867,13 +867,13 @@ async function submitOwnerChange(event) {
         ownerInput.classList.add('is-invalid');
         return;
     }
-    ownerSubmit?.setAttribute('disabled', 'disabled');
+    if (ownerSubmit) ownerSubmit.disabled = true;
     ownerSubmitSpinner?.classList.remove('d-none');
     const result = await handleApi(Api.changeOwner(ownerNoteId, {owner}), {
         fallback: 'Failed to change owner',
         onFinally: () => {
             ownerSubmitSpinner?.classList.add('d-none');
-            ownerSubmit?.removeAttribute('disabled');
+            if (ownerSubmit) ownerSubmit.disabled = false;
         }
     });
     if (result) {
@@ -937,196 +937,11 @@ function renderNotes(data) {
     const fragments = [];
     notes.forEach(note => {
         noteCache.set(note.id, note);
-        const creator = note.createdBy ?? '';
-        const owner = note.owner ?? '';
-        const updater = note.lastModifiedBy ?? '';
-        const createdText = formatDate(note.createdDate);
-        const modifiedText = note.lastModifiedDate ? formatDate(note.lastModifiedDate) : createdText;
-        const deletedBy = note.deletedBy ?? '';
-        const deletedText = note.deletedDate ? formatDate(note.deletedDate) : '';
-
-        if (state.view === 'trash') {
-            fragments.push(`
-                <div class="col-12 col-md-6 col-xl-6">
-                    <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
-                        <div class="card-body d-flex flex-column gap-2">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="form-check me-2 mt-1">
-                                    <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
-                                        ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
-                                        ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
-                                    </div>
-                                    <div class="text-muted small">${escapeHtml(note.content)}</div>
-                                    ${renderTags(note)}
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <button class="btn btn-success btn-sm" data-action="restore" data-id="${note.id}" title="Restore">
-                                        <i class="fa-solid fa-rotate-left"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
-                                        <i class="fa-solid fa-copy"></i>
-                                    </button>
-                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
-                                        <i class="fa-solid fa-user-gear"></i>
-                                    </button>` : ''}
-                                    <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
-                                        <i class="fa-solid fa-clock-rotate-left"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger btn-sm" data-action="delete-forever" data-id="${note.id}" title="Delete permanently">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column gap-1 text-muted small">
-                                ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
-                                <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
-                                ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
-                            </div>
-                            <div class="d-flex flex-column text-muted small gap-1">
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <i class="fa-regular fa-calendar me-1"></i>
-                                    <span>Created:</span>
-                                    <span class="text-nowrap">${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
-                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
-                                </div>
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <i class="fa-regular fa-calendar-check me-1"></i>
-                                    <span>Updated:</span>
-                                    <span class="text-nowrap">${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
-                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-3 text-muted small">
-                                <span><i class="fa-solid fa-ban me-1"></i>Deleted by: ${escapeHtml(deletedBy || '—')}</span>
-                            </div>
-                                ${deletedText ? `
-                                <div class="d-flex text-muted small align-items-center gap-2 flex-wrap mt-1">
-                                    <i class="fa-regular fa-calendar me-1"></i>
-                                    <span>Deleted:</span>
-                                    <span class="text-nowrap">${escapeHtml(deletedText.split(' ')[0] ?? deletedText)}</span>
-                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(deletedText.split(' ')[1] ?? '')}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-            `);
-        } else {
-            fragments.push(`
-                <div class="col-12 col-md-6 col-xl-6">
-                    <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
-                        <div class="card-body d-flex flex-column gap-2">
-                            <div class="d-flex justify-content-between align-items-start view-mode">
-                                <div class="form-check me-2 mt-1">
-                                    <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
-                                        ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
-                                        ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
-                                    </div>
-                                    <div class="text-muted small">${escapeHtml(note.content)}</div>
-                                    ${renderTags(note)}
-                                </div>
-                                <div class="d-grid gap-1" style="grid-template-columns: repeat(3, 32px); justify-content: end; justify-items: end;">
-                                    <button class="btn btn-outline-warning btn-sm" style="width: 32px; height: 32px;" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
-                                        <i class="fa-solid fa-thumbtack ${note.pinned ? '' : 'opacity-50'}"></i>
-                                    </button>
-                                    <button class="btn btn-outline-primary btn-sm" style="width: 32px; height: 32px;" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="copy" data-id="${note.id}" title="Copy content">
-                                        <i class="fa-solid fa-copy"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share-links" data-id="${note.id}" title="Existing links">
-                                        <i class="fa-solid fa-link"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share" data-id="${note.id}" title="Create share link">
-                                        <i class="fa-solid fa-share-from-square"></i>
-                                    </button>
-                                    ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="change-owner" data-id="${note.id}" title="Change owner">
-                                        <i class="fa-solid fa-user-gear"></i>
-                                    </button>` : ''}
-                                    <button class="btn btn-outline-info btn-sm" style="width: 32px; height: 32px;" data-action="revisions" data-id="${note.id}" title="Revision history">
-                                        <i class="fa-solid fa-clock-rotate-left"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger btn-sm" style="width: 32px; height: 32px;" data-action="delete" data-id="${note.id}" title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="edit-mode d-none">
-                                <div class="mb-2">
-                                    <input class="form-control form-control-sm" type="text" placeholder="Title"
-                                           minlength="3" maxlength="255" required value="${escapeHtml(note.title)}"
-                                           data-inline-title="${note.id}">
-                                    <div class="invalid-feedback d-none" data-inline-title-required="${note.id}">This field is required.</div>
-                                    <div class="invalid-feedback d-none" data-inline-title-size="${note.id}">Size must be between 3 and 255 characters.</div>
-                                </div>
-                                <div class="mb-2">
-                                    <textarea class="form-control form-control-sm" rows="3" placeholder="Content"
-                                              minlength="10" maxlength="1024" required
-                                              data-inline-content="${note.id}">${escapeHtml(note.content)}</textarea>
-                                    <div class="invalid-feedback d-none" data-inline-content-required="${note.id}">This field is required.</div>
-                                    <div class="invalid-feedback d-none" data-inline-content-size="${note.id}">Size must be between 10 and 1024 characters.</div>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label small mb-1" for="inlineColor-${note.id}">Color</label>
-                                    <input class="form-control form-control-color" type="color" id="inlineColor-${note.id}" data-inline-color="${note.id}" value="${escapeHtml(note.color || '#2563eb')}">
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label small mb-1" for="inlineTagsInput-${note.id}">Tags</label>
-                                    <div class="form-control p-2 pe-5" data-inline-tags-container="${note.id}">
-                                        <div class="d-flex flex-wrap gap-2 mb-2" data-inline-tags-list="${note.id}"></div>
-                                        <input class="form-control form-control-sm border-0 shadow-none p-0" type="text" id="inlineTagsInput-${note.id}" data-inline-tags-input="${note.id}" placeholder="Type and press Enter or comma" list="tagSuggestions">
-                                    </div>
-                                    <div class="invalid-feedback d-none" data-inline-tags-error="${note.id}"></div>
-                                </div>
-                                <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="inlinePinned-${note.id}" data-inline-pinned="${note.id}" ${note.pinned ? 'checked' : ''}>
-                                    <label class="form-check-label text-body" for="inlinePinned-${note.id}">Pin this note</label>
-                                </div>
-                                <div class="d-flex justify-content-end gap-2">
-                                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-cancel" data-id="${note.id}">
-                                        <i class="fa-solid fa-xmark"></i> Cancel
-                                    </button>
-                                    <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-save" data-id="${note.id}">
-                                        <i class="fa-solid fa-save"></i> Save
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column gap-1 text-muted small">
-                                ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
-                                <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
-                                ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
-                            </div>
-                            <div class="d-flex flex-column text-muted small gap-1">
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <i class="fa-regular fa-calendar me-1"></i>
-                                    <span>Created:</span>
-                                    <span class="text-nowrap">${escapeHtml(createdText.split(' ')[0] ?? createdText)}</span>
-                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(createdText.split(' ')[1] ?? '')}</span>
-                                </div>
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <i class="fa-regular fa-calendar-check me-1"></i>
-                                    <span>Updated:</span>
-                                    <span class="text-nowrap">${escapeHtml(modifiedText.split(' ')[0] ?? modifiedText)}</span>
-                                    <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(modifiedText.split(' ')[1] ?? '')}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `);
-        }
+        const metaInfo = buildNoteMeta(note);
+        const card = state.view === 'trash'
+            ? buildTrashCard(note, metaInfo, showOwner)
+            : buildActiveNoteCard(note, metaInfo, showOwner);
+        fragments.push(card);
     });
     noteGrid.innerHTML = fragments.join('');
 
@@ -1199,10 +1014,221 @@ function renderEmptyNotes() {
     }
 }
 
+function buildNoteMeta(note) {
+    const createdText = formatDate(note.createdDate);
+    const modifiedText = note.lastModifiedDate ? formatDate(note.lastModifiedDate) : createdText;
+    const deletedText = note.deletedDate ? formatDate(note.deletedDate) : '';
+    return {
+        creator: note.createdBy ?? '',
+        owner: note.owner ?? '',
+        updater: note.lastModifiedBy ?? '',
+        createdText,
+        modifiedText,
+        deletedBy: note.deletedBy ?? '',
+        deletedText
+    };
+}
+
+function buildTrashCard(note, metaInfo, showOwner) {
+    const {creator, owner, updater, createdText, modifiedText, deletedBy, deletedText} = metaInfo;
+    return `
+        <div class="col-12 col-md-6 col-xl-6">
+            <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="form-check me-2 mt-1">
+                            <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
+                                ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
+                                ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                            </div>
+                            <div class="text-muted small">${escapeHtml(note.content)}</div>
+                            ${renderTags(note)}
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 justify-content-end">
+                            <button class="btn btn-success btn-sm" data-action="restore" data-id="${note.id}" title="Restore">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" data-action="copy" data-id="${note.id}" title="Copy content">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </button>` : ''}
+                            <button class="btn btn-outline-info btn-sm" data-action="revisions" data-id="${note.id}" title="Revision history">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" data-action="delete-forever" data-id="${note.id}" title="Delete permanently">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column gap-1 text-muted small">
+                        ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
+                        <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
+                        ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
+                    </div>
+                    <div class="d-flex flex-column text-muted small gap-1">
+                        ${buildDateRow('Created', createdText)}
+                        ${buildDateRow('Updated', modifiedText)}
+                    </div>
+                    <div class="d-flex gap-3 text-muted small">
+                        <span><i class="fa-solid fa-ban me-1"></i>Deleted by: ${escapeHtml(deletedBy || '—')}</span>
+                    </div>
+                    ${deletedText ? buildDeletedRow(deletedText) : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function buildActiveNoteCard(note, metaInfo, showOwner) {
+    const {creator, owner, updater, createdText, modifiedText} = metaInfo;
+    return `
+        <div class="col-12 col-md-6 col-xl-6">
+            <div class="card h-100 border-0 shadow-sm" id="note-${note.id}">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-start view-mode">
+                        <div class="form-check me-2 mt-1">
+                            <input class="form-check-input selection-checkbox" type="checkbox" data-note-id="${note.id}" ${state.selected.has(note.id) ? 'checked' : ''}>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="fw-bold text-primary mb-0">${escapeHtml(note.title)}</div>
+                                ${note.pinned ? '<i class="fa-solid fa-thumbtack text-warning" title="Pinned"></i>' : ''}
+                                ${note.color ? `<span class="badge rounded-pill bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : ''}
+                            </div>
+                            <div class="text-muted small">${escapeHtml(note.content)}</div>
+                            ${renderTags(note)}
+                        </div>
+                        ${buildActiveActions(note, showOwner)}
+                    </div>
+                    ${buildInlineEditor(note)}
+                    <div class="d-flex flex-column gap-1 text-muted small">
+                        ${showOwner ? `<span><i class="fa-solid fa-user-shield me-1"></i>Owner: ${escapeHtml(owner)}</span>` : ''}
+                        <span><i class="fa-solid fa-user me-1"></i>Created by: ${escapeHtml(creator)}</span>
+                        ${updater ? `<span><i class="fa-solid fa-user-pen me-1"></i>Updated by: ${escapeHtml(updater)}</span>` : ''}
+                    </div>
+                    <div class="d-flex flex-column text-muted small gap-1">
+                        ${buildDateRow('Created', createdText)}
+                        ${buildDateRow('Updated', modifiedText)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function buildDateRow(label, text) {
+    const [datePart = text, timePart = ''] = text.split(' ');
+    return `
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <i class="fa-regular fa-calendar me-1"></i>
+            <span>${label}:</span>
+            <span class="text-nowrap">${escapeHtml(datePart)}</span>
+            <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(timePart)}</span>
+        </div>
+    `;
+}
+
+function buildDeletedRow(deletedText) {
+    const [datePart = deletedText, timePart = ''] = deletedText.split(' ');
+    return `
+        <div class="d-flex text-muted small align-items-center gap-2 flex-wrap mt-1">
+            <i class="fa-regular fa-calendar me-1"></i>
+            <span>Deleted:</span>
+            <span class="text-nowrap">${escapeHtml(datePart)}</span>
+            <span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="fa-regular fa-clock"></i>${escapeHtml(timePart)}</span>
+        </div>
+    `;
+}
+
+function buildActiveActions(note, showOwner) {
+    return `
+        <div class="d-grid gap-1" style="grid-template-columns: repeat(3, 32px); justify-content: end; justify-items: end;">
+            <button class="btn btn-outline-warning btn-sm" style="width: 32px; height: 32px;" data-action="toggle-pin" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                <i class="fa-solid fa-thumbtack ${note.pinned ? '' : 'opacity-50'}"></i>
+            </button>
+            <button class="btn btn-outline-primary btn-sm" style="width: 32px; height: 32px;" data-action="edit-modal" data-id="${note.id}" title="Edit in modal">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="inline-edit" data-id="${note.id}" title="Inline edit">
+                <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="copy" data-id="${note.id}" title="Copy content">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share-links" data-id="${note.id}" title="Existing links">
+                <i class="fa-solid fa-link"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="share" data-id="${note.id}" title="Create share link">
+                <i class="fa-solid fa-share-from-square"></i>
+            </button>
+            ${showOwner ? `<button class="btn btn-outline-secondary btn-sm" style="width: 32px; height: 32px;" data-action="change-owner" data-id="${note.id}" title="Change owner">
+                <i class="fa-solid fa-user-gear"></i>
+            </button>` : ''}
+            <button class="btn btn-outline-info btn-sm" style="width: 32px; height: 32px;" data-action="revisions" data-id="${note.id}" title="Revision history">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm" style="width: 32px; height: 32px;" data-action="delete" data-id="${note.id}" title="Delete">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+    `;
+}
+
+function buildInlineEditor(note) {
+    return `
+        <div class="edit-mode d-none">
+            <div class="mb-2">
+                <input class="form-control form-control-sm" type="text" placeholder="Title"
+                       minlength="3" maxlength="255" required value="${escapeHtml(note.title)}"
+                       data-inline-title="${note.id}">
+                <div class="invalid-feedback d-none" data-inline-title-required="${note.id}">This field is required.</div>
+                <div class="invalid-feedback d-none" data-inline-title-size="${note.id}">Size must be between 3 and 255 characters.</div>
+            </div>
+            <div class="mb-2">
+                <textarea class="form-control form-control-sm" rows="3" placeholder="Content"
+                          minlength="10" maxlength="1024" required
+                          data-inline-content="${note.id}">${escapeHtml(note.content)}</textarea>
+                <div class="invalid-feedback d-none" data-inline-content-required="${note.id}">This field is required.</div>
+                <div class="invalid-feedback d-none" data-inline-content-size="${note.id}">Size must be between 10 and 1024 characters.</div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1" for="inlineColor-${note.id}">Color</label>
+                <input class="form-control form-control-color" type="color" id="inlineColor-${note.id}" data-inline-color="${note.id}" value="${escapeHtml(note.color || '#2563eb')}">
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1" for="inlineTagsInput-${note.id}">Tags</label>
+                <div class="form-control p-2 pe-5" data-inline-tags-container="${note.id}">
+                    <div class="d-flex flex-wrap gap-2 mb-2" data-inline-tags-list="${note.id}"></div>
+                    <input class="form-control form-control-sm border-0 shadow-none p-0" type="text" id="inlineTagsInput-${note.id}" data-inline-tags-input="${note.id}" placeholder="Type and press Enter or comma" list="tagSuggestions">
+                </div>
+                <div class="invalid-feedback d-none" data-inline-tags-error="${note.id}"></div>
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="inlinePinned-${note.id}" data-inline-pinned="${note.id}" ${note.pinned ? 'checked' : ''}>
+                <label class="form-check-label text-body" for="inlinePinned-${note.id}">Pin this note</label>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-cancel" data-id="${note.id}">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+                <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" data-action="inline-save" data-id="${note.id}">
+                    <i class="fa-solid fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 function bindSelectionCheckboxes() {
     document.querySelectorAll('.selection-checkbox').forEach(cb => {
         cb.addEventListener('change', (e) => {
-            const id = Number.parseInt(e.target.getAttribute('data-note-id'), 10);
+            const id = Number.parseInt(e.target.dataset.noteId, 10);
             toggleSelection(id, e.target.checked);
         });
     });
@@ -1514,10 +1540,10 @@ function toggleRevisionLoadSpinner(show) {
     const button = row.querySelector('button');
     if (show) {
         spinner?.classList.remove('d-none');
-        button?.setAttribute('disabled', 'disabled');
+        if (button) button.disabled = true;
     } else {
         spinner?.classList.add('d-none');
-        button?.removeAttribute('disabled');
+        if (button) button.disabled = false;
     }
 }
 
@@ -1681,7 +1707,7 @@ function syncSelectAllCheckbox() {
 
 function syncCheckboxStates() {
     document.querySelectorAll('.selection-checkbox').forEach(cb => {
-        const id = Number.parseInt(cb.getAttribute('data-note-id'), 10);
+        const id = Number.parseInt(cb.dataset.noteId, 10);
         cb.checked = state.selected.has(id);
     });
 }
@@ -2124,7 +2150,7 @@ function bindInlineTagInputs(id) {
         listEl.addEventListener('click', (e) => {
             const target = e.target.closest('[data-inline-tag-remove]');
             if (!target) return;
-            const tag = target.getAttribute('data-tag');
+            const tag = target.dataset.tag;
             const set = inlineTagsState.get(id);
             if (set && tag) {
                 set.delete(tag);
@@ -2573,7 +2599,7 @@ if (filterTagsList) {
     filterTagsList.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-filter-tag-remove]');
         if (!btn) return;
-        const tag = btn.getAttribute('data-filter-tag-remove');
+        const tag = btn.dataset.filterTagRemove;
         if (tag) {
             state.filterTags.delete(tag);
             renderFilterTags();
@@ -2715,7 +2741,7 @@ if (tagsListEl) {
     tagsListEl.addEventListener('click', (e) => {
         const btn = e.target.closest('.remove-tag');
         if (!btn) return;
-        const tag = btn.getAttribute('data-tag');
+        const tag = btn.dataset.tag;
         currentTags.delete(tag);
         renderTagsChips();
         clearTagError();
@@ -2738,7 +2764,7 @@ if (pagination) {
         const target = e.target.closest('[data-page]');
         if (!target) return;
         e.preventDefault();
-        const page = Number.parseInt(target.getAttribute('data-page'), 10);
+        const page = Number.parseInt(target.dataset.page, 10);
         if (Number.isNaN(page)) return;
         changePage(page);
     });
@@ -2751,7 +2777,7 @@ if (ownerSuggestions) {
     ownerSuggestions.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-username]');
         if (!btn || !ownerInput) return;
-        ownerInput.value = btn.getAttribute('data-username') || '';
+        ownerInput.value = btn.dataset.username || '';
         handleOwnerInput();
     });
     ownerSuggestions.addEventListener('scroll', () => {
@@ -2826,29 +2852,31 @@ if (revisionList) {
     revisionList.addEventListener('click', (e) => {
         const diffBtn = e.target.closest('[data-action="revision-diff"]');
         if (diffBtn) {
-            const idx = Number.parseInt(diffBtn.getAttribute('data-rev-index'), 10);
+            const idx = Number.parseInt(diffBtn.dataset.revIndex, 10);
             showRevisionDiff(idx);
             return;
         }
         const hideBtn = e.target.closest('[data-action="hide-diff"]');
         if (hideBtn) {
-            const revId = hideBtn.getAttribute('data-rev-id');
+            const revId = hideBtn.dataset.revId;
             const block = revisionList.querySelector(`[data-diff-block="${revId}"]`);
             if (block) block.classList.add('d-none');
             return;
         }
         const loadMore = e.target.closest('[data-action="revision-load-more"]');
         if (loadMore) {
-            const noteId = Number.parseInt(loadMore.getAttribute('data-note-id'), 10);
+            const noteId = Number.parseInt(loadMore.dataset.noteId, 10);
             const row = loadMore.closest('.list-group-item');
             if (row) {
                 row.querySelector('[data-revision-load-spinner="true"]')?.classList.remove('d-none');
-                row.querySelector('button')?.setAttribute('disabled', 'disabled');
+                const btnEl = row.querySelector('button');
+                if (btnEl) btnEl.disabled = true;
             }
             loadRevisionPage(noteId, true).finally(() => {
                 if (row) {
                     row.querySelector('[data-revision-load-spinner="true"]')?.classList.add('d-none');
-                    row.querySelector('button')?.removeAttribute('disabled');
+                    const btnEl = row.querySelector('button');
+                    if (btnEl) btnEl.disabled = false;
                 }
             });
 

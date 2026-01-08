@@ -136,12 +136,12 @@ function updateAuthUi(username, signedIn) {
         authBtn.classList.toggle('d-none', !signedIn);
         authBtn.classList.toggle('dropdown-toggle', signedIn);
         if (signedIn) {
-            authBtn.setAttribute('data-bs-toggle', 'dropdown');
+            authBtn.dataset.bsToggle = 'dropdown';
             if (authBtnLabel) {
                 authBtnLabel.textContent = username;
             }
         } else {
-            authBtn.removeAttribute('data-bs-toggle');
+            delete authBtn.dataset.bsToggle;
             if (authBtnLabel) {
                 authBtnLabel.textContent = '';
             }

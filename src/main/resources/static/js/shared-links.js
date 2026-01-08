@@ -116,7 +116,7 @@ function bindEvents() {
         const link = e.target.closest('a[data-page]');
         if (!link) return;
         e.preventDefault();
-        const target = Number.parseInt(link.getAttribute('data-page'), 10);
+        const target = Number.parseInt(link.dataset.page, 10);
         if (Number.isNaN(target) || target === page || target < 0 || target >= totalPages || loading) return;
         loadLinks(target);
     });
@@ -332,10 +332,10 @@ function updateAuthUi(username) {
     authBtn?.classList.toggle('d-none', !signedIn);
     authBtn?.classList.toggle('dropdown-toggle', signedIn);
     if (signedIn) {
-        authBtn?.setAttribute('data-bs-toggle', 'dropdown');
+        if (authBtn) authBtn.dataset.bsToggle = 'dropdown';
         if (authBtnLabel) authBtnLabel.textContent = username;
     } else {
-        authBtn?.removeAttribute('data-bs-toggle');
+        if (authBtn) delete authBtn.dataset.bsToggle;
         if (authBtnLabel) authBtnLabel.textContent = '';
     }
     if (authUserLabel) {
@@ -500,9 +500,9 @@ async function loadLinks(targetPage = 0) {
 async function handleListClick(event) {
     const btn = event.target.closest('button[data-action]');
     if (!btn) return;
-    const action = btn.getAttribute('data-action');
+    const action = btn.dataset.action;
     if (action === 'copy') {
-        const token = btn.getAttribute('data-token');
+        const token = btn.dataset.token;
         if (!token) return;
         const url = `${window.location.origin}/share/${encodeURIComponent(token)}`;
         try {
@@ -514,7 +514,7 @@ async function handleListClick(event) {
         return;
     }
     if (action === 'revoke') {
-        const id = btn.getAttribute('data-id');
+        const id = btn.dataset.id;
         if (!id) return;
         btn.disabled = true;
         const res = await handleApi(Api.revokeShareLink(id), {
