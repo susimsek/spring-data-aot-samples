@@ -15,8 +15,7 @@ class HashingUtilsTest {
         String hash1 = HashingUtils.sha256Hex("secret");
         String hash2 = HashingUtils.sha256Hex("secret");
 
-        assertThat(hash1).isEqualTo(hash2);
-        assertThat(hash1).hasSize(64).matches("[0-9a-f]+");
+        assertThat(hash1).isEqualTo(hash2).hasSize(64).matches("[0-9a-f]+");
     }
 
     @Test

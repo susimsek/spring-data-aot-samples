@@ -34,7 +34,6 @@ class RefreshTokenRequestTest {
         Set<ConstraintViolation<RefreshTokenRequest>> violations = validator.validate(request);
 
         assertThat(violations)
-                .anySatisfy(
-                        v -> assertThat(v.getPropertyPath().toString()).isEqualTo("refreshToken"));
+                .anySatisfy(v -> assertThat(v.getPropertyPath()).hasToString("refreshToken"));
     }
 }

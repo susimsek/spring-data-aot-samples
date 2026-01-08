@@ -43,8 +43,7 @@ class NoteShareTokenCleanupSchedulerTest {
                         NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
 
         Instant captured = instantCaptor.getValue();
-        assertThat(captured).isNotNull();
-        assertThat(captured).isBetween(before.minusSeconds(1), after.plusSeconds(1));
+        assertThat(captured).isNotNull().isBetween(before.minusSeconds(1), after.plusSeconds(1));
 
         verify(noteShareTokenRepository).deleteByExpiresAtBefore(captured);
         verify(noteShareTokenRepository).deleteByRevokedTrue();

@@ -40,8 +40,7 @@ class RefreshTokenCleanupSchedulerTest {
         inOrder.verify(cacheProvider).clearCache(RefreshToken.class.getName());
 
         Instant captured = instantCaptor.getValue();
-        assertThat(captured).isNotNull();
-        assertThat(captured).isBetween(before.minusSeconds(1), after.plusSeconds(1));
+        assertThat(captured).isNotNull().isBetween(before.minusSeconds(1), after.plusSeconds(1));
 
         verify(refreshTokenRepository).deleteByExpiresAtBefore(captured);
         verify(refreshTokenRepository).deleteByRevokedTrue();

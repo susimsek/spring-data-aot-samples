@@ -242,7 +242,6 @@ class NoteSpecificationsTest {
 
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, java.time.Instant> namedInstantAttribute() {
-        SingularAttribute<T, java.time.Instant> attribute = mock(SingularAttribute.class);
-        return attribute;
+        return mock(SingularAttribute.class);
     }
 }

@@ -359,8 +359,8 @@ class NoteCommandServiceTest {
         active.setId(1L);
         active.setDeleted(false);
 
-        when(noteRepository.findAllById(eq(Set.of(1L, 2L)))).thenReturn(List.of(active));
-        when(noteRepository.softDeleteByIds(eq(List.of(1L)))).thenReturn(1);
+        when(noteRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(active));
+        when(noteRepository.softDeleteByIds(List.of(1L))).thenReturn(1);
 
         BulkActionResult result =
                 noteCommandService.bulk(
@@ -368,7 +368,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(2L);
-        verify(noteRepository).softDeleteByIds(eq(List.of(1L)));
+        verify(noteRepository).softDeleteByIds(List.of(1L));
         verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
     }
 
@@ -378,7 +378,7 @@ class NoteCommandServiceTest {
         active.setId(1L);
         active.setDeleted(false);
 
-        when(noteRepository.findAllById(eq(Set.of(1L)))).thenReturn(List.of(active));
+        when(noteRepository.findAllById(Set.of(1L))).thenReturn(List.of(active));
 
         BulkActionResult result =
                 noteCommandService.bulk(
@@ -396,8 +396,8 @@ class NoteCommandServiceTest {
         deleted.setId(1L);
         deleted.setDeleted(true);
 
-        when(noteRepository.findAllById(eq(Set.of(1L)))).thenReturn(List.of(deleted));
-        when(noteRepository.restoreByIds(eq(List.of(1L)))).thenReturn(1);
+        when(noteRepository.findAllById(Set.of(1L))).thenReturn(List.of(deleted));
+        when(noteRepository.restoreByIds(List.of(1L))).thenReturn(1);
 
         BulkActionResult result =
                 noteCommandService.bulk(
@@ -405,7 +405,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).isEmpty();
-        verify(noteRepository).restoreByIds(eq(List.of(1L)));
+        verify(noteRepository).restoreByIds(List.of(1L));
         verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
     }
 
@@ -419,7 +419,7 @@ class NoteCommandServiceTest {
         deleted.setId(2L);
         deleted.setDeleted(true);
 
-        when(noteRepository.findAllById(eq(Set.of(1L, 2L)))).thenReturn(List.of(active, deleted));
+        when(noteRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(active, deleted));
 
         BulkActionResult result =
                 noteCommandService.bulk(
@@ -427,7 +427,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
-        verify(noteRepository).deleteAllByIdInBatch(eq(List.of(2L)));
+        verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
         verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
     }
 
@@ -437,7 +437,7 @@ class NoteCommandServiceTest {
         active.setId(1L);
         active.setDeleted(false);
 
-        when(noteRepository.findAllById(eq(Set.of(1L)))).thenReturn(List.of(active));
+        when(noteRepository.findAllById(Set.of(1L))).thenReturn(List.of(active));
 
         BulkActionResult result =
                 noteCommandService.bulk(
@@ -471,9 +471,9 @@ class NoteCommandServiceTest {
         alreadyDeleted.setId(2L);
         alreadyDeleted.setDeleted(true);
 
-        when(noteRepository.findAllByIdInForCurrentUser(eq(Set.of(1L, 2L, 3L))))
+        when(noteRepository.findAllByIdInForCurrentUser(Set.of(1L, 2L, 3L)))
                 .thenReturn(List.of(active, alreadyDeleted));
-        when(noteRepository.softDeleteByIds(eq(List.of(1L)))).thenReturn(1);
+        when(noteRepository.softDeleteByIds(List.of(1L))).thenReturn(1);
 
         BulkActionResult result =
                 noteCommandService.bulkForCurrentUser(
@@ -494,9 +494,9 @@ class NoteCommandServiceTest {
         deleted.setId(2L);
         deleted.setDeleted(true);
 
-        when(noteRepository.findAllByIdInForCurrentUser(eq(Set.of(1L, 2L))))
+        when(noteRepository.findAllByIdInForCurrentUser(Set.of(1L, 2L)))
                 .thenReturn(List.of(active, deleted));
-        when(noteRepository.restoreByIds(eq(List.of(2L)))).thenReturn(1);
+        when(noteRepository.restoreByIds(List.of(2L))).thenReturn(1);
 
         BulkActionResult result =
                 noteCommandService.bulkForCurrentUser(
@@ -504,7 +504,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
-        verify(noteRepository).restoreByIds(eq(List.of(2L)));
+        verify(noteRepository).restoreByIds(List.of(2L));
         verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
     }
 
@@ -527,7 +527,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
-        verify(noteRepository).deleteAllByIdInBatch(eq(List.of(2L)));
+        verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
         verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
     }
 

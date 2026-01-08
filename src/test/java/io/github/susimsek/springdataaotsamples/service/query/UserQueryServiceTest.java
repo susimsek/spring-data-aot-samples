@@ -58,6 +58,6 @@ class UserQueryServiceTest {
                         org.mockito.ArgumentMatchers.<Specification<User>>any(),
                         pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(5);
-        assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(0);
+        assertThat(pageableCaptor.getValue().getPageNumber()).isZero();
     }
 }
