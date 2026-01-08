@@ -24,6 +24,7 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -89,7 +90,9 @@ class NoteTrashServiceTest {
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of(), null, null))
+            ThrowingCallable call =
+                    () -> noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of(), null, null);
+            assertThatThrownBy(call)
                     .isInstanceOf(UsernameNotFoundException.class);
         }
     }

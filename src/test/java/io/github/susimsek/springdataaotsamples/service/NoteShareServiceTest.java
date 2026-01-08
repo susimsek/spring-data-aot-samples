@@ -22,6 +22,7 @@ import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundExc
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -225,7 +226,9 @@ class NoteShareServiceTest {
     @Test
     void listForAdminShouldThrowWhenNoteMissing() {
         when(noteRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> noteShareService.listForAdmin(1L, PageRequest.of(0, 5), null, null, null, null))
+        Pageable pageable = PageRequest.of(0, 5);
+        ThrowingCallable call = () -> noteShareService.listForAdmin(1L, pageable, null, null, null, null);
+        assertThatThrownBy(call)
                 .isInstanceOf(NoteNotFoundException.class);
     }
 }

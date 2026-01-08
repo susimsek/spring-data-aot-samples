@@ -131,9 +131,11 @@ class NoteQueryServiceTest {
     @Test
     void findAllForCurrentUserShouldThrowWhenCurrentUserMissing() {
         ensureJpaMetamodelInitialized();
+        ThrowingCallable call =
+                () -> noteQueryService.findAllForCurrentUser(PageRequest.of(0, 10), null, null, null, null);
         assertThrows(
                 UsernameNotFoundException.class,
-                () -> noteQueryService.findAllForCurrentUser(PageRequest.of(0, 10), null, null, null, null));
+                call);
         verifyNoInteractions(noteRepository);
     }
 
