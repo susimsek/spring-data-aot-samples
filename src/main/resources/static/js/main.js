@@ -1533,7 +1533,7 @@ function renderRevisionItems(items, noteId, startIndex, append = false) {
     if (!append) {
         revisionList.innerHTML = '';
     }
-    if ((!items || !items.length) && !append) {
+    if (!items?.length && !append) {
         revisionList.innerHTML = '<div class="list-group-item text-muted">No revisions yet.</div>';
         return;
     }
@@ -1664,10 +1664,9 @@ async function openRevisionModal(noteId) {
     if (revisionModalTitle) {
         const versionRaw = (cached?.version ?? cached?.note?.version);
         const versionLabel = typeof versionRaw === 'number' ? versionRaw + 1 : versionRaw;
-        const titleText = cached?.title
-            ? `${cached.title} · ${versionLabel ? `v${versionLabel}` : `#${noteId}`}`
-            : `Revisions · ${versionLabel ? `v${versionLabel}` : `#${noteId}`}`;
-        revisionModalTitle.textContent = titleText;
+        const versionSuffix = versionLabel ? `v${versionLabel}` : `#${noteId}`;
+        const titlePrefix = cached?.title ? `${cached.title} · ` : 'Revisions · ';
+        revisionModalTitle.textContent = titlePrefix + versionSuffix;
     }
     clearRevisionError();
     if (revisionList) revisionList.innerHTML = '';

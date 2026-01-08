@@ -31,11 +31,12 @@ const Helpers = (() => {
 
     function showToast(message, variantOrAction, action, title) {
         const isVariant = typeof variantOrAction === 'string';
-        const variant = isVariant
-            ? variantOrAction
-            : typeof title === 'string'
-                ? title
-                : 'success';
+        let variant = 'success';
+        if (isVariant) {
+            variant = variantOrAction;
+        } else if (typeof title === 'string') {
+            variant = title;
+        }
         const resolvedAction = isVariant ? action : variantOrAction;
         const resolvedTitle = isVariant ? title : action;
         return renderToast(message, resolvedAction, resolvedTitle, variant);
