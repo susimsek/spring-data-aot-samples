@@ -1,5 +1,21 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.lang.reflect.Method;
+import java.util.Locale;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,24 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.lang.reflect.Method;
-import java.util.Locale;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.MessageSource;
-import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
 
 @WebMvcTest(controllers = GlobalExceptionHandlerTestController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -134,18 +132,16 @@ class GlobalExceptionHandlerTest {
 
         Method method =
                 GlobalExceptionHandler.class.getDeclaredMethod(
-                        "createProblemDetail",
+                        "buildProblemDetail",
                         Exception.class,
                         org.springframework.http.HttpStatusCode.class,
                         String.class,
                         String.class,
                         String.class,
-                        Object[].class,
-                        WebRequest.class);
+                        Object[].class);
         method.setAccessible(true);
 
         Object[] args = new Object[] {"arg1"};
-        WebRequest request = new ServletWebRequest(new MockHttpServletRequest("GET", "/x"));
 
         ProblemDetail body =
                 (ProblemDetail)
@@ -156,8 +152,7 @@ class GlobalExceptionHandlerTest {
                                 "problemDetail.title.test",
                                 "default detail",
                                 "problemDetail.detail.test",
-                                args,
-                                request);
+                                args);
 
         verify(messageSource)
                 .getMessage(
