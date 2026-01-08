@@ -918,7 +918,7 @@ function setLoading() {
     totalLabel.hidden = true;
     pager.hidden = true;
     pagination.innerHTML = '';
-    noteGrid.innerHTML = '<div class="col-12 text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    noteGrid.innerHTML = '<div class="col-12 text-center py-3"><div class="spinner-border text-primary"><span class="visually-hidden">Loading...</span></div></div>';
 }
 
 function renderNotes(data) {
@@ -1525,7 +1525,7 @@ function renderRevisionItems(items, noteId, startIndex, append = false) {
     if (revisionHasMore) {
         revisionList.insertAdjacentHTML('beforeend', `
                 <div class="list-group-item text-center d-flex justify-content-center align-items-center gap-2">
-                    <span class="spinner-border spinner-border-sm d-none" data-revision-load-spinner="true" role="status" aria-hidden="true"></span>
+            <span class="spinner-border spinner-border-sm d-none" data-revision-load-spinner="true" aria-hidden="true"></span>
                     <button class="btn btn-outline-secondary btn-sm" data-action="revision-load-more" data-note-id="${noteId}">
                         Load more
                     </button>
@@ -2342,7 +2342,7 @@ async function restoreRevision(noteId, revisionId) {
     const original = btn?.innerHTML;
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Restoring...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Restoring...';
     }
     clearRevisionError();
     const res = await handleApi(
