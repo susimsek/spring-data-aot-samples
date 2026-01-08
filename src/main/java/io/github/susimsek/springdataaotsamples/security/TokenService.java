@@ -6,10 +6,8 @@ import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
-import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
@@ -23,6 +21,10 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class TokenService {
     }
 
     @Transactional
-    public TokenDTO refresh(String refreshTokenValue) {
+    public TokenDTO refresh(@Nullable String refreshTokenValue) {
         if (!StringUtils.hasText(refreshTokenValue)) {
             throw new InvalidBearerTokenException("Refresh token is missing");
         }
@@ -71,7 +73,9 @@ public class TokenService {
     }
 
     private String encodeAccessToken(
-            UserPrincipal principal, Set<String> authorities, Instant issuedAt, Instant expiresAt) {
+            UserPrincipal principal,
+            Set<@Nullable String> authorities,
+            Instant issuedAt, Instant expiresAt) {
         JwtClaimsSet claims =
                 JwtClaimsSet.builder()
                         .issuer(jwtProperties().getIssuer())
@@ -91,9 +95,6 @@ public class TokenService {
     private RefreshToken createRefreshToken(
             UserPrincipal principal, Instant issuedAt, boolean rememberMe) {
         Long userId = principal.id();
-        if (userId == null) {
-            throw new InvalidBearerTokenException("User id is required to issue refresh token");
-        }
         var refreshToken = new RefreshToken();
         refreshToken.setUserId(userId);
         refreshToken.setIssuedAt(issuedAt);
@@ -110,7 +111,7 @@ public class TokenService {
     }
 
     private TokenDTO issueTokens(UserPrincipal principal, boolean rememberMe) {
-        Set<String> authorities =
+        Set<@Nullable String> authorities =
                 principal.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toSet());

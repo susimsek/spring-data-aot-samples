@@ -1,9 +1,7 @@
 package io.github.susimsek.springdataaotsamples.security;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -12,6 +10,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class SecurityUtils {
@@ -23,7 +25,8 @@ public class SecurityUtils {
 
     public Optional<String> getCurrentUserLogin() {
         var ctx = SecurityContextHolder.getContext();
-        return Optional.ofNullable(extractPrincipal(ctx.getAuthentication()));
+        String principal = extractPrincipal(ctx.getAuthentication());
+        return principal == null ? Optional.empty() : Optional.of(principal);
     }
 
     public Optional<Long> getCurrentUserId() {
@@ -45,7 +48,7 @@ public class SecurityUtils {
                         .anyMatch(auth -> Arrays.asList(authorities).contains(auth));
     }
 
-    private String extractPrincipal(Authentication authentication) {
+    private @Nullable String extractPrincipal(@Nullable Authentication authentication) {
         if (authentication == null) {
             return null;
         }
@@ -60,7 +63,7 @@ public class SecurityUtils {
         return null;
     }
 
-    private Stream<String> getAuthorities(Authentication authentication) {
+    private Stream<@Nullable String> getAuthorities(Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }
 

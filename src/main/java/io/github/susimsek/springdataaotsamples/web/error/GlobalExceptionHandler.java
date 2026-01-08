@@ -2,11 +2,9 @@ package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,6 +27,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -37,20 +38,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private MessageSource messageSource;
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<@NonNull Object> handleApiException(
-            @NonNull ApiException ex, @NonNull WebRequest request) {
+    public @Nullable ResponseEntity<Object> handleApiException(
+            ApiException ex, WebRequest request) {
         return this.handleExceptionInternal(
                 ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
     }
 
     @Override
-    protected ResponseEntity<@NonNull Object> handleMethodArgumentNotValid(
-            @NonNull MethodArgumentNotValidException ex,
-            @NonNull HttpHeaders headers,
-            @NonNull HttpStatusCode status,
-            @NonNull WebRequest request) {
+    protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
         ProblemDetail body =
-                this.buildProblemDetail(ex, status, "Validation failed", null, null, null);
+                this.buildProblemDetail(ex, status, "Validation failed",
+                    "One or more validation errors occurred.",
+                    null, null);
         List<Violation> violations =
                 Stream.concat(
                                 ex.getBindingResult().getFieldErrors().stream()
@@ -64,8 +67,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<@NonNull Object> handleAuth(
-            @NonNull AuthenticationException ex, @NonNull WebRequest request) {
+    public @Nullable ResponseEntity<Object> handleAuth(
+            AuthenticationException ex, WebRequest request) {
         if (ex instanceof DisabledException disabled) {
             return handleDisabled(disabled, request);
         }
@@ -75,7 +78,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleBadCredentials(ex, request);
     }
 
-    private ResponseEntity<@NonNull Object> handleBadCredentials(
+    private @Nullable ResponseEntity<Object> handleBadCredentials(
             AuthenticationException ex, WebRequest request) {
         ProblemDetail body =
                 this.buildProblemDetail(
@@ -89,7 +92,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
 
-    private ResponseEntity<@NonNull Object> handleOAuth2Auth(
+    private @Nullable ResponseEntity<Object> handleOAuth2Auth(
             OAuth2AuthenticationException ex, WebRequest request) {
         ProblemDetail body =
                 this.buildProblemDetail(
@@ -103,7 +106,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ex, body, HttpHeaders.EMPTY, HttpStatus.UNAUTHORIZED, request);
     }
 
-    private ResponseEntity<@NonNull Object> handleDisabled(
+    private @Nullable ResponseEntity<Object> handleDisabled(
             DisabledException ex, WebRequest request) {
         ProblemDetail body =
                 this.buildProblemDetail(
@@ -118,8 +121,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<@NonNull Object> handleAccessDenied(
-            @NonNull AccessDeniedException ex, @NonNull WebRequest request) {
+    public @Nullable ResponseEntity<Object> handleAccessDenied(
+            AccessDeniedException ex, WebRequest request) {
         ProblemDetail body =
                 this.buildProblemDetail(
                         ex,
@@ -133,7 +136,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(value = NoResourceFoundException.class, produces = MediaType.TEXT_HTML_VALUE)
-    public String handleNotFoundHtml(
+    public @Nullable String handleNotFoundHtml(
             NoResourceFoundException ex, Model model, HttpServletResponse response) {
         response.setStatus(HttpStatus.NOT_FOUND.value());
         model.addAttribute("errorMessage", ex.getMessage());
@@ -141,8 +144,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<@NonNull Object> handleUnhandled(
-            @NonNull Exception ex, @NonNull WebRequest request) {
+    public @Nullable ResponseEntity<Object> handleUnhandled(
+            Exception ex, WebRequest request) {
         log.error("Unhandled exception", ex);
         return this.handleExceptionInternal(
                 ex,
@@ -161,10 +164,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ProblemDetail buildProblemDetail(
             Exception ex,
             HttpStatusCode status,
-            String titleMessageCode,
+            @Nullable String titleMessageCode,
             String defaultDetail,
-            String detailMessageCode,
-            Object[] detailMessageArguments) {
+            @Nullable String detailMessageCode,
+            Object @Nullable [] detailMessageArguments) {
         ErrorResponse.Builder builder = ErrorResponse.builder(ex, status, defaultDetail);
         if (detailMessageCode != null) {
             builder.detailMessageCode(detailMessageCode);

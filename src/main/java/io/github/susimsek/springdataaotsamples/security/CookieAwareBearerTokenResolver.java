@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.util.StringUtils;
@@ -29,7 +30,7 @@ public class CookieAwareBearerTokenResolver implements BearerTokenResolver {
     }
 
     @Override
-    public String resolve(HttpServletRequest request) {
+    public @Nullable String resolve(HttpServletRequest request) {
         String headerToken = delegate.resolve(request);
         if (StringUtils.hasText(headerToken)) {
             return headerToken;

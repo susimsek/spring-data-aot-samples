@@ -2,12 +2,12 @@ package io.github.susimsek.springdataaotsamples.config.aot;
 
 import io.github.susimsek.springdataaotsamples.config.audit.RevisionInfoListener;
 import io.github.susimsek.springdataaotsamples.web.error.Violation;
-import java.time.Instant;
 import liquibase.change.core.AddDefaultValueChange;
 import liquibase.change.core.LoadDataChange;
 import liquibase.change.core.LoadDataColumnConfig;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.cache.jcache.internal.JCacheRegionFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -17,12 +17,14 @@ import org.springframework.data.envers.repository.support.EnversRevisionReposito
 import org.springframework.data.envers.repository.support.EnversRevisionRepositoryImpl;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.time.Instant;
+
 @Configuration(proxyBeanMethods = false)
 @ImportRuntimeHints(NativeConfig.class)
 @RequiredArgsConstructor
 public class NativeConfig implements RuntimeHintsRegistrar {
     @Override
-    public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+    public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
         hints.resources().registerPattern("i18n/**");
         registerLiquibaseHints(hints);
         registerHibernateHints(hints, classLoader);
@@ -52,7 +54,7 @@ public class NativeConfig implements RuntimeHintsRegistrar {
                         LoadDataColumnConfig.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
     }
 
-    private void registerHibernateHints(RuntimeHints hints, ClassLoader classLoader) {
+    private void registerHibernateHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
         hints.reflection()
                 .registerType(JCacheRegionFactory.class, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
         registerStaticMetamodelHints(hints, classLoader);
@@ -81,7 +83,8 @@ public class NativeConfig implements RuntimeHintsRegistrar {
         hints.reflection().registerType(Instant.class, MemberCategory.INVOKE_PUBLIC_METHODS);
     }
 
-    private static void registerStaticMetamodelHints(RuntimeHints hints, ClassLoader classLoader) {
+    private static void registerStaticMetamodelHints(RuntimeHints hints,
+                                                     @Nullable ClassLoader classLoader) {
         String basePackage = "io.github.susimsek.springdataaotsamples.domain";
 
         StaticMetamodelScanner scanner = new StaticMetamodelScanner(basePackage, classLoader);
@@ -92,7 +95,7 @@ public class NativeConfig implements RuntimeHintsRegistrar {
     }
 
     private static void registerConstraintValidatorHints(
-            RuntimeHints hints, ClassLoader classLoader) {
+            RuntimeHints hints, @Nullable ClassLoader classLoader) {
         String basePackage = "io.github.susimsek.springdataaotsamples.service.validation";
 
         ConstraintValidatorScanner scanner =

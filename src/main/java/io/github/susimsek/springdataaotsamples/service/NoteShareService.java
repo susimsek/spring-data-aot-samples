@@ -14,9 +14,6 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteShareDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.spec.NoteShareTokenSpecifications;
 import jakarta.validation.constraints.NotNull;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,7 +25,10 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -134,7 +134,6 @@ public class NoteShareService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public NoteShareToken validateAndConsume(String rawToken) {
-        Assert.hasText(rawToken, "Share token must not be empty");
         var token =
                 noteShareTokenRepository
                         .findOneWithNoteByTokenHashAndRevokedFalse(rawToken)

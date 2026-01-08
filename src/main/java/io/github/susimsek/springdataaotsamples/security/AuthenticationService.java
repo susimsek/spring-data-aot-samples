@@ -7,6 +7,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,7 +34,7 @@ public class AuthenticationService {
         return tokenService.generateToken(authentication, request.rememberMe());
     }
 
-    public TokenDTO refresh(String refreshToken) {
+    public TokenDTO refresh(@Nullable String refreshToken) {
         return tokenService.refresh(refreshToken);
     }
 
@@ -48,7 +49,7 @@ public class AuthenticationService {
         return userMapper.toDto(user);
     }
 
-    public void logout(String refreshToken) {
+    public void logout(@Nullable String refreshToken) {
         if (!StringUtils.hasText(refreshToken)) {
             return;
         }

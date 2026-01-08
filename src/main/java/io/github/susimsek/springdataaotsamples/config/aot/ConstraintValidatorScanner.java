@@ -1,9 +1,7 @@
 package io.github.susimsek.springdataaotsamples.config.aot;
 
 import jakarta.validation.ConstraintValidator;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
@@ -11,12 +9,17 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 public final class ConstraintValidatorScanner {
 
     private final String basePackage;
     private final ClassLoader classLoader;
 
-    public ConstraintValidatorScanner(String basePackage, ClassLoader classLoader) {
+    public ConstraintValidatorScanner(@Nullable String basePackage,
+                                      @Nullable ClassLoader classLoader) {
         Assert.hasText(basePackage, "'basePackage' must not be null or empty");
         Assert.notNull(classLoader, "'classLoader' must not be null");
         this.basePackage = basePackage;

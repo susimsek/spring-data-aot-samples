@@ -1,12 +1,11 @@
 package io.github.susimsek.springdataaotsamples.service.exception;
 
-import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponse;
 
-@NullMarked
 public abstract class ApiException extends RuntimeException implements ErrorResponse {
 
     private final HttpStatusCode status;
@@ -39,7 +38,7 @@ public abstract class ApiException extends RuntimeException implements ErrorResp
     }
 
     @Override
-    public Object[] getDetailMessageArguments() {
+    public Object @Nullable [] getDetailMessageArguments() {
         return args;
     }
 }

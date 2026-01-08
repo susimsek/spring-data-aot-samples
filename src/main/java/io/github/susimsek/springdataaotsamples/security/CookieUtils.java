@@ -1,18 +1,20 @@
 package io.github.susimsek.springdataaotsamples.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.Instant;
 import lombok.experimental.UtilityClass;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ResponseCookie;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.WebUtils;
+
+import java.time.Instant;
 
 @UtilityClass
 public class CookieUtils {
 
     private static final String SAME_SITE_STRICT = "Strict";
 
-    public String getCookieValue(HttpServletRequest request, String name) {
+    public @Nullable String getCookieValue(HttpServletRequest request, String name) {
         var cookie = WebUtils.getCookie(request, name);
         String val = cookie != null ? cookie.getValue() : null;
         return StringUtils.hasText(val) ? val : null;
