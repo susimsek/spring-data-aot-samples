@@ -17,7 +17,10 @@ class SpringDataAotSamplesApplicationTest {
 
             SpringDataAotSamplesApplication.main(new String[] {"--test"});
 
-            mocked.verify(() -> SpringApplication.run(eq(SpringDataAotSamplesApplication.class), captor.capture()));
+            mocked.verify(
+                    () ->
+                            SpringApplication.run(
+                                    eq(SpringDataAotSamplesApplication.class), captor.capture()));
             assertThat(captor.getValue()).containsExactly("--test");
         }
     }

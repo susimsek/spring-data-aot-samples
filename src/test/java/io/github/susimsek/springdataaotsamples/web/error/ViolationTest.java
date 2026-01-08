@@ -34,6 +34,7 @@ class ViolationTest {
         Violation violation = Violation.from(error);
 
         assertThat(violation)
-                .isEqualTo(new Violation("NotBlank", "Login", "LoginDTO", null, "refresh required"));
+                .isEqualTo(
+                        new Violation("NotBlank", "Login", "LoginDTO", null, "refresh required"));
     }
 }

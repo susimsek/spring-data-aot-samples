@@ -1,7 +1,6 @@
 package io.github.susimsek.springdataaotsamples.config.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -50,7 +49,10 @@ class CacheConfigHibernateTest {
         invokeCreateCache(cfg, cm, "existing");
 
         verify(cache).clear();
-        verify(cm, never()).createCache(org.mockito.ArgumentMatchers.eq("existing"), org.mockito.ArgumentMatchers.any());
+        verify(cm, never())
+                .createCache(
+                        org.mockito.ArgumentMatchers.eq("existing"),
+                        org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -69,7 +71,8 @@ class CacheConfigHibernateTest {
         verify(cm).createCache(org.mockito.ArgumentMatchers.eq("newCache"), captor.capture());
         CaffeineConfiguration<?, ?> caffeine = (CaffeineConfiguration<?, ?>) captor.getValue();
         assertThat(caffeine.getMaximumSize()).isEqualTo(OptionalLong.of(42));
-        assertThat(caffeine.getExpireAfterWrite()).isEqualTo(OptionalLong.of(Duration.ofSeconds(5).toNanos()));
+        assertThat(caffeine.getExpireAfterWrite())
+                .isEqualTo(OptionalLong.of(Duration.ofSeconds(5).toNanos()));
         assertThat(caffeine.isStatisticsEnabled()).isTrue();
     }
 
@@ -90,7 +93,8 @@ class CacheConfigHibernateTest {
     private static void invokeCreateCache(
             CacheConfig.HibernateSecondLevelCacheConfiguration cfg, CacheManager cm, String name)
             throws Exception {
-        Method method = cfg.getClass().getDeclaredMethod("createCache", CacheManager.class, String.class);
+        Method method =
+                cfg.getClass().getDeclaredMethod("createCache", CacheManager.class, String.class);
         method.setAccessible(true);
         method.invoke(cfg, cm, name);
     }
