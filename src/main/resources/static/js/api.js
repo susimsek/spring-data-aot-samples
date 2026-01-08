@@ -37,6 +37,7 @@ const Api = (() => {
         try {
             body = await res.json();
         } catch (e) {
+            console.warn('Failed to parse response body', e);
             body = null;
         }
         if (!res.ok) {
@@ -57,9 +58,9 @@ const Api = (() => {
                     await refresh();
                     const res = await fetch(url, options);
                     return await parseResponse(res);
-                } catch (refreshErr) {
+                } catch (error_) {
                     redirectToLogin();
-                    throw refreshErr;
+                    throw error_;
                 }
             }
             throw err;

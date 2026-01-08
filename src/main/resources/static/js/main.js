@@ -374,6 +374,7 @@ async function handleShareLinksClick(event) {
             await navigator.clipboard.writeText(link);
             showInlineCopied(btn);
         } catch (err) {
+            console.warn('Clipboard copy failed for share link', err);
             const copied = await fallbackCopyText(link);
             if (copied) {
                 showInlineCopied(btn);
