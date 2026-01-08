@@ -173,12 +173,12 @@ class TokenServiceTest {
     }
 
     private ApplicationProperties buildProps() {
-        ApplicationProperties props = new ApplicationProperties();
-        props.getSecurity().getJwt().setIssuer("issuer");
-        props.getSecurity().getJwt().setAudience(ApplicationDefaults.Security.Jwt.audience);
-        props.getSecurity().getJwt().setAccessTokenTtl(Duration.ofSeconds(60));
-        props.getSecurity().getJwt().setRefreshTokenTtl(Duration.ofSeconds(120));
-        props.getSecurity().getJwt().setRefreshTokenTtlForRememberMe(Duration.ofSeconds(180));
-        return props;
+        ApplicationProperties properties = new ApplicationProperties();
+        properties.getSecurity().getJwt().setIssuer("issuer");
+        properties.getSecurity().getJwt().setAudience(ApplicationDefaults.Security.Jwt.audience);
+        properties.getSecurity().getJwt().setAccessTokenTtl(Duration.ofSeconds(60));
+        properties.getSecurity().getJwt().setRefreshTokenTtl(Duration.ofSeconds(120));
+        properties.getSecurity().getJwt().setRefreshTokenTtlForRememberMe(Duration.ofSeconds(180));
+        return properties;
     }
 }

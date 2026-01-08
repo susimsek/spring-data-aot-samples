@@ -2237,9 +2237,8 @@ function resetFilterControls() {
 }
 
 function applyFilterStateFromUi() {
-    state.filterColor = (filterColorInput && filterColorInput.dataset.active === 'true')
-        ? (filterColorInput.value?.trim() || '')
-        : '';
+    const colorActive = filterColorInput?.dataset.active === 'true';
+    state.filterColor = colorActive ? (filterColorInput?.value?.trim() || '') : '';
     const pinnedVal = filterPinnedSelect?.value;
     state.filterPinned = pinnedVal === '' ? null : pinnedVal === 'true';
 }
@@ -2413,7 +2412,6 @@ async function deleteForever() {
     if (deleteForeverLabel) {
         deleteForeverLabel.textContent = originalText || 'Delete';
     }
-    const id = deleteForeverId;
     deleteForeverId = null;
     if (!res) return;
     deleteForeverModal.hide();
@@ -2509,9 +2507,6 @@ async function saveNote(e) {
     if (!isEdit) {
         state.page = 0; // new note: jump to first page
     }
-    const url = isEdit ? `/api/notes/${state.editId}` : '/api/notes';
-    const method = isEdit ? 'PUT' : 'POST';
-
     const res = await handleApi(
         isEdit
             ? Api.updateNote(state.editId, payload)
@@ -2640,10 +2635,10 @@ if (filterTagsInput) {
         const trimmed = raw.trim();
         if (trimmed.length >= 2) {
             loadTagSuggestions(trimmed);
-        } else {
-            if (filterTagsSuggestions) {
-                filterTagsSuggestions.innerHTML = '';
-            }
+            return;
+        }
+        if (filterTagsSuggestions) {
+            filterTagsSuggestions.innerHTML = '';
         }
     });
     filterTagsInput.addEventListener('blur', addFilterTagsFromInput);
@@ -2941,13 +2936,10 @@ if (revisionList) {
 updateEmptyTrashButton();
 resetFilterControls();
 renderFilterTags();
-(async () => {
-    const authenticated = await bootstrapAuth();
-    if (!authenticated) {
-        return;
-    }
+const authenticated = await bootstrapAuth();
+if (authenticated) {
     loadNotes();
-})();
+}
 
 // Initialize auditor using shared State helper
 // Auditor input removed; JWT user used for auditing

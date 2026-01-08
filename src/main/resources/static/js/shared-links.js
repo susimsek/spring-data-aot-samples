@@ -361,11 +361,12 @@ function setLoading(isLoading) {
 }
 
 function buildRow(link) {
-    const status = link.revoked
-        ? '<span class="badge bg-secondary-subtle text-secondary">Revoked</span>'
-        : link.expired
-            ? '<span class="badge bg-warning-subtle text-warning">Expired</span>'
-            : '<span class="badge bg-success-subtle text-success">Active</span>';
+    let status = '<span class="badge bg-success-subtle text-success">Active</span>';
+    if (link.revoked) {
+        status = '<span class="badge bg-secondary-subtle text-secondary">Revoked</span>';
+    } else if (link.expired) {
+        status = '<span class="badge bg-warning-subtle text-warning">Expired</span>';
+    }
     const noteTitle = link.noteTitle || '—';
     const noteOwner = link.noteOwner || '—';
     const tokenShort = link.token ? `${escapeHtml(link.token.substring(0, 6))}…${escapeHtml(link.token.slice(-4))}` : `#${link.id}`;

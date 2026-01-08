@@ -5,7 +5,7 @@ const Theme = (() => {
     let label;
 
     function systemPrefersDark() {
-        return globalThis.matchMedia && globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+        return globalThis.matchMedia?.('(prefers-color-scheme: dark)')?.matches;
     }
 
     function getStoredTheme() {
