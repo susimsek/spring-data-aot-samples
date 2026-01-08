@@ -435,7 +435,7 @@ async function loadLinks(targetPage = 0) {
     totalLabel?.classList.add('d-none');
     pageInfo?.classList.add('d-none');
     const res = await handleApi(
-        Api.fetchMyShareLinks(targetPage, pageSize, sort, search, status, createdFrom, createdTo),
+        Api.fetchMyShareLinks(sort, search, status, createdFrom, createdTo, targetPage, pageSize),
         {
             fallback: 'Could not load shared links.',
             onFinally: () => setLoading(false)

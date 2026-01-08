@@ -232,11 +232,14 @@ function setShareLinksLoading(loading) {
 }
 
 function buildShareLinkCard(link) {
-    const status = link.revoked
-        ? '<span class="badge bg-secondary-subtle text-secondary border">Revoked</span>'
-        : link.expired
-            ? '<span class="badge bg-warning-subtle text-warning border">Expired</span>'
-            : '<span class="badge bg-success-subtle text-success border">Active</span>';
+    let status;
+    if (link.revoked) {
+        status = '<span class="badge bg-secondary-subtle text-secondary border">Revoked</span>';
+    } else if (link.expired) {
+        status = '<span class="badge bg-warning-subtle text-warning border">Expired</span>';
+    } else {
+        status = '<span class="badge bg-success-subtle text-success border">Active</span>';
+    }
     const expiresLabel = link.expiresAt
         ? escapeHtml(formatDate(link.expiresAt) || '')
         : 'No expiry';
@@ -755,7 +758,7 @@ async function submitShare(event) {
 }
 
 async function copyShareLink() {
-    if (!shareLink || !shareLink.value) return;
+    if (!shareLink?.value) return;
     try {
         await navigator.clipboard.writeText(shareLink.value);
         showCopiedFeedback();
@@ -794,7 +797,7 @@ function fallbackCopyText(text) {
         document.body.appendChild(tempInput);
         tempInput.select();
         document.execCommand('copy');
-        document.body.removeChild(tempInput);
+        tempInput.remove();
     } catch (e) {
         console.warn('Fallback copy failed', e);
     }
@@ -988,12 +991,8 @@ function updateTotalsAndCheckEmpty(meta, count) {
 }
 
 function renderEmptyNotes() {
-    const emptyMsg = state.query
-        ? 'No notes match your search.'
-        : (state.view === 'trash' ? 'Trash is empty.' : 'No notes found. Create a new one to get started.');
-    const emptyIcon = state.query
-        ? 'fa-circle-info'
-        : (state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky');
+    const emptyMsg = buildEmptyMessage();
+    const emptyIcon = buildEmptyIcon();
     totalLabel.hidden = true;
     noteGrid.innerHTML = `
             <div class="col-12">
@@ -1012,6 +1011,22 @@ function renderEmptyNotes() {
     if (pageInfo) {
         pageInfo.hidden = true;
     }
+}
+
+function buildEmptyMessage() {
+    if (state.query) {
+        return 'No notes match your search.';
+    }
+    return state.view === 'trash'
+        ? 'Trash is empty.'
+        : 'No notes found. Create a new one to get started.';
+}
+
+function buildEmptyIcon() {
+    if (state.query) {
+        return 'fa-circle-info';
+    }
+    return state.view === 'trash' ? 'fa-trash-can' : 'fa-note-sticky';
 }
 
 function buildNoteMeta(note) {
@@ -1146,6 +1161,19 @@ function buildDeletedRow(deletedText) {
     `;
 }
 
+function buildRevisionTags(tags) {
+    const badges = tags
+        .map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(tagLabel(t))}</span>`)
+        .join('');
+    return `<div class="d-flex flex-wrap gap-1 mt-1">${badges}</div>`;
+}
+
+function buildRevisionColorDot(color) {
+    if (!color) return '';
+    const escaped = escapeHtml(color);
+    return `<span class="badge bg-body-secondary border text-body" title="Color" style="border-color:${escaped};color:${escaped}"><i class="fa-solid fa-circle" style="color:${escaped}"></i></span>`;
+}
+
 function buildActiveActions(note, showOwner) {
     return `
         <div class="d-grid gap-1" style="grid-template-columns: repeat(3, 32px); justify-content: end; justify-items: end;">
@@ -1254,13 +1282,11 @@ function revisionVersionLabel(revision) {
 
 function renderRevisionItem(rev, noteId, index, localNumber) {
     const note = rev.note || {};
-    const tags = note.tags && note.tags.length
-        ? `<div class="d-flex flex-wrap gap-1 mt-1">${note.tags.map(t => `<span class="badge bg-secondary-subtle text-secondary">${escapeHtml(tagLabel(t))}</span>`).join('')}</div>`
-        : '';
+    const tags = note.tags?.length ? buildRevisionTags(note.tags) : '';
     const pinnedBadge = note.pinned
         ? '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pinned</span>'
         : '<span class="badge bg-body-secondary text-secondary border">Unpinned</span>';
-    const colorDot = note.color ? `<span class="badge bg-body-secondary border text-body" title="Color" style="border-color:${escapeHtml(note.color)};color:${escapeHtml(note.color)}"><i class="fa-solid fa-circle" style="color:${escapeHtml(note.color)}"></i></span>` : '';
+    const colorDot = buildRevisionColorDot(note.color);
     const revTypeClass = revisionTypeBadge(rev.revisionType);
     const revTypeLabel = `<span class="badge ${revTypeClass} text-uppercase">${escapeHtml(rev.revisionType || 'N/A')}</span>`;
     const versionFromNote = revisionVersionLabel(rev);
@@ -1458,7 +1484,6 @@ function showRevisionDiff(index) {
     const current = revisionCache[index];
     if (!current) return;
     const prev = revisionCache[index + 1] || null;
-    const currentLocal = revisionLocalNumber(index, revisionVersionLabel(current));
     const prevLocal = prev ? revisionLocalNumber(index + 1, revisionVersionLabel(prev)) : null;
     const initialOnly = !prev; // first revision, show only additions
     const currentNote = current.note || {};

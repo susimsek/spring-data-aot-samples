@@ -290,7 +290,7 @@ const Api = (() => {
         return parseResponse(res);
     };
 
-    const fetchMyShareLinks = async (page = 0, size = 10, sort, query, status, createdFrom, createdTo) => {
+    const fetchMyShareLinks = async (sort, query, status, createdFrom, createdTo, page = 0, size = 10) => {
         const params = new URLSearchParams();
         params.set('page', page);
         params.set('size', size);

@@ -29,7 +29,19 @@ const Helpers = (() => {
         });
     }
 
-    function showToast(message, variant = 'success', action, title) {
+    function showToast(message, variantOrAction, action, title) {
+        const isVariant = typeof variantOrAction === 'string';
+        const variant = isVariant
+            ? variantOrAction
+            : typeof title === 'string'
+                ? title
+                : 'success';
+        const resolvedAction = isVariant ? action : variantOrAction;
+        const resolvedTitle = isVariant ? title : action;
+        return renderToast(message, resolvedAction, resolvedTitle, variant);
+    }
+
+    function renderToast(message, action, title, variant = 'success') {
         if (!toastContainer) return;
         const icons = {
             success: 'fa-circle-check',
@@ -84,7 +96,7 @@ const Helpers = (() => {
         return () => {
             button.disabled = disabled;
             spinnerEl?.classList.add('d-none');
-            if (labelEl && labelEl.dataset.prev) {
+            if (labelEl?.dataset.prev) {
                 labelEl.textContent = labelEl.dataset.prev;
                 delete labelEl.dataset.prev;
             }
