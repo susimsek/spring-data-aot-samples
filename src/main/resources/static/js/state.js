@@ -7,6 +7,7 @@ const State = (() => {
             const raw = localStorage.getItem(USER_STORAGE_KEY);
             return raw ? JSON.parse(raw) : null;
         } catch (e) {
+            console.warn('Failed to read stored user', e);
             return null;
         }
     }
@@ -19,7 +20,7 @@ const State = (() => {
                 localStorage.removeItem(USER_STORAGE_KEY);
             }
         } catch (e) {
-            // ignore storage errors
+            console.warn('Failed to persist user state', e);
         }
     }
 

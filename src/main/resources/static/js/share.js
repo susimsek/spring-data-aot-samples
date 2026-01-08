@@ -149,7 +149,7 @@ function bindSignOut() {
             await Api.logout();
             globalThis.location.reload();
         } catch (err) {
-            // ignore errors
+            console.warn('Logout failed', err);
             globalThis.location.reload();
         }
     });

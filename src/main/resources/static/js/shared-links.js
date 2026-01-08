@@ -217,13 +217,13 @@ function toIsoString(value) {
 }
 
 function addDays(date, days) {
-    const d = new Date(date.getTime());
+    const d = new Date(date);
     d.setDate(d.getDate() + days);
     return d;
 }
 
 function addHours(date, hours) {
-    const d = new Date(date.getTime());
+    const d = new Date(date);
     d.setHours(d.getHours() + hours);
     return d;
 }
@@ -321,6 +321,7 @@ async function initAuth() {
         updateAuthUi(me?.username);
         return State.isAdmin?.();
     } catch (e) {
+        console.warn('Failed to load current user for shared links', e);
         updateAuthUi('');
         globalThis.location.replace('/login.html');
         return false;
@@ -484,11 +485,7 @@ function renderLinksTotals(totalElements, hasItems) {
 
 function renderLinksPagination(meta, hasItems) {
     if (pagination) {
-        if (!hasItems) {
-            pagination.innerHTML = '';
-        } else {
-            pagination.innerHTML = buildPaginationItems(page, totalPages);
-        }
+        pagination.innerHTML = hasItems ? buildPaginationItems(page, totalPages) : '';
     }
     if (pageInfo) {
         const humanPage = totalPages > 0 ? page + 1 : 0;
@@ -528,6 +525,7 @@ async function handleListClick(event) {
             await navigator.clipboard.writeText(url);
             inlineCopied(btn);
         } catch (err) {
+            console.warn('Copy to clipboard failed', err);
             showToast('Could not copy link. Copy manually.', 'warning');
         }
         return;

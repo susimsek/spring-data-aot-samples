@@ -109,6 +109,7 @@ async function handleSubmit(event) {
         const me = await Api.currentUser();
         setCurrentUser(me);
     } catch (e) {
+        console.warn('Login succeeded but current user fetch failed', e);
         setCurrentUser({username});
     }
     form.reset();

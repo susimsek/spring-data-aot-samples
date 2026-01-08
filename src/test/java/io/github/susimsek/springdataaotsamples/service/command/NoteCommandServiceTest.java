@@ -518,7 +518,7 @@ class NoteCommandServiceTest {
         deleted.setId(2L);
         deleted.setDeleted(true);
 
-        when(noteRepository.findAllByIdInForCurrentUser(eq(Set.of(1L, 2L))))
+        when(noteRepository.findAllByIdInForCurrentUser(Set.of(1L, 2L)))
                 .thenReturn(List.of(active, deleted));
 
         BulkActionResult result =
