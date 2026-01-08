@@ -1,5 +1,11 @@
 package io.github.susimsek.springdataaotsamples.service.spec;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -14,29 +20,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class TagSpecificationsTest {
 
-    @Mock
-    private Root<Tag> root;
+    @Mock private Root<Tag> root;
 
-    @Mock
-    private CriteriaQuery<?> query;
+    @Mock private CriteriaQuery<?> query;
 
-    @Mock
-    private CriteriaBuilder cb;
+    @Mock private CriteriaBuilder cb;
 
-    @Mock
-    private Predicate conjunction;
+    @Mock private Predicate conjunction;
 
-    @Mock
-    private Predicate disjunction;
+    @Mock private Predicate disjunction;
 
     @Test
     void searchShouldReturnConjunctionWhenBlank() {

@@ -1,12 +1,12 @@
 package io.github.susimsek.springdataaotsamples.config.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.github.susimsek.springdataaotsamples.config.ApplicationDefaults;
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class CacheConfigTest {
 

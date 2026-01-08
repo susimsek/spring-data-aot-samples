@@ -1,5 +1,12 @@
 package io.github.susimsek.springdataaotsamples.service.spec;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.domain.AuditableEntity_;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
@@ -11,34 +18,22 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class NoteShareTokenSpecificationsTest {
 
-    @Mock
-    private Root<NoteShareToken> root;
+    @Mock private Root<NoteShareToken> root;
 
-    @Mock
-    private CriteriaQuery<?> query;
+    @Mock private CriteriaQuery<?> query;
 
-    @Mock
-    private CriteriaBuilder cb;
+    @Mock private CriteriaBuilder cb;
 
-    @Mock
-    private Predicate predicate;
+    @Mock private Predicate predicate;
 
     @Test
     void ownedByShouldReturnConjunctionWhenBlank() {
@@ -59,7 +54,8 @@ class NoteShareTokenSpecificationsTest {
         when(notePath.get(Note_.owner)).thenReturn(ownerPath);
         when(cb.equal(ownerPath, "alice")).thenReturn(eq);
 
-        Predicate result = NoteShareTokenSpecifications.ownedBy("alice").toPredicate(root, query, cb);
+        Predicate result =
+                NoteShareTokenSpecifications.ownedBy("alice").toPredicate(root, query, cb);
 
         assertThat(result).isSameAs(eq);
     }
@@ -137,7 +133,8 @@ class NoteShareTokenSpecificationsTest {
         when(root.get(NoteShareToken_.revoked)).thenReturn(revoked);
         when(cb.isTrue(revoked)).thenReturn(isTrue);
 
-        Predicate result = NoteShareTokenSpecifications.status("revoked").toPredicate(root, query, cb);
+        Predicate result =
+                NoteShareTokenSpecifications.status("revoked").toPredicate(root, query, cb);
 
         assertThat(result).isSameAs(isTrue);
     }
@@ -198,7 +195,9 @@ class NoteShareTokenSpecificationsTest {
     void createdBetweenShouldReturnConjunctionWhenBothNull() {
         when(cb.conjunction()).thenReturn(predicate);
 
-        Predicate result = NoteShareTokenSpecifications.createdBetween(null, null).toPredicate(root, query, cb);
+        Predicate result =
+                NoteShareTokenSpecifications.createdBetween(null, null)
+                        .toPredicate(root, query, cb);
 
         assertThat(result).isSameAs(predicate);
     }

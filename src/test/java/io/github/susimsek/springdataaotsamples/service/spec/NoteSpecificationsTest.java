@@ -38,17 +38,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NoteSpecificationsTest {
 
-    @Mock
-    private Root<Note> root;
+    @Mock private Root<Note> root;
 
-    @Mock
-    private CriteriaQuery<?> query;
+    @Mock private CriteriaQuery<?> query;
 
-    @Mock
-    private CriteriaBuilder cb;
+    @Mock private CriteriaBuilder cb;
 
-    @Mock
-    private Predicate predicate;
+    @Mock private Predicate predicate;
 
     @Test
     void isNotDeletedShouldReturnFalseCheck() {
@@ -206,7 +202,7 @@ class NoteSpecificationsTest {
     @Test
     void prioritizePinnedShouldAddPinnedSortWhenUnsorted() {
         ensureJpaMetamodelInitialized();
-        when(AuditableEntity_.createdDate.getName()).thenReturn("createdDate");
+        doReturn("createdDate").when(AuditableEntity_.createdDate).getName();
         Pageable pageable = PageRequest.of(1, 10, Sort.unsorted());
 
         Pageable result = NoteSpecifications.prioritizePinned(pageable);
@@ -234,19 +230,20 @@ class NoteSpecificationsTest {
     }
 
     private static void ensureJpaMetamodelInitialized() {
-        if (Note_.pinned == null) {
-            Note_.pinned = namedBooleanAttribute("pinned");
-        }
-        if (AuditableEntity_.createdDate == null) {
-            AuditableEntity_.createdDate = mock(SingularAttribute.class);
-        }
+        Note_.pinned = namedBooleanAttribute("pinned");
+        AuditableEntity_.createdDate = namedInstantAttribute("createdDate");
     }
 
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, Boolean> namedBooleanAttribute(String name) {
         SingularAttribute<T, Boolean> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
+        doReturn(name).when(attribute).getName();
         return attribute;
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> SingularAttribute<T, java.time.Instant> namedInstantAttribute(String name) {
+        SingularAttribute<T, java.time.Instant> attribute = mock(SingularAttribute.class);
+        return attribute;
+    }
 }
