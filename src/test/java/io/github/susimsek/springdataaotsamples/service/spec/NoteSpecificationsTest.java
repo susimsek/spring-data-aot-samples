@@ -230,7 +230,7 @@ class NoteSpecificationsTest {
 
     private static void ensureJpaMetamodelInitialized() {
         Note_.pinned = namedBooleanAttribute("pinned");
-        AuditableEntity_.createdDate = namedInstantAttribute("createdDate");
+        AuditableEntity_.createdDate = namedInstantAttribute();
     }
 
     @SuppressWarnings("unchecked")
@@ -241,7 +241,7 @@ class NoteSpecificationsTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, java.time.Instant> namedInstantAttribute(String name) {
+    private static <T> SingularAttribute<T, java.time.Instant> namedInstantAttribute() {
         SingularAttribute<T, java.time.Instant> attribute = mock(SingularAttribute.class);
         return attribute;
     }

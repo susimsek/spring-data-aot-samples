@@ -89,10 +89,7 @@ class NoteTrashServiceTest {
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
-            assertThatThrownBy(
-                            () ->
-                                    noteTrashService.findDeletedForCurrentUser(
-                                            pageable, "q", Set.of(), null, null))
+            assertThatThrownBy(() -> noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of(), null, null))
                     .isInstanceOf(UsernameNotFoundException.class);
         }
     }

@@ -133,9 +133,7 @@ class NoteQueryServiceTest {
         ensureJpaMetamodelInitialized();
         assertThrows(
                 UsernameNotFoundException.class,
-                () ->
-                        noteQueryService.findAllForCurrentUser(
-                                PageRequest.of(0, 10), null, null, null, null));
+                () -> noteQueryService.findAllForCurrentUser(PageRequest.of(0, 10), null, null, null, null));
         verifyNoInteractions(noteRepository);
     }
 

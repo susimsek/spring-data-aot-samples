@@ -2938,7 +2938,7 @@ resetFilterControls();
 renderFilterTags();
 const authenticated = await bootstrapAuth();
 if (authenticated) {
-    loadNotes();
+    await loadNotes();
 }
 
 // Initialize auditor using shared State helper
