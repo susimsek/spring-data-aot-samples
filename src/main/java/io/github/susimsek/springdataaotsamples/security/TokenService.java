@@ -6,9 +6,6 @@ import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
-import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,7 +20,12 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,11 +123,13 @@ public class TokenService {
         String accessToken = encodeAccessToken(principal, authorities, now, accessExpiresAt);
 
         RefreshToken refreshToken = createRefreshToken(principal, now, rememberMe);
+        String rawToken = refreshToken.getRawToken();
+        Assert.hasText(rawToken, "Refresh token must not be null or empty");
         return new TokenDTO(
                 accessToken,
                 "Bearer",
                 accessExpiresAt,
-                refreshToken.getRawToken(),
+                rawToken,
                 refreshToken.getExpiresAt(),
                 principal.getUsername(),
                 authorities);
