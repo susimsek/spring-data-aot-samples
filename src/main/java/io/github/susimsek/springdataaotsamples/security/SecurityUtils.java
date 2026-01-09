@@ -1,7 +1,7 @@
 package io.github.susimsek.springdataaotsamples.security;
 
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
@@ -42,24 +42,22 @@ public class SecurityUtils {
 
     public boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Set<String> required = Set.of(authorities);
         return authentication != null
-                && getAuthorities(authentication)
-                        .anyMatch(auth -> Arrays.asList(authorities).contains(auth));
+                && getAuthorities(authentication).anyMatch(required::contains);
     }
 
     private @Nullable String extractPrincipal(@Nullable Authentication authentication) {
         if (authentication == null) {
             return null;
         }
-        var principal = authentication.getPrincipal();
-        if (principal instanceof Jwt jwt) {
-            return jwt.getSubject();
-        } else if (principal instanceof UserDetails ud) {
-            return ud.getUsername();
-        } else if (principal instanceof String username) {
-            return username;
-        }
-        return null;
+        return switch (authentication.getPrincipal()) {
+            case null -> null;
+            case Jwt jwt -> jwt.getSubject();
+            case UserDetails ud -> ud.getUsername();
+            case String username -> username;
+            default -> null;
+        };
     }
 
     private Stream<@Nullable String> getAuthorities(Authentication authentication) {
