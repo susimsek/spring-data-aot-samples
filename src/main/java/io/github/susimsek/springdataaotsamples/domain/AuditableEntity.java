@@ -6,6 +6,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -28,9 +29,9 @@ public abstract class AuditableEntity {
 
     @LastModifiedBy
     @Column(name = "last_modified_by", length = 100)
-    private String lastModifiedBy;
+    private @Nullable String lastModifiedBy;
 
     @LastModifiedDate
     @Column(name = "last_modified_date")
-    private Instant lastModifiedDate;
+    private @Nullable Instant lastModifiedDate;
 }

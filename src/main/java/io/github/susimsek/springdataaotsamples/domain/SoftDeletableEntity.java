@@ -5,6 +5,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 
 @Getter
 @Setter
@@ -15,8 +16,8 @@ public abstract class SoftDeletableEntity extends AuditableEntity {
     private boolean deleted = false;
 
     @Column(name = "deleted_by", length = 100)
-    private String deletedBy;
+    private @Nullable String deletedBy;
 
     @Column(name = "deleted_date")
-    private Instant deletedDate;
+    private @Nullable Instant deletedDate;
 }

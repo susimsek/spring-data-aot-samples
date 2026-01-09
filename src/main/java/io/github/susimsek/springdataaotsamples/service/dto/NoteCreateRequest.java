@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Payload to create a note")
 public record NoteCreateRequest(
@@ -28,8 +29,10 @@ public record NoteCreateRequest(
                 String content,
         @Schema(description = "Whether the note is pinned", example = "false") @NotNull
                 Boolean pinned,
-        @Schema(description = "Optional color hex (e.g. #2563eb)", example = "#2563eb") @HexColor
+        @Schema(description = "Optional color hex (e.g. #2563eb)", example = "#2563eb")
+                @Nullable
+                @HexColor
                 String color,
         @Schema(description = "Tags attached to the note", example = "[\"audit\",\"liquibase\"]")
                 @Size(max = 5)
-                Set<@NotBlank @Size(min = 1, max = 30) @TagValue String> tags) {}
+                @Nullable Set<@NotBlank @Size(min = 1, max = 30) @TagValue String> tags) {}

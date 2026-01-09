@@ -3,10 +3,10 @@ package io.github.susimsek.springdataaotsamples.service.dto;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.HexColor;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.TagValue;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Payload to partially update a note")
 public record NotePatchRequest(

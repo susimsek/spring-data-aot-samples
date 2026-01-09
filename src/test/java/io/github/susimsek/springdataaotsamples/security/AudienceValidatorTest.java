@@ -1,15 +1,14 @@
 package io.github.susimsek.springdataaotsamples.security;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.jwt.Jwt;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 class AudienceValidatorTest {
 
@@ -17,8 +16,7 @@ class AudienceValidatorTest {
     void validateShouldSucceedWhenNoRequiredAudiencesConfigured() {
         AudienceValidator validator = new AudienceValidator(List.of());
 
-        OAuth2TokenValidatorResult result =
-            validator.validate(jwtWithAudiences(List.of("any")));
+        OAuth2TokenValidatorResult result = validator.validate(jwtWithAudiences(List.of("any")));
 
         assertThat(result.hasErrors()).isFalse();
     }
@@ -28,7 +26,7 @@ class AudienceValidatorTest {
         AudienceValidator validator = new AudienceValidator(List.of("note-api"));
 
         OAuth2TokenValidatorResult result =
-            validator.validate(jwtWithAudiences(List.of("note-api", "other")));
+                validator.validate(jwtWithAudiences(List.of("note-api", "other")));
 
         assertThat(result.hasErrors()).isFalse();
     }
@@ -37,23 +35,22 @@ class AudienceValidatorTest {
     void validateShouldFailWhenTokenDoesNotContainRequiredAudience() {
         AudienceValidator validator = new AudienceValidator(List.of("note-api"));
 
-        OAuth2TokenValidatorResult result =
-            validator.validate(jwtWithAudiences(List.of("other")));
+        OAuth2TokenValidatorResult result = validator.validate(jwtWithAudiences(List.of("other")));
 
         assertThat(result.hasErrors()).isTrue();
         assertThat(result.getErrors())
-            .singleElement()
-            .extracting(OAuth2Error::getErrorCode, OAuth2Error::getDescription)
-            .containsExactly("invalid_token", "The required audience is missing");
+                .singleElement()
+                .extracting(OAuth2Error::getErrorCode, OAuth2Error::getDescription)
+                .containsExactly("invalid_token", "The required audience is missing");
     }
 
     private static Jwt jwtWithAudiences(Collection<String> audiences) {
         Instant now = Instant.now();
         return Jwt.withTokenValue("token")
-            .header("alg", "none")
-            .audience(List.copyOf(audiences))
-            .issuedAt(now)
-            .expiresAt(now.plusSeconds(60))
-            .build();
+                .header("alg", "none")
+                .audience(List.copyOf(audiences))
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(60))
+                .build();
     }
 }

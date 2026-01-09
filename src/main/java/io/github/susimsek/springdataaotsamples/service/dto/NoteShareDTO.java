@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.service.dto;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
+import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Share token view model")
 public record NoteShareDTO(
@@ -13,7 +14,7 @@ public record NoteShareDTO(
         @Schema(description = "Permission granted by the token", example = "READ")
                 SharePermission permission,
         @Schema(description = "Expiry timestamp", example = "2024-12-31T23:59:59Z")
-                Instant expiresAt,
+                @Nullable Instant expiresAt,
         @Schema(description = "Whether the token is one-time use", example = "false")
                 boolean oneTime,
         @Schema(description = "Whether the token is revoked", example = "false") boolean revoked,
@@ -23,7 +24,7 @@ public record NoteShareDTO(
                         example = "2024-12-12T18:58:42Z")
                 Instant createdDate,
         @Schema(description = "Last use or update timestamp", example = "2024-12-12T19:10:00Z")
-                Instant lastUsedAt,
+                @Nullable Instant lastUsedAt,
         @Schema(
                         description = "Whether the link is expired at the time of the response",
                         example = "true")

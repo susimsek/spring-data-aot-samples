@@ -1,8 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.exception;
 
-import org.springframework.http.HttpStatus;
-
 import java.util.Set;
+import org.springframework.http.HttpStatus;
 
 public class InvalidPermanentDeleteException extends ApiException {
 

@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "note_share_token")
@@ -50,7 +51,7 @@ public class NoteShareToken extends AuditableEntity {
     private String tokenHash;
 
     @Column(name = "expires_at")
-    private Instant expiresAt;
+    private @Nullable Instant expiresAt;
 
     @Column(name = "one_time", nullable = false)
     private boolean oneTime = false;

@@ -3,10 +3,9 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.Username;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
-
-import java.util.regex.Pattern;
 
 public class UsernameValidator implements ConstraintValidator<Username, String> {
 

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "refresh_token")
@@ -49,5 +50,5 @@ public class RefreshToken {
     @Column(name = "revoked", nullable = false)
     private boolean revoked = false;
 
-    @Transient private String rawToken;
+    @Transient private @Nullable String rawToken;
 }

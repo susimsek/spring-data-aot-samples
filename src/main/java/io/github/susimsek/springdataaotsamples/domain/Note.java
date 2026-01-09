@@ -22,6 +22,7 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "note")
@@ -48,7 +49,7 @@ public class Note extends SoftDeletableEntity {
     private boolean pinned = false;
 
     @Column(length = 20)
-    private String color;
+    private @Nullable String color;
 
     @Column(name = "owner", nullable = false, length = 100)
     private String owner;

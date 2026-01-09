@@ -2,6 +2,8 @@ package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -27,9 +29,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -51,9 +50,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request) {
         ProblemDetail body =
-                this.buildProblemDetail(ex, status, "Validation failed",
-                    "One or more validation errors occurred.",
-                    null, null);
+                this.buildProblemDetail(
+                        ex,
+                        status,
+                        "Validation failed",
+                        "One or more validation errors occurred.",
+                        null,
+                        null);
         List<Violation> violations =
                 Stream.concat(
                                 ex.getBindingResult().getFieldErrors().stream()
@@ -144,8 +147,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public @Nullable ResponseEntity<Object> handleUnhandled(
-            Exception ex, WebRequest request) {
+    public @Nullable ResponseEntity<Object> handleUnhandled(Exception ex, WebRequest request) {
         log.error("Unhandled exception", ex);
         return this.handleExceptionInternal(
                 ex,
