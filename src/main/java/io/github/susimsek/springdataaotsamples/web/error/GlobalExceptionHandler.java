@@ -72,13 +72,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public @Nullable ResponseEntity<Object> handleAuth(
             AuthenticationException ex, WebRequest request) {
-        if (ex instanceof DisabledException disabled) {
-            return handleDisabled(disabled, request);
-        }
-        if (ex instanceof OAuth2AuthenticationException oAuth2AuthenticationException) {
-            return handleOAuth2Auth(oAuth2AuthenticationException, request);
-        }
-        return handleBadCredentials(ex, request);
+        return switch (ex) {
+            case DisabledException disabled -> handleDisabled(disabled, request);
+            case OAuth2AuthenticationException oauth2 -> handleOAuth2Auth(oauth2, request);
+            default -> handleBadCredentials(ex, request);
+        };
     }
 
     private @Nullable ResponseEntity<Object> handleBadCredentials(
