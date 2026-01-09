@@ -4,19 +4,21 @@ import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class TagCommandService {
     private final CacheProvider cacheProvider;
 
     @Transactional
-    public Set<Tag> resolveTags(Set<String> names) {
+    public Set<Tag> resolveTags(@Nullable Set<String> names) {
         var normalized = normalizeNames(names);
         if (normalized.isEmpty()) {
             return new LinkedHashSet<>();
@@ -75,7 +77,7 @@ public class TagCommandService {
         cacheProvider.clearCache(Tag.class.getName());
     }
 
-    private Set<String> normalizeNames(Set<String> names) {
+    private Set<String> normalizeNames(@Nullable Set<String> names) {
         if (CollectionUtils.isEmpty(names)) {
             return Set.of();
         }
