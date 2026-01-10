@@ -86,7 +86,7 @@ Notes (selected):
 - `GET /api/notes/{id}/revisions`
 - `POST /api/notes/{id}/revisions/{rev}/restore`
 
-## Build, Test, and Coverage
+## Testing
 - Unit tests: `./mvnw test`
 - Integration tests: `./mvnw verify` (Failsafe `*IT*`)
 - Full verification: `./mvnw verify` (includes Checkstyle + Spotless check + JaCoCo)
@@ -113,7 +113,6 @@ Spotless runs `spotless:check` in the `compile` phase. To apply formatting:
 ### Sonar
 If you use SonarCloud (or SonarQube) in your pipeline, you can run analysis locally as well.
 
-Recommended (runs tests + generates reports first):
 ```bash
 export SONAR_TOKEN=...
 ./mvnw -B -ntp -Pprod verify sonar:sonar \
@@ -144,16 +143,6 @@ Defaults (from `pom.xml`, `native` profile):
 - Base image: `scratch` (contains only the native binary; no JVM)
 - Working directory: `/tmp`
 - Platform: `linux/arm64` (override with `-Djib-maven-plugin.architecture=amd64` if needed)
-
-How it works (based on the `native` Maven profile in `pom.xml`):
-- Base image is set to `scratch` (`<jib-maven-plugin.image>scratch</jib-maven-plugin.image>`), so the image contains only the native binary and minimal metadata (no JVM).
-- `JibNativeImageExtension` wires the `native-maven-plugin` output (`target/native-executable`) into Jib.
-- Container working directory is `/tmp` (`<workingDirectory>/tmp</workingDirectory>`).
-
-Optional: push the native image to a registry:
-```bash
-./mvnw -Pprod,native -DskipTests jib:build -Djib.to.image=YOUR_IMAGE
-```
 
 ## GraalVM Native Image
 Native executable:
@@ -239,7 +228,7 @@ Uninstall release:
 helm uninstall note-app -n note-app
 ```
 
-## Continuous Integration (CircleCI)
+## Continuous Integration
 Pipeline: `.circleci/config.yml`
 - `./mvnw -Pprod verify` for tests + quality gates
 - `./mvnw -Pprod,native -DskipTests native:compile` for a musl static native build
