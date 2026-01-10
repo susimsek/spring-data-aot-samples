@@ -307,7 +307,7 @@
                 <executions>
                     <execution>
                         <id>checkstyle</id>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
