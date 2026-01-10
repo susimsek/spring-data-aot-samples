@@ -271,8 +271,6 @@
                             <reflowLongStrings>true</reflowLongStrings>
                         </googleJavaFormat>
                         <removeUnusedImports/>
-                        <trimTrailingWhitespace/>
-                        <endWithNewline/>
                     </java>
                 </configuration>
                 <executions>
