@@ -20,8 +20,7 @@ class ApplicationPropertiesTest {
                 .isEqualTo(ApplicationDefaults.Security.Jwt.refreshTokenTtl);
         assertThat(props.getSecurity().getJwt().getRefreshTokenTtlForRememberMe())
                 .isEqualTo(ApplicationDefaults.Security.Jwt.refreshTokenTtlForRememberMe);
-        assertThat(props.getSecurity().getJwt().getAudience())
-                .isEqualTo(ApplicationDefaults.Security.Jwt.audience);
+        assertThat(props.getSecurity().getJwt().getAudience()).isNull();
 
         assertThat(props.getCache().getCaffeine().getTtl())
                 .isEqualTo(ApplicationDefaults.Cache.Caffeine.ttl);
