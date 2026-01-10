@@ -86,7 +86,7 @@ Notes (selected):
 - `GET /api/notes/{id}/revisions`
 - `POST /api/notes/{id}/revisions/{rev}/restore`
 
-## Testing
+## Build
 - Unit tests: `./mvnw test`
 - Integration tests: `./mvnw verify` (Failsafe `*IT*`)
 - Full verification: `./mvnw verify` (includes Checkstyle + Spotless check + JaCoCo)
