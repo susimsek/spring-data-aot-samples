@@ -75,7 +75,7 @@ jobs:
           name: Install UPX
           command: |
             set -e
-            UPX_VERSION=5.0.2
+            UPX_VERSION=5.1.0
             UPX_ARCHIVE=upx-${UPX_VERSION}-amd64_linux.tar.xz
 
             microdnf -y install xz tar && \
