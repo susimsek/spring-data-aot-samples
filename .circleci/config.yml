@@ -29,6 +29,35 @@ jobs:
           paths:
             - ~/.m2/repository
       - run:
+          name: Install Snyk CLI
+          command: |
+            microdnf -y install wget && \
+            wget -qO /usr/local/bin/snyk https://static.snyk.io/cli/latest/snyk-linux && \
+            chmod +x /usr/local/bin/snyk
+
+            snyk --version
+      - run:
+          name: Snyk test
+          command: |
+            if [ -n "${SNYK_TOKEN}" ]; then
+              snyk test --all-projects || true
+            else
+              echo "SNYK_TOKEN not set; skipping Snyk test."
+            fi
+      - run:
+          name: Snyk monitor
+          command: |
+            if [ "${CIRCLE_BRANCH}" != "main" ]; then
+              echo "Not on main (${CIRCLE_BRANCH}); skipping Snyk monitor."
+              exit 0
+            fi
+
+            if [ -n "${SNYK_TOKEN}" ]; then
+              snyk monitor --all-projects || true
+            else
+              echo "SNYK_TOKEN not set; skipping Snyk monitor."
+            fi
+      - run:
           name: Test
           command: ./mvnw -B -ntp -Pprod verify
       - run:
@@ -49,7 +78,7 @@ jobs:
             UPX_VERSION=5.0.2
             UPX_ARCHIVE=upx-${UPX_VERSION}-amd64_linux.tar.xz
 
-            microdnf -y install wget xz tar && \
+            microdnf -y install xz tar && \
             wget -q https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_ARCHIVE} && \
             tar -xJf ${UPX_ARCHIVE} && \
             mv upx-${UPX_VERSION}-amd64_linux/upx /usr/local/bin/upx && \
