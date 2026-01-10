@@ -12,6 +12,11 @@
 
     <module name="SuppressWarningsFilter"/>
 
+    <module name="SuppressionFilter">
+        <property name="file" value="checkstyle-suppressions.xml"/>
+        <property name="optional" value="true"/>
+    </module>
+
     <module name="NewlineAtEndOfFile">
         <property name="lineSeparator" value="lf"/>
     </module>
@@ -92,6 +97,10 @@
                       value="fall through|Fall through|fallthru|Fallthru|
                        falls through|Falls through|fallthrough|
                        Fallthrough|No break|NO break|no break|continue on"/>
+        </module>
+
+        <module name="EmptyCatchBlock">
+            <property name="commentFormat" value="\\w+"/>
         </module>
 
         <!-- ===== WHITESPACE ===== -->

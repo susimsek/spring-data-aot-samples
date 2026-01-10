@@ -277,10 +277,9 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>spotless</id>
-                        <phase>process-sources</phase>
+                        <phase>compile</phase>
                         <goals>
-                            <goal>apply</goal>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -298,6 +297,7 @@
                 </dependencies>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
+                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
