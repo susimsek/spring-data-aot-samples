@@ -6,6 +6,7 @@
 <module name="Checker">
 
     <property name="charset" value="UTF-8"/>
+    <property name="severity" value="warning"/>
     <property name="fileExtensions" value="java,properties,xml"/>
 
     <!-- ========= FILE LEVEL ========= -->
@@ -15,6 +16,10 @@
     <module name="SuppressionFilter">
         <property name="file" value="checkstyle-suppressions.xml"/>
         <property name="optional" value="true"/>
+    </module>
+
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\\-info\\.java$"/>
     </module>
 
     <module name="NewlineAtEndOfFile">
@@ -79,6 +84,20 @@
             <property name="message" value="Static import functions from Guava Preconditions"/>
         </module>
 
+        <module name="IllegalTokenText">
+            <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL, TEXT_BLOCK_CONTENT"/>
+            <property name="format"
+                      value="\\u00(09|0(a|A)|0(b|B)|(0|1)(c|C)|(0|1)(d|D)|1(d|D)|1(e|E)|1(f|F)|22|27|5(C|c))|\\u1680|\\u3000|\\u20(00|0(a|A)|28|29|(2|5)(f|F))|\\(0(10|11|12|14|15|40|42|47)|134)"/>
+            <property name="message"
+                      value="Consider using special escape sequence instead of octal value or Unicode escaped value."/>
+        </module>
+
+        <module name="AvoidEscapedUnicodeCharacters">
+            <property name="allowEscapesForControlCharacters" value="true"/>
+            <property name="allowByTailComment" value="true"/>
+            <property name="allowNonPrintableEscapes" value="true"/>
+        </module>
+
         <!-- ===== BASIC CODE SAFETY ===== -->
 
         <module name="NeedBraces">
@@ -103,6 +122,10 @@
             <property name="commentFormat" value="\\w+"/>
         </module>
 
+        <module name="MissingSwitchDefault"/>
+
+        <module name="OneStatementPerLine"/>
+
         <!-- ===== WHITESPACE ===== -->
 
         <module name="WhitespaceAfter">
@@ -120,62 +143,112 @@
             <property name="severity" value="error"/>
         </module>
 
-        <module name="NoWhitespaceAfter">
-            <property name="tokens"
-                      value="BNOT, DEC, DOT, INC, LNOT, UNARY_MINUS,
-                       UNARY_PLUS"/>
-            <property name="allowLineBreaks" value="true"/>
-            <property name="severity" value="error"/>
-        </module>
-
         <module name="NoWhitespaceBefore">
-            <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
+            <property name="tokens"
+                      value="COMMA, SEMI, POST_INC, POST_DEC, DOT,
+                    LABELED_STAT, METHOD_REF, ELLIPSIS"/>
             <property name="allowLineBreaks" value="true"/>
-            <property name="severity" value="error"/>
         </module>
 
         <module name="ParenPad">
-            <property name="severity" value="error"/>
+            <property name="tokens"
+                      value="ANNOTATION, ANNOTATION_FIELD_DEF, CTOR_CALL, CTOR_DEF, DOT, ENUM_CONSTANT_DEF,
+                    EXPR, LITERAL_CATCH, LITERAL_DO, LITERAL_FOR, LITERAL_IF, LITERAL_NEW,
+                    LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_WHILE, METHOD_CALL,
+                    METHOD_DEF, QUESTION, RESOURCE_SPECIFICATION, SUPER_CTOR_CALL, LAMBDA,
+                    RECORD_DEF, RECORD_PATTERN_DEF"/>
         </module>
 
         <module name="OperatorWrap">
-            <property name="option" value="eol"/>
-            <property name="tokens" value="ASSIGN"/>
+            <property name="option" value="NL"/>
+            <property name="tokens"
+                      value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,
+                    LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF,
+                    TYPE_EXTENSION_AND "/>
+        </module>
+
+        <module name="SeparatorWrap">
+            <property name="id" value="SeparatorWrapDot"/>
+            <property name="tokens" value="DOT"/>
+            <property name="option" value="nl"/>
+        </module>
+        <module name="SeparatorWrap">
+            <property name="id" value="SeparatorWrapComma"/>
+            <property name="tokens" value="COMMA"/>
+            <property name="option" value="EOL"/>
+        </module>
+        <module name="SeparatorWrap">
+            <!-- ELLIPSIS is EOL until https://github.com/google/styleguide/issues/259 -->
+            <property name="id" value="SeparatorWrapEllipsis"/>
+            <property name="tokens" value="ELLIPSIS"/>
+            <property name="option" value="EOL"/>
+        </module>
+        <module name="SeparatorWrap">
+            <!-- ARRAY_DECLARATOR is EOL until https://github.com/google/styleguide/issues/258 -->
+            <property name="id" value="SeparatorWrapArrayDeclarator"/>
+            <property name="tokens" value="ARRAY_DECLARATOR"/>
+            <property name="option" value="EOL"/>
+        </module>
+        <module name="SeparatorWrap">
+            <property name="id" value="SeparatorWrapMethodRef"/>
+            <property name="tokens" value="METHOD_REF"/>
+            <property name="option" value="nl"/>
+        </module>
+
+        <module name="AnnotationLocation">
+            <property name="id" value="AnnotationLocationMostCases"/>
+            <property name="tokens"
+                      value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF,
+                       RECORD_DEF, COMPACT_CTOR_DEF, PACKAGE_DEF"/>
+        </module>
+        <module name="AnnotationLocation">
+            <property name="id" value="AnnotationLocationVariables"/>
+            <property name="tokens" value="VARIABLE_DEF"/>
+            <property name="allowSamelineMultipleAnnotations" value="true"/>
         </module>
 
         <module name="EmptyLineSeparator">
+            <property name="tokens"
+                      value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
+                    STATIC_INIT, INSTANCE_INIT, METHOD_DEF, CTOR_DEF, VARIABLE_DEF, RECORD_DEF,
+                    COMPACT_CTOR_DEF"/>
+            <property name="allowNoEmptyLineBetweenFields" value="true"/>
             <property name="allowMultipleEmptyLines" value="false"/>
-            <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
-            <property name="tokens" value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF,
-        INTERFACE_DEF, ENUM_DEF, STATIC_INIT, INSTANCE_INIT, METHOD_DEF,
-        CTOR_DEF"/>
         </module>
 
         <!-- ===== NAMING ===== -->
 
         <module name="PackageName">
-            <property name="severity" value="error"/>
-            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]+)*$"/>
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+            <message key="name.invalidPattern"
+                     value="Package name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="TypeName">
             <property name="severity" value="error"/>
             <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern"
+                     value="Type name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="MethodName">
-            <property name="severity" value="error"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="format"
+                      value="^(?![a-z]$)(?![a-z][A-Z])[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*(?:_[0-9]+)*$"/>
+            <message key="name.invalidPattern"
+                     value="Method name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="MemberName">
-            <property name="severity" value="error"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="format"
+                      value="^(?![a-z]$)(?![a-z][A-Z])[a-z][a-zA-Z0-9]*(?:_[0-9]+)*$"/>
+            <message key="name.invalidPattern"
+                     value="Member name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="ParameterName">
-            <property name="severity" value="error"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+                     value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="LocalFinalVariableName">
@@ -188,8 +261,9 @@
         </module>
 
         <module name="LocalVariableName">
-            <property name="severity" value="error"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="format" value="^(_|[a-z]([a-z0-9][a-zA-Z0-9]*)?)$"/>
+            <message key="name.invalidPattern"
+                     value="Local variable name ''{0}'' must match pattern ''{1}''."/>
         </module>
 
         <module name="ConstantName">
@@ -206,6 +280,7 @@
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
         <module name="ArrayTypeStyle"/>
+        <module name="NoFinalizer"/>
 
         <module name="TodoComment">
             <property name="format" value="^[ \t]*(?!TODO:)(?i:TODO)\b:?"/>
