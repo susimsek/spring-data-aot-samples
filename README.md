@@ -1,65 +1,252 @@
-# Spring Data AOT Samples – Notes
+# Note App Sample (Spring Data JPA + AOT/Native)
 
-📝 Audit-aware note CRUD with soft delete/trash, revision history/restore, tags, colors, pinning, and a Bootstrap UI.
+This repository is a “Note” sample application built with Spring Boot 4 + Spring Data JPA (Hibernate) + Envers + Liquibase. It can run on the JVM and can also be built as a GraalVM Native Image (native executable / native container).
 
-## ⚙️ Prerequisites
-- ☕ JDK 21+
-- 📦 Maven Wrapper (`./mvnw`) included; no global Maven required
-- 🗄️ H2 in-memory DB; Liquibase seeds data automatically
+## Features
+- Note CRUD, soft delete (trash), permanent delete and restore
+- Revision history (Hibernate Envers) and restore to a revision
+- Tags, pin, color; search (`q`), pagination/sorting
+- JWT-based auth (`/api/auth/*`) + cookie-based session handling
+- Schema + seed data via Liquibase
+- Actuator, Prometheus metrics and OpenTelemetry (OTLP) configuration
 
-## ✨ Features
-- ➕ Note CRUD + soft delete (trash), permanent delete, restore
-- 🕒 Revision history (Envers) and restore by revision
-- 🏷️ Tags, color, pin flag; search title/content; paging/sorting
-- 👤 Auditor header (`X-Auditor`) with `system` fallback
-- 🗄️ Liquibase seed for base and audit tables
+## Requirements
+- Java: `25+` (enforced by Maven Enforcer)
+- Maven Wrapper: `./mvnw`
+- Optional:
+  - Docker (for Jib, docker-compose, Helm)
+  - GraalVM Native Image (for native builds)
 
-## 🚀 Run
+## Project Layout
+- Application code: `src/main/java`
+- Test code: `src/test/java`
+- Configuration: `src/main/resources/config`
+- UI (static): `src/main/resources/static`
+- Liquibase: `src/main/resources/db`
+- Docker compose files: `src/main/docker`
+- Helm chart: `helm/note-app`
+- Monitoring manifest: `helm/monitoring/lgtm.yaml`
+
+## Configuration and Profiles
+Configuration lives under `src/main/resources/config`:
+- `application.yml` (shared)
+- `application-dev.yml` (H2, swagger enabled, debug logs, etc.)
+- `application-prod.yml` (PostgreSQL, swagger disabled, cache headers, etc.)
+
+Maven profiles:
+- `dev` (default)
+- `prod`
+- `native` (GraalVM native build + Jib native-image extension)
+- `docker-compose` (Spring Boot docker-compose integration dependency)
+
+Note: `spring.profiles.active` in `application.yml` is filled via Maven resource filtering (e.g. `dev`/`prod`).
+
+## Run Locally
+### Dev (H2)
 ```bash
 ./mvnw spring-boot:run
 ```
-- 🗄️ DB: `jdbc:h2:mem:note`
-- 📚 Swagger UI: `/swagger-ui.html`
-- 🖥️ Web UI: `/` (Bootstrap)
+- UI: `http://localhost:8080/`
+- Login: `http://localhost:8080/login.html`
+- DB: `jdbc:h2:mem:note` (seeded by Liquibase)
 
-## 🔧 Configuration
-- 👤 Auditor header: `X-Auditor` (defaults to `system` if missing)
-- 🧾 Liquibase change logs: `src/main/resources/db/changelog/`
-- ⚙️ Default properties: `src/main/resources/application.yml`
+### Prod (PostgreSQL)
+Start PostgreSQL first:
+```bash
+docker compose -f src/main/docker/postgresql.yml up -d
+```
+Then run the app with the `prod` profile:
+```bash
+export SECURITY_JWT_SECRET="$(openssl rand -base64 32)"
+export SPRING_DATASOURCE_USERNAME=note
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/note
+./mvnw -Pprod spring-boot:run
+```
 
-## 🔗 API quick tour
-- ➕ `POST /api/notes` – create
-- 📄 `GET /api/notes` – list active (paged, search `q`)
-- 🗑️ `GET /api/notes/deleted` – list trash (paged, search `q`)
-- 🗑️ `DELETE /api/notes/deleted` – empty trash
-- ✏️ `PUT /api/notes/{id}` – full update
-- ✏️ `PATCH /api/notes/{id}` – partial update
-- 🗑️ `DELETE /api/notes/{id}` – soft delete
-- ♻️ `POST /api/notes/{id}/restore` – restore soft-deleted
-- 🔥 `DELETE /api/notes/{id}/permanent` – hard delete
-- 📦 `POST /api/notes/bulk` – bulk soft delete/restore/permanent
-- 🕒 `GET /api/notes/{id}/revisions` – list revisions
-- 🕒 `GET /api/notes/{id}/revisions/{rev}` – get single revision
-- ⏪ `POST /api/notes/{id}/revisions/{rev}/restore` – restore to revision
-- 🔍 `GET /api/notes/{id}` – get by id (active)
+## Swagger UI / OpenAPI
+Swagger UI is enabled in `dev` and disabled in `prod` (see `application-dev.yml` / `application-prod.yml`).
 
-## ✅ Test/build
-- Quick check: `./mvnw test` or `./mvnw -DskipTests package`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON (springdoc): `http://localhost:8080/v3/api-docs`
 
-## 🧹 Code style (Checkstyle)
-- Run only Checkstyle: `./mvnw -DskipTests checkstyle:check`
-- Run as part of build: `./mvnw verify`
-- Config: `checkstyle.xml`
+## API Quick Overview
+Auth:
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
 
-## 🧽 Code format (Spotless)
-- Auto-format: `./mvnw -DskipTests spotless:apply`
-- Auto-format on build: `./mvnw process-sources` (and any later phase like `./mvnw test`, `./mvnw package`)
+Notes (selected):
+- `POST /api/notes`
+- `GET /api/notes` (search `q`, paging/sort)
+- `GET /api/notes/deleted`
+- `DELETE /api/notes/{id}` (soft delete)
+- `POST /api/notes/{id}/restore`
+- `DELETE /api/notes/{id}/permanent`
+- `GET /api/notes/{id}/revisions`
+- `POST /api/notes/{id}/revisions/{rev}/restore`
 
-## 📊 Sonar (JHipster-style)
-- CircleCI env vars: `SONAR_TOKEN`, `SONAR_PROJECT_KEY` (optional: `SONAR_HOST_URL`, `SONAR_ORGANIZATION`)
-- Local run: `SONAR_TOKEN=... SONAR_PROJECT_KEY=... SONAR_ORGANIZATION=... SONAR_HOST_URL=https://sonarcloud.io ./mvnw -ntp -Pprod,sonar verify sonar:sonar`
+## Build, Test, and Coverage
+- Unit tests: `./mvnw test`
+- Integration tests: `./mvnw verify` (Failsafe `*IT*`)
+- Full verification: `./mvnw verify` (includes Checkstyle + Spotless check + JaCoCo)
+- Package: `./mvnw -DskipTests package`
 
-## 🧪 Tests & coverage (Sonar)
-- Unit tests: Surefire (default), reports in `target/surefire-reports`
-- Integration tests: Failsafe (`**/*IT.java`), reports in `target/failsafe-reports`
-- Coverage: JaCoCo XML reports in `target/site/jacoco/jacoco.xml` and `target/site/jacoco-it/jacoco.xml`
+JaCoCo reports:
+- Unit: `target/site/jacoco/jacoco.xml`
+- Integration: `target/site/jacoco-it/jacoco.xml`
+
+## Code Quality
+### Checkstyle
+Checkstyle runs automatically in the `validate` phase.
+```bash
+./mvnw -DskipTests checkstyle:check
+```
+Config: `checkstyle.xml` and `checkstyle-suppressions.xml`
+
+### Spotless
+Spotless runs `spotless:check` in the `compile` phase. To apply formatting:
+```bash
+./mvnw -DskipTests spotless:apply
+```
+
+### Sonar
+If you use SonarCloud (or SonarQube) in your pipeline, you can run analysis locally as well.
+
+Recommended (runs tests + generates reports first):
+```bash
+export SONAR_TOKEN=...
+./mvnw -B -ntp -Pprod verify sonar:sonar \
+  -Dsonar.token="$SONAR_TOKEN"
+```
+
+## Docker Image
+Build a JVM container image without a Dockerfile:
+```bash
+./mvnw -Pprod -DskipTests jib:dockerBuild
+```
+Push to a registry:
+```bash
+./mvnw -Pprod -DskipTests jib:build -Djib.to.image=YOUR_IMAGE
+```
+
+Defaults (from `pom.xml`):
+- Base image: `eclipse-temurin:25-jre-alpine`
+- Platform: `linux/arm64` (override with `-Djib-maven-plugin.architecture=amd64` if needed)
+
+Native Docker image (GraalVM Native Image + Jib):
+```bash
+./mvnw -Pprod,native -DskipTests jib:dockerBuild \
+  -Djib.to.image=note-app:latest-native
+```
+
+Defaults (from `pom.xml`, `native` profile):
+- Base image: `scratch` (contains only the native binary; no JVM)
+- Working directory: `/tmp`
+- Platform: `linux/arm64` (override with `-Djib-maven-plugin.architecture=amd64` if needed)
+
+How it works (based on the `native` Maven profile in `pom.xml`):
+- Base image is set to `scratch` (`<jib-maven-plugin.image>scratch</jib-maven-plugin.image>`), so the image contains only the native binary and minimal metadata (no JVM).
+- `JibNativeImageExtension` wires the `native-maven-plugin` output (`target/native-executable`) into Jib.
+- Container working directory is `/tmp` (`<workingDirectory>/tmp</workingDirectory>`).
+
+Optional: push the native image to a registry:
+```bash
+./mvnw -Pprod,native -DskipTests jib:build -Djib.to.image=YOUR_IMAGE
+```
+
+## GraalVM Native Image
+Native executable:
+```bash
+./mvnw -Pprod,native -DskipTests native:compile
+```
+Output: `target/native-executable`
+
+Native-image build arguments:
+```bash
+./mvnw -ntp -Pprod,native -DskipTests \
+  -DbuildArgs="--no-fallback,-Os,--static,--libc=musl,--verbose,-J-Xmx6g" \
+  native:compile
+```
+`buildArgs` meaning:
+- `--no-fallback`: fail the build instead of producing a fallback JVM image
+- `-Os`: optimize for size
+- `--static`: build a statically linked binary
+- `--libc=musl`: link against musl (Linux/musl environments)
+- `--verbose`: print detailed native-image output (useful for debugging)
+- `-J-Xmx6g`: give the native-image process up to ~6GB heap
+
+UPX compression (optional):
+```bash
+upx --lzma --best target/native-executable
+```
+- `--best`: maximum compression
+- `--lzma`: use LZMA for better compression (slower, smaller)
+
+## Observability
+- Actuator endpoints: `http://localhost:8080/actuator`
+- Prometheus: `http://localhost:8080/actuator/prometheus`
+- OTLP exporter settings are in `application-*.yml` (disabled by default in dev)
+
+Monitoring stack (Grafana OTEL LGTM):
+```bash
+docker compose -f src/main/docker/monitoring.yml up -d
+```
+
+## Docker Compose Support
+Files under `src/main/docker/*.yml` are marked as “dev purpose only”.
+- PostgreSQL: `docker compose -f src/main/docker/postgresql.yml up -d`
+- Monitoring: `docker compose -f src/main/docker/monitoring.yml up -d`
+- App with prebuilt native image (GHCR): `docker compose -f src/main/docker/app.yml up -d`
+
+Spring Boot docker-compose integration (optional):
+```bash
+./mvnw -Pprod,docker-compose spring-boot:run
+```
+
+## Helm
+- Chart: `helm/note-app`
+- Monitoring: `helm/monitoring/lgtm.yaml`
+
+Common commands:
+Lint the chart:
+```bash
+helm lint helm/note-app
+```
+
+Render manifests locally:
+```bash
+helm template note-app helm/note-app
+```
+
+Create namespace (idempotent):
+```bash
+kubectl create namespace note-app --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Install/upgrade release:
+```bash
+helm upgrade --install note-app helm/note-app -n note-app
+```
+
+Install/upgrade with values override:
+```bash
+helm upgrade --install note-app helm/note-app -n note-app -f helm/note-app/values.yaml
+```
+
+Uninstall release:
+```bash
+helm uninstall note-app -n note-app
+```
+
+## Continuous Integration (CircleCI)
+Pipeline: `.circleci/config.yml`
+- `./mvnw -Pprod verify` for tests + quality gates
+- `./mvnw -Pprod,native -DskipTests native:compile` for a musl static native build
+- Compress `target/native-executable` with UPX
+- Push native image to GHCR on the `main` branch (via Jib)
+
+Environment variables:
+- SonarCloud: `SONAR_TOKEN` (optional)
+- Snyk: `SNYK_TOKEN` (optional)
+- GHCR push: `GHCR_USERNAME`, `GHCR_TOKEN` (only on `main`)
