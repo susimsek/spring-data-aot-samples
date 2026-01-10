@@ -20,7 +20,7 @@ class SecurityJwtConfigTest {
     void setUp() {
         props = new ApplicationProperties();
         props.getSecurity().getJwt().setSecret("my-secret-key-1234567890");
-        props.getSecurity().getJwt().setIssuer("issuer");
+        props.getSecurity().getJwt().setIssuer("http://issuer");
         props.getSecurity().getJwt().setAudience(List.of("aud"));
         props.getSecurity().getJwt().setAccessTokenTtl(Duration.ofMinutes(5));
         config = new SecurityJwtConfig(props);

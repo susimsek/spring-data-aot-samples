@@ -15,7 +15,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,8 +176,8 @@ public class OpenApiConfig {
         return info;
     }
 
-    private List<Server> buildServers(ApplicationProperties.ApiDocs.Server[] servers) {
-        return Arrays.stream(servers)
+    private List<Server> buildServers(List<ApplicationProperties.ApiDocs.Server> servers) {
+        return servers.stream()
                 .map(
                         server ->
                                 new Server()

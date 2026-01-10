@@ -1,15 +1,14 @@
 package io.github.susimsek.springdataaotsamples.config.aot;
 
 import jakarta.persistence.metamodel.StaticMetamodel;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class StaticMetamodelScanner {
 

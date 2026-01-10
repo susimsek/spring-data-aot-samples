@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.github.susimsek.springdataaotsamples.config.ApplicationDefaults;
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.User;
@@ -174,8 +173,8 @@ class TokenServiceTest {
 
     private ApplicationProperties buildProps() {
         ApplicationProperties properties = new ApplicationProperties();
-        properties.getSecurity().getJwt().setIssuer("issuer");
-        properties.getSecurity().getJwt().setAudience(ApplicationDefaults.Security.Jwt.audience);
+        properties.getSecurity().getJwt().setIssuer("http://issuer");
+        properties.getSecurity().getJwt().setAudience(java.util.List.of("aud"));
         properties.getSecurity().getJwt().setAccessTokenTtl(Duration.ofSeconds(60));
         properties.getSecurity().getJwt().setRefreshTokenTtl(Duration.ofSeconds(120));
         properties.getSecurity().getJwt().setRefreshTokenTtlForRememberMe(Duration.ofSeconds(180));

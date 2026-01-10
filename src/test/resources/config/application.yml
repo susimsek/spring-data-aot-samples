@@ -28,6 +28,7 @@ application:
     jwt:
       secret: onMAEhlrulDjt0cM8wdiSHBGRl9SUaXMAO7XaotoX/U=
       issuer: http://localhost:8080
+      audience: note-api
 
 management:
   logging:
