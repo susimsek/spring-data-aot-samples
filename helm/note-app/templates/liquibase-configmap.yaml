@@ -1,0 +1,19 @@
+{{- if .Values.initContainers.liquibase.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "note-app.fullname" . }}-liquibase
+  labels:
+    {{ include "note-app.labels" . | nindent 4 }}
+data:
+  master.xml: |-
+{{ .Files.Get "liquibase/master.xml" | indent 4 }}
+{{- range $path, $_ := .Files.Glob "liquibase/changelog/*.xml" }}
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- range $path, $_ := .Files.Glob "liquibase/data/*.csv" }}
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}

@@ -8,6 +8,7 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy:
 {{ toYaml .Values.updateStrategy | nindent 4 }}
   selector:
@@ -33,7 +34,16 @@ spec:
       serviceAccountName: {{ include "note-app.serviceAccountName" . }}
       securityContext:
         {{ toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- end }}
+      {{- with .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
       initContainers:
+        {{- if .Values.initContainers.waitForDb.enabled }}
         - name: wait-for-db
           image: "{{ .Values.initContainers.waitForDb.image.repository }}:{{ .Values.initContainers.waitForDb.image.tag }}"
           imagePullPolicy: {{ .Values.initContainers.waitForDb.image.pullPolicy }}
@@ -65,6 +75,33 @@ spec:
               done
 
               echo "DB is UP"
+        {{- end }}
+        {{- if .Values.initContainers.liquibase.enabled }}
+        - name: liquibase
+          image: "{{ .Values.initContainers.liquibase.image.repository }}:{{ .Values.initContainers.liquibase.image.tag }}"
+          imagePullPolicy: {{ .Values.initContainers.liquibase.image.pullPolicy }}
+          args:
+            - update
+          env:
+            - name: LIQUIBASE_COMMAND_URL
+              value: {{ .Values.spring.datasource.url | quote }}
+            - name: LIQUIBASE_COMMAND_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "note-app.fullname" . }}-secret-database
+                  key: database-username
+            - name: LIQUIBASE_COMMAND_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "note-app.fullname" . }}-secret-database
+                  key: database-password
+            - name: LIQUIBASE_COMMAND_CHANGELOG_FILE
+              value: {{ .Values.initContainers.liquibase.changeLogFile | quote }}
+          volumeMounts:
+            - name: liquibase-volume
+              mountPath: /liquibase/db
+              readOnly: true
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -76,6 +113,8 @@ spec:
               containerPort: {{ .Values.containerPort }}
               protocol: TCP
           env:
+            - name: SPRING_DATASOURCE_URL
+              value: {{ .Values.spring.datasource.url | quote }}
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -95,6 +134,17 @@ spec:
             - name: config
               mountPath: /tmp/config/application.yml
               subPath: application.yml
+          {{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startup.path | quote }}
+              port: http
+            initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            successThreshold: {{ .Values.probes.startup.successThreshold }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          {{- end }}
           {{- if .Values.probes.liveness.enabled }}
           livenessProbe:
             httpGet:
@@ -124,6 +174,22 @@ spec:
             items:
               - key: application.yml
                 path: application.yml
+        {{- if .Values.initContainers.liquibase.enabled }}
+        - name: liquibase-volume
+          configMap:
+            name: {{ include "note-app.fullname" . }}-liquibase
+            items:
+              - key: master.xml
+                path: master.xml
+              {{- range $path, $_ := .Files.Glob "liquibase/changelog/*.xml" }}
+              - key: {{ base $path }}
+                path: changelog/{{ base $path }}
+              {{- end }}
+              {{- range $path, $_ := .Files.Glob "liquibase/data/*.csv" }}
+              - key: {{ base $path }}
+                path: data/{{ base $path }}
+              {{- end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{ toYaml . | nindent 8 }}

@@ -9,6 +9,8 @@ data:
     spring:
       profiles:
         active: {{ .Values.spring.profiles.active | quote }}
+      liquibase:
+        enabled: {{ .Values.spring.liquibase.enabled }}
       datasource:
         url: {{ .Values.spring.datasource.url | quote }}
     management:

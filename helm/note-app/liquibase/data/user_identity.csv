@@ -1,0 +1,12 @@
+id;username;password;enabled;created_by;last_modified_by
+1;admin;{bcrypt}$2a$10$ZT/jqyCMHFiUDaEZd4piLupduz7aoioyj4oVeA1xm/zvvaRZ2wIla;true;system;system
+2;user;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+3;user1;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+4;user2;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+5;user3;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+6;user4;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+7;user5;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+8;user6;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+9;user7;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+10;user8;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system
+11;user9;{bcrypt}$2a$10$A5YMlJqpS/Oh9OnrqIfKCuG.9bDFALqsVXXMMueebRCj7ZHD1Hfga;true;system;system

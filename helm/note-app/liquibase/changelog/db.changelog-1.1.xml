@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="5" author="codex">
+        <createSequence sequenceName="rev_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="revinfo">
+            <column name="rev" type="bigint" defaultValueSequenceNext="rev_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="revtstmp" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="varchar(100)"/>
+        </createTable>
+
+        <addDefaultValue tableName="revinfo"
+                         columnName="rev"
+                         defaultValueSequenceNext="rev_seq"/>
+    </changeSet>
+
+    <changeSet id="6" author="codex">
+        <createTable tableName="note_aud">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)"/>
+            <column name="content" type="varchar(1024)"/>
+            <column name="pinned" type="boolean"/>
+            <column name="color" type="varchar(20)"/>
+            <column name="owner" type="varchar(100)"/>
+            <column name="version" type="bigint"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp"/>
+            <column name="deleted" type="boolean"/>
+            <column name="deleted_by" type="varchar(100)"/>
+            <column name="deleted_date" type="timestamp"/>
+            <column name="rev" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="smallint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="note_aud" columnNames="id, rev" constraintName="pk_note_aud"/>
+        <addForeignKeyConstraint baseTableName="note_aud" baseColumnNames="rev"
+                                 referencedTableName="revinfo" referencedColumnNames="rev"
+                                 constraintName="fk_note_aud_rev"/>
+    </changeSet>
+
+    <changeSet id="7" author="codex">
+        <createTable tableName="tag_aud">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)"/>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp"/>
+            <column name="rev" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="smallint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="tag_aud" columnNames="id, rev" constraintName="pk_tag_aud"/>
+        <addForeignKeyConstraint baseTableName="tag_aud" baseColumnNames="rev"
+                                 referencedTableName="revinfo" referencedColumnNames="rev"
+                                 constraintName="fk_tag_aud_rev"/>
+    </changeSet>
+
+    <changeSet id="8" author="codex">
+        <createTable tableName="note_tag_aud">
+            <column name="note_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rev" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="smallint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="note_tag_aud" columnNames="note_id, tag_id, rev" constraintName="pk_note_tag_aud"/>
+        <addForeignKeyConstraint baseTableName="note_tag_aud" baseColumnNames="rev"
+                                 referencedTableName="revinfo" referencedColumnNames="rev"
+                                 constraintName="fk_note_tag_aud_rev"/>
+    </changeSet>
+
+    <changeSet id="9" author="codex">
+        <loadData tableName="revinfo"
+                  file="../data/revinfo.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="username" type="string"/>
+        </loadData>
+
+        <loadData tableName="note_aud"
+                  file="../data/note_aud.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="id" type="numeric"/>
+            <column header="title" type="string"/>
+            <column header="content" type="string"/>
+            <column header="pinned" type="boolean"/>
+            <column header="color" type="string"/>
+            <column header="owner" type="string"/>
+            <column header="version" type="numeric"/>
+            <column header="created_by" type="string"/>
+            <column header="created_date" type="timestamp"/>
+            <column header="last_modified_by" type="string"/>
+            <column header="last_modified_date" type="timestamp"/>
+            <column header="deleted" type="boolean"/>
+            <column header="deleted_by" type="string"/>
+            <column header="deleted_date" type="timestamp"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
+        </loadData>
+
+        <loadData tableName="tag_aud"
+                  file="../data/tag_aud.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="id" type="numeric"/>
+            <column header="name" type="string"/>
+            <column header="created_by" type="string"/>
+            <column header="created_date" type="timestamp"/>
+            <column header="last_modified_by" type="string"/>
+            <column header="last_modified_date" type="timestamp"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
+        </loadData>
+
+        <loadData tableName="note_tag_aud"
+                  file="../data/note_tag_aud.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="note_id" type="numeric"/>
+            <column header="tag_id" type="numeric"/>
+            <column header="rev" type="numeric"/>
+            <column header="revtype" type="numeric"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>

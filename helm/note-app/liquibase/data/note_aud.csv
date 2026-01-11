@@ -1,0 +1,31 @@
+id;title;content;pinned;color;owner;version;created_by;created_date;last_modified_by;last_modified_date;deleted;deleted_by;deleted_date;rev;revtype
+1;Welcome note;This is the first sample note inserted via CSV.;true;#2563eb;system;0;system;;system;;false;;;1;0
+2;Audit intro;Showing how auditing captures creators.;true;#7c3aed;system;0;system;;system;;false;;;2;0
+3;Liquibase seed;Data seeded through Liquibase loadData.;false;#0ea5e9;system;0;system;;system;;false;;;3;0
+4;MapStruct demo;DTO mapping handled by MapStruct.;false;#22c55e;system;0;system;;system;;false;;;4;0
+5;Springdoc info;Swagger UI documents these endpoints.;false;#14b8a6;system;0;system;;system;;false;;;5;0
+6;H2 access;H2 is exposed via TCP for tooling.;false;#f59e0b;system;0;system;;system;;false;;;6;0
+7;Pagination;Paged results are supported via Pageable.;false;#0284c7;system;0;system;;system;;false;;;7;0
+8;Auditor header;Pass X-User to populate audit fields.;false;#f97316;system;0;system;;system;;false;;;8;0
+9;Update endpoint;PUT /api/notes/{id} updates title/content.;false;#ef4444;system;0;system;;system;;false;;;9;0
+10;Delete endpoint;DELETE /api/notes/{id} removes a note.;false;#8b5cf6;system;0;system;;system;;false;;;10;0
+11;Concurrency check;Demonstrates optimistic updates in service layer.;false;#22c55e;system;0;system;;system;;false;;;11;0
+12;Validation;Note requests enforce title/content length and not blank.;false;#0ea5e9;system;0;system;;system;;false;;;12;0
+13;Auditing default;Without X-User header, auditor defaults to system.;false;#2563eb;system;0;system;;system;;false;;;13;0
+14;Paging default;Pageable defaults configured via application.yml.;false;#0284c7;system;0;system;;system;;false;;;14;0
+15;Swagger header;X-User header documented in Swagger UI.;false;#14b8a6;system;0;system;;system;;false;;;15;0
+16;Sequence id;IDs are generated from note_seq sequence.;false;#f59e0b;system;0;system;;system;;false;;;16;0
+17;Liquibase load;CSV seed inserted by Liquibase changeSet 2.;false;#0ea5e9;system;0;system;;system;;false;;;17;0
+18;Record DTOs;NoteDTO and request DTOs use Java records.;false;#22c55e;system;0;system;;system;;false;;;18;0
+19;MapStruct update;Update uses mapper to merge request into entity.;false;#22c55e;system;0;system;;system;;false;;;19;0
+20;H2 TCP;H2 exposed on 9092 for external tooling.;false;#2563eb;system;0;system;;system;;false;;;20;0
+1;Welcome note v2;Updated intro text with more context.;true;#2563eb;system;1;system;;system;;false;;;21;1
+1;Welcome note v3;Switched to a calm cyan theme.;false;#0ea5e9;system;2;system;;system;;false;;;22;1
+1;Welcome note v4;Added welcome checklist.;true;#0ea5e9;system;3;system;;system;;false;;;23;1
+1;Welcome note v5;Checklist reordered and clarified.;true;#0ea5e9;system;4;system;;system;;false;;;24;1
+1;Welcome note v6;Color reverted to indigo for contrast.;true;#2563eb;system;5;system;;system;;false;;;25;1
+1;Welcome note v7;Pinned off temporarily.;false;#2563eb;system;6;system;;system;;false;;;26;1
+1;Welcome note v8;Restored pin, cleaned text.;true;#2563eb;system;7;system;;system;;false;;;27;1
+1;Welcome note v9;Tweaked wording for clarity.;true;#2563eb;system;8;system;;system;;false;;;28;1
+1;Welcome note v10;Minor typo fixes.;true;#2563eb;system;9;system;;system;;false;;;29;1
+1;Welcome note v11;Pinned off for review.;false;#2563eb;system;10;system;;system;;false;;;30;1

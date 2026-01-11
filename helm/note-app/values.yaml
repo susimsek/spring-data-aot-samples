@@ -5,6 +5,7 @@
 
 replicaCount: 2
 terminationGracePeriodSeconds: 30
+revisionHistoryLimit: 10
 
 updateStrategy:
   type: RollingUpdate
@@ -20,10 +21,18 @@ image:
 
 initContainers:
   waitForDb:
+    enabled: true
     image:
       repository: busybox
       pullPolicy: IfNotPresent
       tag: "1.37.0"
+  liquibase:
+    enabled: true
+    image:
+      repository: ghcr.io/susimsek/liquibase-postgresql
+      pullPolicy: IfNotPresent
+      tag: "5.0.1"
+    changeLogFile: db/master.xml
 
 imagePullSecrets: []
 nameOverride: ""
@@ -39,6 +48,8 @@ spring:
     url: jdbc:postgresql://postgresql:5432/note
     username: note
     password: "V5tDoPwOjIkoFLmO9X3W/l9VnfTVoXYo"
+  liquibase:
+    enabled: false
 
 security:
   jwt:
@@ -90,6 +101,11 @@ serviceAccount:
 
 podAnnotations: {}
 
+dnsPolicy: ""
+dnsConfig: {}
+
+enableServiceLinks: true
+
 podSecurityContext: {}
   # fsGroup: 2000
 
@@ -106,6 +122,14 @@ service:
   port: 8080
 
 probes:
+  startup:
+    enabled: false
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 10
   liveness:
     enabled: true
     path: /actuator/health/liveness
@@ -149,10 +173,26 @@ resources:
 
 autoscaling:
   enabled: false
-  minReplicas: 1
-  maxReplicas: 100
+  minReplicas: 2
+  maxReplicas: 4
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  # Suggested defaults for GraalVM native (~3s startup): scale up quickly, scale down slowly.
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      selectPolicy: Max
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      selectPolicy: Max
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
 
 nodeSelector: {}
 

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="14" author="codex">
+        <createSequence sequenceName="note_share_token_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="note_share_token">
+            <column name="id" type="bigint" defaultValueSequenceNext="note_share_token_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="note_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_hash" type="varchar(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="expires_at" type="timestamp"/>
+            <column name="one_time" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="use_count" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revoked" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp" defaultValueComputed="${now}"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="note_share_token"
+                                 baseColumnNames="note_id"
+                                 referencedTableName="note"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_note_share_token_note"/>
+
+        <createIndex tableName="note_share_token" indexName="idx_note_share_token_note">
+            <column name="note_id"/>
+        </createIndex>
+
+        <createIndex tableName="note_share_token" indexName="idx_note_share_token_expires">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

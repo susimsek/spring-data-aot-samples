@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="10" author="codex">
+        <createSequence sequenceName="user_identity_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="user_identity">
+            <column name="id" type="bigint" defaultValueSequenceNext="user_identity_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(100)" defaultValue="system">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="11" author="codex">
+        <createSequence sequenceName="authority_seq"
+                        startValue="1"
+                        incrementBy="1"
+                        minValue="1"
+                        maxValue="9999999999999999"
+                        cacheSize="100"
+                        cycle="false"/>
+
+        <createTable tableName="authority">
+            <column name="id" type="bigint" defaultValueSequenceNext="authority_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_by" type="varchar(100)" defaultValue="system">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="${now}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_modified_by" type="varchar(100)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="user_authority">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="user_authority"
+                       columnNames="user_id, authority_id"
+                       constraintName="pk_user_authority"/>
+
+        <addForeignKeyConstraint baseTableName="user_authority"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="user_identity"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_user_authority_user"/>
+
+        <addForeignKeyConstraint baseTableName="user_authority"
+                                 baseColumnNames="authority_id"
+                                 referencedTableName="authority"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_user_authority_authority"/>
+    </changeSet>
+
+    <changeSet id="12" author="codex">
+        <loadData tableName="authority"
+                  file="../data/authority.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="id" type="numeric"/>
+            <column header="name" type="string"/>
+            <column header="created_by" type="string"/>
+            <column header="last_modified_by" type="string"/>
+        </loadData>
+
+        <loadData tableName="user_identity"
+                  file="../data/user_identity.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="id" type="numeric"/>
+            <column header="username" type="string"/>
+            <column header="password" type="string"/>
+            <column header="enabled" type="boolean"/>
+            <column header="created_by" type="string"/>
+            <column header="last_modified_by" type="string"/>
+        </loadData>
+
+        <loadData tableName="user_authority"
+                  file="../data/user_authority.csv"
+                  relativeToChangelogFile="true"
+                  separator=";"
+                  usePreparedStatements="true"
+                  encoding="UTF-8">
+            <column header="user_id" type="numeric"/>
+            <column header="authority_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+
+</databaseChangeLog>
