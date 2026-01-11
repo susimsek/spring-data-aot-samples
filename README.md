@@ -96,6 +96,15 @@ JaCoCo reports:
 - Unit: `target/site/jacoco/jacoco.xml`
 - Integration: `target/site/jacoco-it/jacoco.xml`
 
+
+## Performance Tests
+Performance tests are done with Gatling and are located in the `src/test/java/gatling/simulations` folder.
+
+Run all simulations:
+```bash
+./mvnw gatling:test
+```
+
 ## Code Quality
 ### Checkstyle
 Checkstyle runs automatically in the `validate` phase.
