@@ -13,6 +13,22 @@ public final class GatlingDefaults {
     public static final String BASE_URL =
             Optional.ofNullable(System.getProperty("baseURL")).orElse("http://localhost:8080");
 
+    private static String mode() {
+        return Optional.ofNullable(System.getProperty("mode")).orElse("soak");
+    }
+
+    private static boolean stressMode() {
+        return "stress".equalsIgnoreCase(mode());
+    }
+
+    private static long longPropertyOrDefault(String key, long defaultValue) {
+        var value = System.getProperty(key);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        return Long.parseLong(value);
+    }
+
     public static int users() {
         return Integer.getInteger("users", 100);
     }
@@ -21,20 +37,24 @@ public final class GatlingDefaults {
         return Duration.ofMinutes(Integer.getInteger("ramp", 1));
     }
 
+    public static Duration testDuration() {
+        return Duration.ofMinutes(Integer.getInteger("duration", 10));
+    }
+
     public static Duration minPause() {
-        return Duration.ofSeconds(Long.getLong("minPauseSeconds", 10));
+        return Duration.ofSeconds(longPropertyOrDefault("minPauseSeconds", stressMode() ? 0 : 1));
     }
 
     public static Duration maxPause() {
-        return Duration.ofSeconds(Long.getLong("maxPauseSeconds", 20));
+        return Duration.ofSeconds(longPropertyOrDefault("maxPauseSeconds", stressMode() ? 1 : 3));
     }
 
     public static Duration shortPause() {
-        return Duration.ofSeconds(Long.getLong("shortPauseSeconds", 2));
+        return Duration.ofSeconds(longPropertyOrDefault("shortPauseSeconds", stressMode() ? 0 : 1));
     }
 
     public static Duration longPause() {
-        return Duration.ofSeconds(Long.getLong("longPauseSeconds", 10));
+        return Duration.ofSeconds(longPropertyOrDefault("longPauseSeconds", stressMode() ? 1 : 2));
     }
 
     public static String adminUsername() {
@@ -64,7 +84,6 @@ public final class GatlingDefaults {
     public static HttpProtocolBuilder httpProtocol() {
         return HttpDsl.http
                 .baseUrl(BASE_URL)
-                .inferHtmlResources()
                 .acceptHeader("*/*")
                 .acceptEncodingHeader("gzip, deflate")
                 .acceptLanguageHeader("en-US,en;q=0.9")
