@@ -92,7 +92,8 @@
 
     <changeSet id="12" author="codex">
         <loadData tableName="authority"
-                  file="db/data/authority.csv"
+                  file="../data/authority.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -103,7 +104,8 @@
         </loadData>
 
         <loadData tableName="user_identity"
-                  file="db/data/user_identity.csv"
+                  file="../data/user_identity.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -116,7 +118,8 @@
         </loadData>
 
         <loadData tableName="user_authority"
-                  file="db/data/user_authority.csv"
+                  file="../data/user_authority.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">

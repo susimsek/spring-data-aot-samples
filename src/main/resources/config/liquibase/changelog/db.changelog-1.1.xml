@@ -109,7 +109,8 @@
 
     <changeSet id="9" author="codex">
         <loadData tableName="revinfo"
-                  file="db/data/revinfo.csv"
+                  file="../data/revinfo.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -117,7 +118,8 @@
         </loadData>
 
         <loadData tableName="note_aud"
-                  file="db/data/note_aud.csv"
+                  file="../data/note_aud.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -140,7 +142,8 @@
         </loadData>
 
         <loadData tableName="tag_aud"
-                  file="db/data/tag_aud.csv"
+                  file="../data/tag_aud.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -155,7 +158,8 @@
         </loadData>
 
         <loadData tableName="note_tag_aud"
-                  file="db/data/note_tag_aud.csv"
+                  file="../data/note_tag_aud.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">

@@ -96,7 +96,8 @@
 
     <changeSet id="2" author="codex">
         <loadData tableName="note"
-                  file="db/data/note.csv"
+                  file="../data/note.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -116,7 +117,8 @@
 
     <changeSet id="3" author="codex">
         <loadData tableName="tag"
-                  file="db/data/tag.csv"
+                  file="../data/tag.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
@@ -128,7 +130,8 @@
 
     <changeSet id="4" author="codex">
         <loadData tableName="note_tag"
-                  file="db/data/note_tag.csv"
+                  file="../data/note_tag.csv"
+                  relativeToChangelogFile="true"
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">

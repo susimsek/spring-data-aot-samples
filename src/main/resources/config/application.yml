@@ -31,7 +31,7 @@ spring:
     problemdetails:
       enabled: true
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:config/liquibase/master.xml
   data:
     web:
       pageable:
@@ -106,4 +106,3 @@ management:
           enabled: true
     tags:
       application: ${spring.application.name}
-

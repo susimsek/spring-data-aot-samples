@@ -20,7 +20,7 @@ spring:
       hibernate.generate_statistics: false
       hibernate.jdbc.time_zone: Europe/Istanbul
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:config/liquibase/master.xml
     contexts: test
 
 application:

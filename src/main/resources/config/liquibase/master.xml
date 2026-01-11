@@ -8,10 +8,10 @@
     <property name="now" value="now()" dbms="h2"/>
     <property name="now" value="current_timestamp" dbms="postgresql"/>
 
-    <include file="db/changelog/db.changelog-1.0.xml"/>
-    <include file="db/changelog/db.changelog-1.1.xml"/>
-    <include file="db/changelog/db.changelog-1.2.xml"/>
-    <include file="db/changelog/db.changelog-1.3.xml"/>
-    <include file="db/changelog/db.changelog-1.4.xml"/>
+    <include file="changelog/db.changelog-1.0.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/db.changelog-1.1.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/db.changelog-1.2.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/db.changelog-1.3.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/db.changelog-1.4.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
