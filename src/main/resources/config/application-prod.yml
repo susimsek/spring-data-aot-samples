@@ -22,7 +22,6 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 2
   liquibase:
-    enabled: false
     contexts: prod
   web:
     resources:
