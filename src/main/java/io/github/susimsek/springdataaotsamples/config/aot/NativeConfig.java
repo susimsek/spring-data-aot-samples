@@ -36,7 +36,7 @@ public class NativeConfig implements RuntimeHintsRegistrar {
     }
 
     private void registerLiquibaseHints(RuntimeHints hints) {
-        hints.resources().registerPattern("db/**");
+        hints.resources().registerPattern("config/liquibase/**");
 
         hints.reflection()
                 .registerType(

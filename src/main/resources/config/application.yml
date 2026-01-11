@@ -69,6 +69,7 @@ management:
           - threaddump
           - caches
           - liquibase
+          - metrics
   endpoint:
     health:
       show-details: when_authorized

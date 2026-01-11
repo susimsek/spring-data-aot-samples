@@ -22,7 +22,7 @@ public class NoteSimulation extends Simulation {
                             .headers(GatlingDefaults.HEADERS_HTTP)
                             .check(status().is(401)))
                     .exitHereIfFailed()
-                    .pause(GatlingDefaults.minPause())
+                    .pause(GatlingDefaults.longPause())
                     .exec(
                             http("Authentication")
                                     .post("/api/auth/login")
@@ -62,13 +62,13 @@ public class NoteSimulation extends Simulation {
                                             ? session
                                             : session.markAsFailed())
                     .exitHereIfFailed()
-                    .pause(GatlingDefaults.minPause())
+                    .pause(GatlingDefaults.shortPause())
                     .exec(
                             http("Authenticated request")
                                     .get("/api/auth/me")
                                     .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
                                     .check(status().is(200)))
-                    .pause(GatlingDefaults.minPause(), GatlingDefaults.maxPause())
+                    .pause(GatlingDefaults.longPause())
                     .repeat(2)
                     .on(
                             exec(http("Get all notes")
@@ -112,7 +112,7 @@ public class NoteSimulation extends Simulation {
                                                             ? session
                                                             : session.markAsFailed())
                                     .exitHereIfFailed()
-                                    .pause(GatlingDefaults.minPause())
+                                    .pause(GatlingDefaults.longPause())
                                     .repeat(5)
                                     .on(
                                             exec(session ->
@@ -132,7 +132,7 @@ public class NoteSimulation extends Simulation {
                                                                             GatlingDefaults
                                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                                     .check(status().is(200)))
-                                                    .pause(GatlingDefaults.minPause()))
+                                                    .pause(GatlingDefaults.longPause()))
                                     .exec(
                                             http("Update note")
                                                     .put(
@@ -156,7 +156,7 @@ public class NoteSimulation extends Simulation {
                                                                     """))
                                                     .asJson()
                                                     .check(status().is(200)))
-                                    .pause(GatlingDefaults.minPause())
+                                    .pause(GatlingDefaults.longPause())
                                     .exec(
                                             http("Soft delete created note")
                                                     .delete(
@@ -168,7 +168,7 @@ public class NoteSimulation extends Simulation {
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
-                                    .pause(GatlingDefaults.minPause())
+                                    .pause(GatlingDefaults.longPause())
                                     .exec(
                                             http("Delete created note permanently")
                                                     .delete(
@@ -181,7 +181,7 @@ public class NoteSimulation extends Simulation {
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
-                                    .pause(GatlingDefaults.minPause()));
+                                    .pause(GatlingDefaults.longPause()));
 
     ScenarioBuilder users =
             scenario("Test notes")

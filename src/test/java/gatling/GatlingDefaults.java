@@ -22,11 +22,19 @@ public final class GatlingDefaults {
     }
 
     public static Duration minPause() {
-        return Duration.ofSeconds(Long.getLong("minPauseSeconds", 2));
+        return Duration.ofSeconds(Long.getLong("minPauseSeconds", 10));
     }
 
     public static Duration maxPause() {
-        return Duration.ofSeconds(Long.getLong("maxPauseSeconds", 5));
+        return Duration.ofSeconds(Long.getLong("maxPauseSeconds", 20));
+    }
+
+    public static Duration shortPause() {
+        return Duration.ofSeconds(Long.getLong("shortPauseSeconds", 2));
+    }
+
+    public static Duration longPause() {
+        return Duration.ofSeconds(Long.getLong("longPauseSeconds", 10));
     }
 
     public static String adminUsername() {
