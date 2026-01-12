@@ -13,24 +13,8 @@ public final class GatlingDefaults {
     public static final String BASE_URL =
             Optional.ofNullable(System.getProperty("baseURL")).orElse("http://localhost:8080");
 
-    private static String mode() {
-        return Optional.ofNullable(System.getProperty("mode")).orElse("soak");
-    }
-
-    private static boolean stressMode() {
-        return "stress".equalsIgnoreCase(mode());
-    }
-
-    private static long longPropertyOrDefault(String key, long defaultValue) {
-        var value = System.getProperty(key);
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-        return Long.parseLong(value);
-    }
-
     public static int users() {
-        return Integer.getInteger("users", 100);
+        return Integer.getInteger("users", 10);
     }
 
     public static Duration rampDuration() {
@@ -38,23 +22,19 @@ public final class GatlingDefaults {
     }
 
     public static Duration testDuration() {
-        return Duration.ofMinutes(Integer.getInteger("duration", 10));
+        return Duration.ofMinutes(Integer.getInteger("duration", 1));
     }
 
     public static Duration minPause() {
-        return Duration.ofSeconds(longPropertyOrDefault("minPauseSeconds", stressMode() ? 0 : 1));
+        return Duration.ofSeconds(Long.getLong("minPauseSeconds", 10));
     }
 
     public static Duration maxPause() {
-        return Duration.ofSeconds(longPropertyOrDefault("maxPauseSeconds", stressMode() ? 1 : 3));
+        return Duration.ofSeconds(Long.getLong("maxPauseSeconds", 20));
     }
 
-    public static Duration shortPause() {
-        return Duration.ofSeconds(longPropertyOrDefault("shortPauseSeconds", stressMode() ? 0 : 1));
-    }
-
-    public static Duration longPause() {
-        return Duration.ofSeconds(longPropertyOrDefault("longPauseSeconds", stressMode() ? 1 : 2));
+    public static Duration pause() {
+        return Duration.ofSeconds(Long.getLong("pauseSeconds", 10));
     }
 
     public static String adminUsername() {

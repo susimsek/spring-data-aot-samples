@@ -1,13 +1,9 @@
 package gatling.simulations;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
-import static io.gatling.javaapi.core.CoreDsl.doIf;
-import static io.gatling.javaapi.core.CoreDsl.during;
 import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.core.CoreDsl.jsonPath;
-import static io.gatling.javaapi.core.CoreDsl.percent;
 import static io.gatling.javaapi.core.CoreDsl.rampUsers;
-import static io.gatling.javaapi.core.CoreDsl.randomSwitch;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
@@ -16,135 +12,21 @@ import gatling.GatlingDefaults;
 import io.gatling.javaapi.core.ChainBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
+import io.gatling.javaapi.http.HttpProtocolBuilder;
 import java.time.Duration;
 import java.util.UUID;
 
 public class NoteSimulation extends Simulation {
 
-    private final ChainBuilder listNotes =
-            exec(http("Get all notes")
-                            .get("/api/notes?page=0&size=20&sort=id,desc")
-                            .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
-                            .check(status().is(200)))
-                    .pause(GatlingDefaults.minPause(), GatlingDefaults.maxPause());
+    HttpProtocolBuilder httpConf = GatlingDefaults.httpProtocol();
 
-    private final ChainBuilder createNote =
-            exec(session -> session.set("note_uuid", UUID.randomUUID().toString()))
-                    .exec(
-                            http("Create new note")
-                                    .post("/api/notes")
-                                    .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
-                                    .body(
-                                            StringBody(
-                                                    """
-                                                    {
-                                                      "title": "Perf Note ${note_uuid}",
-                                                      "content": "Perf content ${note_uuid} - lorem ipsum dolor sit amet",
-                                                      "pinned": false,
-                                                      "color": "#2563eb",
-                                                      "tags": ["audit","perf"]
-                                                    }
-                                                    """))
-                                    .asJson()
-                                    .check(status().is(201))
-                                    .check(
-                                            jsonPath("$.id")
-                                                    .ofLong()
-                                                    .find()
-                                                    .exists()
-                                                    .saveAs("note_id")))
-                    .exec(session -> session.contains("note_id") ? session : session.markAsFailed())
-                    .exitHereIfFailed()
-                    .exec(
-                            http("Get created note")
-                                    .get(session -> "/api/notes/" + session.getLong("note_id"))
-                                    .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
-                                    .check(status().is(200)))
-                    .pause(GatlingDefaults.minPause(), GatlingDefaults.maxPause());
-
-    private final ChainBuilder updateAndDeleteNote =
-            exec(http("Pick note id")
-                            .get("/api/notes?page=0&size=1&sort=id,desc")
-                            .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
-                            .check(status().is(200))
-                            .check(
-                                    jsonPath("$.content[0].id")
-                                            .ofLong()
-                                            .find()
-                                            .optional()
-                                            .saveAs("picked_note_id")))
-                    .pause(GatlingDefaults.shortPause())
-                    .exec(
-                            doIf(session -> session.contains("picked_note_id"))
-                                    .then(
-                                            exec(session ->
-                                                            session.set(
-                                                                    "note_uuid",
-                                                                    UUID.randomUUID().toString()))
-                                                    .exec(
-                                                            http("Update note")
-                                                                    .put(
-                                                                            session ->
-                                                                                    "/api/notes/"
-                                                                                            + session
-                                                                                                    .getLong(
-                                                                                                            "picked_note_id"))
-                                                                    .headers(
-                                                                            GatlingDefaults
-                                                                                    .HEADERS_HTTP_AUTHENTICATED)
-                                                                    .body(
-                                                                            StringBody(
-                                                                                    """
-                                                                                    {
-                                                                                      "title": "Perf Note Updated ${note_uuid}",
-                                                                                      "content": "Perf content updated ${note_uuid} - lorem ipsum dolor sit amet",
-                                                                                      "pinned": true,
-                                                                                      "color": "#16a34a",
-                                                                                      "tags": ["audit","perf","updated"]
-                                                                                    }
-                                                                                    """))
-                                                                    .asJson()
-                                                                    .check(status().is(200)))
-                                                    .pause(GatlingDefaults.shortPause())
-                                                    .exec(
-                                                            http("Soft delete note")
-                                                                    .delete(
-                                                                            session ->
-                                                                                    "/api/notes/"
-                                                                                            + session
-                                                                                                    .getLong(
-                                                                                                            "picked_note_id"))
-                                                                    .headers(
-                                                                            GatlingDefaults
-                                                                                    .HEADERS_HTTP_AUTHENTICATED)
-                                                                    .check(status().is(204)))
-                                                    .pause(GatlingDefaults.shortPause())
-                                                    .exec(
-                                                            http("Restore note")
-                                                                    .post(
-                                                                            session ->
-                                                                                    "/api/notes/"
-                                                                                            + session
-                                                                                                    .getLong(
-                                                                                                            "picked_note_id")
-                                                                                            + "/restore")
-                                                                    .headers(
-                                                                            GatlingDefaults
-                                                                                    .HEADERS_HTTP_AUTHENTICATED)
-                                                                    .check(status().is(204)))
-                                                    .exec(
-                                                            session ->
-                                                                    session.remove(
-                                                                            "picked_note_id"))))
-                    .pause(GatlingDefaults.minPause(), GatlingDefaults.maxPause());
-
-    private final ChainBuilder scn =
+    ChainBuilder scn =
             exec(http("First unauthenticated request")
                             .get("/api/auth/me")
                             .headers(GatlingDefaults.HEADERS_HTTP)
                             .check(status().is(401)))
                     .exitHereIfFailed()
-                    .pause(GatlingDefaults.shortPause())
+                    .pause(GatlingDefaults.pause())
                     .exec(
                             http("Authentication")
                                     .post("/api/auth/login")
@@ -171,37 +53,129 @@ public class NoteSimulation extends Simulation {
                                                     .exists()
                                                     .saveAs("access_token")))
                     .exec(
-                            session ->
-                                    session.set(
-                                            "access_token",
-                                            session.getString("access_token").startsWith("Bearer ")
-                                                    ? session.getString("access_token")
-                                                    : "Bearer "
-                                                            + session.getString("access_token")))
-                    .exec(
-                            session ->
-                                    session.contains("access_token")
-                                            ? session
-                                            : session.markAsFailed())
+                            session -> {
+                                var token = session.getString("access_token");
+                                if (token == null || token.isBlank()) {
+                                    return session.markAsFailed();
+                                }
+                                if (!token.startsWith("Bearer ")) {
+                                    token = "Bearer " + token;
+                                }
+                                return session.set("access_token", token);
+                            })
                     .exitHereIfFailed()
-                    .pause(GatlingDefaults.shortPause())
+                    .pause(GatlingDefaults.pause())
                     .exec(
                             http("Authenticated request")
                                     .get("/api/auth/me")
                                     .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
                                     .check(status().is(200)))
-                    .pause(GatlingDefaults.shortPause())
-                    .exec(
-                            during(GatlingDefaults.testDuration())
+                    .pause(GatlingDefaults.pause())
+                    .repeat(2)
+                    .on(
+                            exec(http("Get all notes")
+                                            .get("/api/notes")
+                                            .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
+                                            .check(status().is(200)))
+                                    .pause(GatlingDefaults.minPause(), GatlingDefaults.maxPause())
+                                    .exec(
+                                            session ->
+                                                    session.set(
+                                                            "note_uuid",
+                                                            UUID.randomUUID().toString()))
+                                    .exec(
+                                            http("Create new note")
+                                                    .post("/api/notes")
+                                                    .headers(
+                                                            GatlingDefaults
+                                                                    .HEADERS_HTTP_AUTHENTICATED)
+                                                    .body(
+                                                            StringBody(
+                                                                    """
+                                                                    {
+                                                                      "title": "Perf Note ${note_uuid}",
+                                                                      "content": "Perf content ${note_uuid} - lorem ipsum dolor sit amet",
+                                                                      "pinned": false,
+                                                                      "color": "#2563eb",
+                                                                      "tags": ["audit","perf"]
+                                                                    }
+                                                                    """))
+                                                    .asJson()
+                                                    .check(status().is(201))
+                                                    .check(
+                                                            jsonPath("$.id")
+                                                                    .ofLong()
+                                                                    .find()
+                                                                    .exists()
+                                                                    .saveAs("note_id")))
+                                    .exitHereIfFailed()
+                                    .pause(GatlingDefaults.pause())
+                                    .repeat(5)
                                     .on(
-                                            randomSwitch()
-                                                    .on(
-                                                            percent(80d).then(listNotes),
-                                                            percent(15d).then(createNote),
-                                                            percent(5d)
-                                                                    .then(updateAndDeleteNote))));
+                                            exec(http("Get created note")
+                                                            .get(
+                                                                    session ->
+                                                                            "/api/notes/"
+                                                                                    + session
+                                                                                            .getLong(
+                                                                                                    "note_id"))
+                                                            .headers(
+                                                                    GatlingDefaults
+                                                                            .HEADERS_HTTP_AUTHENTICATED)
+                                                            .check(status().is(200)))
+                                                    .pause(GatlingDefaults.pause()))
+                                    .exec(
+                                            http("Update note")
+                                                    .put(
+                                                            session ->
+                                                                    "/api/notes/"
+                                                                            + session.getLong(
+                                                                                    "note_id"))
+                                                    .headers(
+                                                            GatlingDefaults
+                                                                    .HEADERS_HTTP_AUTHENTICATED)
+                                                    .body(
+                                                            StringBody(
+                                                                    """
+                                                                    {
+                                                                      "title": "Perf Note Updated ${note_uuid}",
+                                                                      "content": "Perf content updated ${note_uuid} - lorem ipsum dolor sit amet",
+                                                                      "pinned": true,
+                                                                      "color": "#16a34a",
+                                                                      "tags": ["audit","perf","updated"]
+                                                                    }
+                                                                    """))
+                                                    .asJson()
+                                                    .check(status().is(200)))
+                                    .pause(GatlingDefaults.pause())
+                                    .exec(
+                                            http("Soft delete created note")
+                                                    .delete(
+                                                            session ->
+                                                                    "/api/notes/"
+                                                                            + session.getLong(
+                                                                                    "note_id"))
+                                                    .headers(
+                                                            GatlingDefaults
+                                                                    .HEADERS_HTTP_AUTHENTICATED)
+                                                    .check(status().is(204)))
+                                    .pause(GatlingDefaults.pause())
+                                    .exec(
+                                            http("Delete created note permanently")
+                                                    .delete(
+                                                            session ->
+                                                                    "/api/notes/"
+                                                                            + session.getLong(
+                                                                                    "note_id")
+                                                                            + "/permanent")
+                                                    .headers(
+                                                            GatlingDefaults
+                                                                    .HEADERS_HTTP_AUTHENTICATED)
+                                                    .check(status().is(204)))
+                                    .exec(session -> session.remove("note_id"))
+                                    .pause(GatlingDefaults.pause()));
 
-    private final ScenarioBuilder users = scenario("Test notes").exec(scn);
+    ScenarioBuilder users = scenario("Test the Note entity").exec(scn);
 
     {
         Duration maxDuration =
@@ -210,7 +184,7 @@ public class NoteSimulation extends Simulation {
                         users.injectOpen(
                                 rampUsers(GatlingDefaults.users())
                                         .during(GatlingDefaults.rampDuration())))
-                .protocols(GatlingDefaults.httpProtocol())
+                .protocols(httpConf)
                 .maxDuration(maxDuration);
     }
 }
