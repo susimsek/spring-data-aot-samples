@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
@@ -13,9 +14,9 @@ import org.springframework.util.StringUtils;
 public final class ConstraintValidatorScanner {
 
     private final String basePackage;
-    private final ClassLoader classLoader;
+    private final @Nullable ClassLoader classLoader;
 
-    public ConstraintValidatorScanner(String basePackage, ClassLoader classLoader) {
+    public ConstraintValidatorScanner(String basePackage, @Nullable ClassLoader classLoader) {
         this.basePackage = basePackage;
         this.classLoader = classLoader;
     }

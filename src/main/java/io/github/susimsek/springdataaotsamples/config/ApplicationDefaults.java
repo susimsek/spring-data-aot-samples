@@ -3,7 +3,7 @@ package io.github.susimsek.springdataaotsamples.config;
 import java.time.Duration;
 import java.util.List;
 
-@SuppressWarnings({"java:S115", "java:S1214", "checkstyle:ConstantName"})
+@SuppressWarnings({"java:S115", "java:S1214"})
 public interface ApplicationDefaults {
     interface Cache {
         interface Caffeine {
