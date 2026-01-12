@@ -1,5 +1,13 @@
 # Note App Sample (Spring Data JPA + AOT/Native)
 
+[![Build Status](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main.svg?style=shield)](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=note-app)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=note-app)
+[![Vulnerabilities](https://snyk.io/test/github/susimsek/spring-data-aot-samples/badge.svg)](https://snyk.io/test/github/susimsek/spring-data-aot-samples)
+[![Java](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-green)](https://spring.io/projects/spring-boot)
+[![GraalVM](https://img.shields.io/badge/GraalVM-Polyglot-red)](https://www.graalvm.org/)
+
 This repository is a “Note” sample application built with Spring Boot 4 + Spring Data JPA (Hibernate) + Envers + Liquibase. It can run on the JVM and can also be built as a GraalVM Native Image (native executable / native container).
 
 ## Features
