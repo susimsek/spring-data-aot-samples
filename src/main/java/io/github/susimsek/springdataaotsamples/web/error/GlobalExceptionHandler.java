@@ -2,6 +2,8 @@ package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -26,9 +28,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 @ControllerAdvice
 @Slf4j
