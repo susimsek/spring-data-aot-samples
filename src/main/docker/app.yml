@@ -2,7 +2,7 @@
 name: note-app
 services:
   app:
-    image: ghcr.io/susimsek/note-app:latest-native
+    image: docker.io/suayb/note-app:latest-native
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/note
@@ -25,7 +25,7 @@ services:
         condition: service_completed_successfully
 
   liquibase:
-    image: ghcr.io/susimsek/liquibase-postgresql:5.0.1
+    image: docker.io/suayb/liquibase-postgresql:5.0.1
     depends_on:
       postgresql:
         condition: service_healthy

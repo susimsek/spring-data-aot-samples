@@ -14,7 +14,7 @@ updateStrategy:
     maxUnavailable: 0
 
 image:
-  repository: ghcr.io/susimsek/note-app
+  repository: docker.io/suayb/note-app
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest-native"
@@ -29,7 +29,7 @@ initContainers:
   liquibase:
     enabled: true
     image:
-      repository: ghcr.io/susimsek/liquibase-postgresql
+      repository: docker.io/suayb/liquibase-postgresql
       pullPolicy: IfNotPresent
       tag: "5.0.1"
     changeLogFile: db/master.xml
