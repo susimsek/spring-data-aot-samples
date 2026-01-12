@@ -5,6 +5,7 @@ import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.core.CoreDsl.jsonPath;
 import static io.gatling.javaapi.core.CoreDsl.rampUsers;
 import static io.gatling.javaapi.core.CoreDsl.scenario;
+import static io.gatling.javaapi.http.HttpDsl.headerRegex;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
 
@@ -13,67 +14,49 @@ import io.gatling.javaapi.core.ChainBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
-import java.time.Duration;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 
 public class NoteSimulation extends Simulation {
 
     HttpProtocolBuilder httpConf = GatlingDefaults.httpProtocol();
 
     ChainBuilder scn =
-            exec(http("First unauthenticated request")
-                            .get("/api/auth/me")
-                            .headers(GatlingDefaults.HEADERS_HTTP)
-                            .check(status().is(401)))
+            exec(http("Authentication")
+                            .post("/api/auth/login")
+                            .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATION)
+                            .body(
+                                    StringBody(
+                                            """
+                                            {
+                                              "username": "%s",
+                                              "password": "%s",
+                                              "rememberMe": true
+                                            }
+                                            """
+                                                    .formatted(
+                                                            GatlingDefaults.userUsername(),
+                                                            GatlingDefaults.userPassword())))
+                            .asJson()
+                            .check(status().is(200))
+                            .check(
+                                    jsonPath("$.token")
+                                            .ofString()
+                                            .find()
+                                            .exists()
+                                            .saveAs("access_token")))
                     .exitHereIfFailed()
+                    .pause(2)
                     .pause(GatlingDefaults.pause())
                     .exec(
-                            http("Authentication")
-                                    .post("/api/auth/login")
-                                    .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATION)
-                                    .body(
-                                            StringBody(
-                                                    """
-                                                    {
-                                                      "username": "%s",
-                                                      "password": "%s",
-                                                      "rememberMe": true
-                                                    }
-                                                    """
-                                                            .formatted(
-                                                                    GatlingDefaults.userUsername(),
-                                                                    GatlingDefaults
-                                                                            .userPassword())))
-                                    .asJson()
-                                    .check(status().is(200))
-                                    .check(
-                                            jsonPath("$.token")
-                                                    .ofString()
-                                                    .find()
-                                                    .exists()
-                                                    .saveAs("access_token")))
-                    .exec(
-                            session -> {
-                                var token = session.getString("access_token");
-                                if (token == null || token.isBlank()) {
-                                    return session.markAsFailed();
-                                }
-                                if (!token.startsWith("Bearer ")) {
-                                    token = "Bearer " + token;
-                                }
-                                return session.set("access_token", token);
-                            })
-                    .exitHereIfFailed()
-                    .pause(GatlingDefaults.pause())
-                    .exec(
-                            http("Authenticated request")
+                            http("Current user")
                                     .get("/api/auth/me")
                                     .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
                                     .check(status().is(200)))
                     .pause(GatlingDefaults.pause())
                     .repeat(2)
                     .on(
-                            exec(http("Get all notes")
+                            exec(http("List notes")
                                             .get("/api/notes")
                                             .headers(GatlingDefaults.HEADERS_HTTP_AUTHENTICATED)
                                             .check(status().is(200)))
@@ -84,7 +67,7 @@ public class NoteSimulation extends Simulation {
                                                             "note_uuid",
                                                             UUID.randomUUID().toString()))
                                     .exec(
-                                            http("Create new note")
+                                            http("Create note")
                                                     .post("/api/notes")
                                                     .headers(
                                                             GatlingDefaults
@@ -103,22 +86,16 @@ public class NoteSimulation extends Simulation {
                                                     .asJson()
                                                     .check(status().is(201))
                                                     .check(
-                                                            jsonPath("$.id")
-                                                                    .ofLong()
-                                                                    .find()
-                                                                    .exists()
-                                                                    .saveAs("note_id")))
+                                                            headerRegex(
+                                                                            HttpHeaders.LOCATION,
+                                                                            "(.*)")
+                                                                    .saveAs("new_note_url")))
                                     .exitHereIfFailed()
                                     .pause(GatlingDefaults.pause())
                                     .repeat(5)
                                     .on(
-                                            exec(http("Get created note")
-                                                            .get(
-                                                                    session ->
-                                                                            "/api/notes/"
-                                                                                    + session
-                                                                                            .getLong(
-                                                                                                    "note_id"))
+                                            exec(http("Get note")
+                                                            .get("#{new_note_url}")
                                                             .headers(
                                                                     GatlingDefaults
                                                                             .HEADERS_HTTP_AUTHENTICATED)
@@ -126,11 +103,7 @@ public class NoteSimulation extends Simulation {
                                                     .pause(GatlingDefaults.pause()))
                                     .exec(
                                             http("Update note")
-                                                    .put(
-                                                            session ->
-                                                                    "/api/notes/"
-                                                                            + session.getLong(
-                                                                                    "note_id"))
+                                                    .put("#{new_note_url}")
                                                     .headers(
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
@@ -149,42 +122,31 @@ public class NoteSimulation extends Simulation {
                                                     .check(status().is(200)))
                                     .pause(GatlingDefaults.pause())
                                     .exec(
-                                            http("Soft delete created note")
-                                                    .delete(
-                                                            session ->
-                                                                    "/api/notes/"
-                                                                            + session.getLong(
-                                                                                    "note_id"))
+                                            http("Delete note")
+                                                    .delete("#{new_note_url}")
                                                     .headers(
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
                                     .pause(GatlingDefaults.pause())
                                     .exec(
-                                            http("Delete created note permanently")
-                                                    .delete(
-                                                            session ->
-                                                                    "/api/notes/"
-                                                                            + session.getLong(
-                                                                                    "note_id")
-                                                                            + "/permanent")
+                                            http("Delete note permanently")
+                                                    .delete("#{new_note_url}/permanent")
                                                     .headers(
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
-                                    .exec(session -> session.remove("note_id"))
+                                    .exec(session -> session.remove("new_note_url"))
                                     .pause(GatlingDefaults.pause()));
 
-    ScenarioBuilder users = scenario("Test the Note entity").exec(scn);
+    ScenarioBuilder users = scenario("Test the Note").exec(scn);
 
     {
-        Duration maxDuration =
-                GatlingDefaults.rampDuration().plus(GatlingDefaults.testDuration()).plusSeconds(30);
         setUp(
                         users.injectOpen(
                                 rampUsers(GatlingDefaults.users())
                                         .during(GatlingDefaults.rampDuration())))
                 .protocols(httpConf)
-                .maxDuration(maxDuration);
+                .maxDuration(GatlingDefaults.maxDuration());
     }
 }

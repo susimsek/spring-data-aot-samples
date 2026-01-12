@@ -25,6 +25,10 @@ public final class GatlingDefaults {
         return Duration.ofMinutes(Integer.getInteger("duration", 1));
     }
 
+    public static Duration maxDuration() {
+        return rampDuration().plus(testDuration()).plusSeconds(30);
+    }
+
     public static Duration minPause() {
         return Duration.ofSeconds(Long.getLong("minPauseSeconds", 10));
     }
@@ -53,13 +57,11 @@ public final class GatlingDefaults {
         return Optional.ofNullable(System.getProperty("userPassword")).orElse("user");
     }
 
-    public static final Map<String, String> HEADERS_HTTP = Map.of("Accept", "application/json");
-
     public static final Map<String, String> HEADERS_HTTP_AUTHENTICATION =
             Map.of("Content-Type", "application/json", "Accept", "application/json");
 
     public static final Map<String, String> HEADERS_HTTP_AUTHENTICATED =
-            Map.of("Accept", "application/json", "Authorization", "${access_token}");
+            Map.of("Accept", "application/json", "Authorization", "Bearer #{access_token}");
 
     public static HttpProtocolBuilder httpProtocol() {
         return HttpDsl.http
