@@ -1,4 +1,4 @@
-# Note App Sample (Spring Data JPA + AOT/Native)
+# Note App Sample (Spring Boot 4 + Native)
 
 [![Build Status](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main.svg?style=shield)](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=note-app)
