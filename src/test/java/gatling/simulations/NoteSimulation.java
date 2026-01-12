@@ -136,7 +136,6 @@ public class NoteSimulation extends Simulation {
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
-                                    .exec(session -> session.remove("new_note_url"))
                                     .pause(GatlingDefaults.pause()));
 
     ScenarioBuilder users = scenario("Test the Note").exec(scn);
