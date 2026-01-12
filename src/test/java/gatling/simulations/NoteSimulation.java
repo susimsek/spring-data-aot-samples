@@ -1,5 +1,14 @@
 package gatling.simulations;
 
+import gatling.GatlingDefaults;
+import io.gatling.javaapi.core.ChainBuilder;
+import io.gatling.javaapi.core.ScenarioBuilder;
+import io.gatling.javaapi.core.Simulation;
+import io.gatling.javaapi.http.HttpProtocolBuilder;
+import org.springframework.http.HttpHeaders;
+
+import java.util.UUID;
+
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
 import static io.gatling.javaapi.core.CoreDsl.exec;
 import static io.gatling.javaapi.core.CoreDsl.jsonPath;
@@ -8,14 +17,6 @@ import static io.gatling.javaapi.core.CoreDsl.scenario;
 import static io.gatling.javaapi.http.HttpDsl.headerRegex;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static io.gatling.javaapi.http.HttpDsl.status;
-
-import gatling.GatlingDefaults;
-import io.gatling.javaapi.core.ChainBuilder;
-import io.gatling.javaapi.core.ScenarioBuilder;
-import io.gatling.javaapi.core.Simulation;
-import io.gatling.javaapi.http.HttpProtocolBuilder;
-import java.util.UUID;
-import org.springframework.http.HttpHeaders;
 
 public class NoteSimulation extends Simulation {
 
@@ -31,7 +32,7 @@ public class NoteSimulation extends Simulation {
                                             {
                                               "username": "%s",
                                               "password": "%s",
-                                              "rememberMe": true
+                                              "rememberMe": false
                                             }
                                             """
                                                     .formatted(
