@@ -4,6 +4,8 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=note-app)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=note-app)
 [![Vulnerabilities](https://snyk.io/test/github/susimsek/spring-data-aot-samples/badge.svg)](https://snyk.io/test/github/susimsek/spring-data-aot-samples)
+[![Docker Pulls](https://img.shields.io/docker/pulls/suayb/note-app?label=Docker%20Pulls)](https://hub.docker.com/r/suayb/note-app)
+[![Docker Image Size](https://img.shields.io/docker/image-size/suayb/note-app/latest-native?label=Image%20Size)](https://hub.docker.com/r/suayb/note-app)
 [![Java](https://img.shields.io/badge/Java-25%2B-orange)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-green)](https://spring.io/projects/spring-boot)
 [![GraalVM](https://img.shields.io/badge/GraalVM-25%2B-red)](https://www.graalvm.org/)
