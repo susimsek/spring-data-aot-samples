@@ -113,7 +113,7 @@ jobs:
               -Djib.to.auth.password="${DOCKERHUB_TOKEN}"
 
       - run:
-          name: Update Docker Hub README
+          name: Update Docker Hub description
           command: |
             if [ "${CIRCLE_BRANCH}" != "main" ]; then
               echo "Not on main (${CIRCLE_BRANCH}); skipping Docker Hub README update."
@@ -122,7 +122,7 @@ jobs:
 
             microdnf -y install jq
 
-            README_PATH="README-dockerhub.md"
+            README_PATH="docs/README-dockerhub.md"
             if [ ! -f "${README_PATH}" ]; then
               echo "${README_PATH} not found; skipping."
               exit 0
