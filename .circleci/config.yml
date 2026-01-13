@@ -136,11 +136,6 @@ jobs:
               | jq -r '.access_token'
             )"
 
-            if [ "${TOKEN}" = "null" ]; then
-              echo "Failed to obtain Docker Hub access token"
-              exit 1
-            fi
-
             PAYLOAD="$(
               jq -n --rawfile readme "${README_PATH}" \
                 '{full_description: $readme}'
