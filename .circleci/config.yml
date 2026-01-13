@@ -31,8 +31,8 @@ jobs:
       - run:
           name: Install Snyk CLI
           command: |
-            microdnf -y install wget && \
-            wget -qO /usr/local/bin/snyk https://static.snyk.io/cli/latest/snyk-linux && \
+            microdnf -y install curl && \
+            curl -fsSL https://static.snyk.io/cli/latest/snyk-linux -o /usr/local/bin/snyk && \
             chmod +x /usr/local/bin/snyk
 
             snyk --version
@@ -79,7 +79,7 @@ jobs:
             UPX_ARCHIVE=upx-${UPX_VERSION}-amd64_linux.tar.xz
 
             microdnf -y install xz tar && \
-            wget -q https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_ARCHIVE} && \
+            curl -fsSLO https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_ARCHIVE} && \
             tar -xJf ${UPX_ARCHIVE} && \
             mv upx-${UPX_VERSION}-amd64_linux/upx /usr/local/bin/upx && \
             chmod +x /usr/local/bin/upx && \
