@@ -112,6 +112,48 @@ jobs:
               -Djib.to.auth.username="${DOCKERHUB_USERNAME}" \
               -Djib.to.auth.password="${DOCKERHUB_TOKEN}"
 
+      - run:
+          name: Update Docker Hub README
+          command: |
+            if [ "${CIRCLE_BRANCH}" != "main" ]; then
+              echo "Not on main (${CIRCLE_BRANCH}); skipping Docker Hub README update."
+              exit 0
+            fi
+
+            microdnf -y install jq
+
+            README_PATH="README-dockerhub.md"
+            if [ ! -f "${README_PATH}" ]; then
+              echo "${README_PATH} not found; skipping."
+              exit 0
+            fi
+
+            TOKEN="$(
+              curl -s -X POST \
+                -H "Content-Type: application/json" \
+                -d "{
+                  \"identifier\": \"${DOCKERHUB_USERNAME}\",
+                  \"secret\": \"${DOCKERHUB_TOKEN}\"
+                }" \
+                https://hub.docker.com/v2/auth/token \
+              | jq -r '.access_token'
+            )"
+
+            if [ "${TOKEN}" = "null" ]; then
+              echo "Failed to obtain Docker Hub access token"
+              exit 1
+            fi
+
+            jq -n --rawfile readme "${README_PATH}" \
+              '{full_description: $readme}' \
+              > /tmp/dockerhub_payload.json
+
+            curl -fsSL -X PATCH \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data-binary @/tmp/dockerhub_payload.json \
+              "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/note-app"
+
 workflows:
   build-and-push:
     jobs:
