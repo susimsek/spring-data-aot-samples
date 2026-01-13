@@ -1,4 +1,4 @@
-## Note App (Spring Boot 4 + Native)1
+## Note App (Spring Boot 4 + Native)
 
 Note CRUD sample application built with Spring Boot 4, Spring Data JPA (Hibernate), Envers and Liquibase.  
 This image runs the app as a GraalVM native executable for fast startup and low memory usage.
