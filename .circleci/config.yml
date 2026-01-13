@@ -133,7 +133,7 @@ jobs:
                 -H "Content-Type: application/json" \
                 -d "{\"identifier\":\"${DOCKERHUB_USERNAME}\",\"secret\":\"${DOCKERHUB_TOKEN}\"}" \
                 https://hub.docker.com/v2/auth/token \
-              | jq -r '.access_token'
+              | jq -er '.access_token'
             )"
 
             PAYLOAD="$(
