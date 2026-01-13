@@ -129,12 +129,9 @@ jobs:
             fi
 
             TOKEN="$(
-              curl -s -X POST \
+              curl -fsS -X POST \
                 -H "Content-Type: application/json" \
-                -d "{
-                  \"identifier\": \"${DOCKERHUB_USERNAME}\",
-                  \"secret\": \"${DOCKERHUB_TOKEN}\"
-                }" \
+                -d "{\"identifier\":\"${DOCKERHUB_USERNAME}\",\"secret\":\"${DOCKERHUB_TOKEN}\"}" \
                 https://hub.docker.com/v2/auth/token \
               | jq -r '.access_token'
             )"
@@ -144,14 +141,15 @@ jobs:
               exit 1
             fi
 
-            jq -n --rawfile readme "${README_PATH}" \
-              '{full_description: $readme}' \
-              > /tmp/dockerhub_payload.json
+            PAYLOAD="$(
+              jq -n --rawfile readme "${README_PATH}" \
+                '{full_description: $readme}'
+            )"
 
-            curl -fsSL -X PATCH \
+            curl -fsS -X PATCH \
               -H "Authorization: Bearer ${TOKEN}" \
               -H "Content-Type: application/json" \
-              --data-binary @/tmp/dockerhub_payload.json \
+              --data "${PAYLOAD}" \
               "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/note-app"
 
 workflows:
