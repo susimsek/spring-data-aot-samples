@@ -16,6 +16,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 import org.hibernate.proxy.HibernateProxy;
+import org.jspecify.annotations.Nullable;
 
 @Entity
 @Table(name = "tag")
@@ -30,7 +31,7 @@ public class Tag extends AuditableEntity {
     @Id
     @SequenceGenerator(name = "tag_seq", sequenceName = "tag_seq", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tag_seq")
-    private Long id;
+    private @Nullable Long id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;

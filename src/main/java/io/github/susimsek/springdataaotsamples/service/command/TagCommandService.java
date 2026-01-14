@@ -4,15 +4,14 @@ import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,43 +24,33 @@ import org.springframework.util.CollectionUtils;
 public class TagCommandService {
 
     private final TagRepository tagRepository;
-    private final TagMapper tagMapper;
     private final CacheProvider cacheProvider;
+    private final TagMapper tagMapper;
 
     @Transactional
     public Set<Tag> resolveTags(@Nullable Set<String> names) {
-        var normalized = normalizeNames(names);
-        if (normalized.isEmpty()) {
+        if (CollectionUtils.isEmpty(names)) {
             return new LinkedHashSet<>();
         }
+        Set<String> normalized = tagMapper.normalizeNames(names);
 
-        var existing = tagRepository.findByNameIn(normalized);
-        Map<String, Tag> byName =
-                existing.stream()
-                        .collect(
-                                Collectors.toMap(
-                                        Tag::getName,
-                                        Function.identity(),
-                                        (a, b) -> a,
-                                        LinkedHashMap::new));
+        List<Tag> existing = tagRepository.findByNameIn(normalized);
+        Map<String, Tag> byName = tagMapper.toTagMapByName(existing);
 
-        var missing =
-                normalized.stream()
-                        .filter(name -> !byName.containsKey(name))
-                        .map(
-                                name -> {
-                                    var tag = new Tag();
-                                    tag.setName(name);
-                                    return tag;
-                                })
-                        .toList();
+        List<Tag> missing = tagMapper.buildMissingTags(normalized, byName);
 
-        if (!missing.isEmpty()) {
-            var saved = tagRepository.saveAll(missing);
-            saved.forEach(tag -> byName.put(tag.getName(), tag));
+        if (!CollectionUtils.isEmpty(missing)) {
+            try {
+                tagRepository
+                        .saveAllAndFlush(missing)
+                        .forEach(tag -> byName.put(tag.getName(), tag));
+            } catch (DataIntegrityViolationException _) {
+                var refreshed = tagRepository.findByNameIn(normalized);
+                return tagMapper.toOrderedTags(normalized, refreshed);
+            }
         }
 
-        return new LinkedHashSet<>(byName.values());
+        return tagMapper.toOrderedTags(normalized, byName);
     }
 
     @Async
@@ -74,15 +63,5 @@ public class TagCommandService {
         tagRepository.deleteAllByIdInBatch(orphanIds);
         log.debug("Deleted {} orphan tags", orphanIds.size());
         cacheProvider.clearCache(Tag.class.getName());
-    }
-
-    private Set<String> normalizeNames(@Nullable Set<String> names) {
-        if (CollectionUtils.isEmpty(names)) {
-            return Set.of();
-        }
-
-        return tagMapper.toTags(names).stream()
-                .map(Tag::getName)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

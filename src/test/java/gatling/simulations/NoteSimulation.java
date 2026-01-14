@@ -80,7 +80,7 @@ public class NoteSimulation extends Simulation {
                                                                       "content": "Perf content ${note_uuid} - lorem ipsum dolor sit amet",
                                                                       "pinned": false,
                                                                       "color": "#2563eb",
-                                                                      "tags": ["audit","perf"]
+                                                                      "tags": ["audit"]
                                                                     }
                                                                     """))
                                                     .asJson()
@@ -115,7 +115,7 @@ public class NoteSimulation extends Simulation {
                                                                       "content": "Perf content updated ${note_uuid} - lorem ipsum dolor sit amet",
                                                                       "pinned": true,
                                                                       "color": "#16a34a",
-                                                                      "tags": ["audit","perf","updated"]
+                                                                      "tags": ["audit","performance"]
                                                                     }
                                                                     """))
                                                     .asJson()
@@ -128,6 +128,7 @@ public class NoteSimulation extends Simulation {
                                                             GatlingDefaults
                                                                     .HEADERS_HTTP_AUTHENTICATED)
                                                     .check(status().is(204)))
+                                    .exitHereIfFailed()
                                     .pause(GatlingDefaults.pause())
                                     .exec(
                                             http("Delete note permanently")

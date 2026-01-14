@@ -11,13 +11,14 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -85,23 +86,28 @@ public class NoteTrashService {
 
     @Transactional
     public void deletePermanently(Long id) {
-        var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
-        if (!note.isDeleted()) {
-            throw new InvalidPermanentDeleteException(id);
+        int deleted = noteRepository.deletePermanentlyById(id);
+        if (deleted == 0) {
+            Boolean deletedFlag = noteRepository.findDeletedFlagById(id).orElse(null);
+            if (Boolean.FALSE.equals(deletedFlag)) {
+                throw new InvalidPermanentDeleteException(id);
+            }
+            throw new NoteNotFoundException(id);
         }
-        noteRepository.deleteById(id);
         tagCommandService.cleanupOrphanTagsAsync();
         evictNoteCaches();
     }
 
     @Transactional
     public void deletePermanentlyForCurrentUser(Long id) {
-        var note = noteRepository.findById(id).orElseThrow(() -> new NoteNotFoundException(id));
-        noteAuthorizationService.ensureEditAccess(note);
-        if (!note.isDeleted()) {
-            throw new InvalidPermanentDeleteException(id);
+        int deleted = noteRepository.deletePermanentlyByIdForCurrentUser(id);
+        if (deleted == 0) {
+            Boolean deletedFlag = noteRepository.findDeletedFlagByIdForCurrentUser(id).orElse(null);
+            if (Boolean.FALSE.equals(deletedFlag)) {
+                throw new InvalidPermanentDeleteException(id);
+            }
+            throw new NoteNotFoundException(id);
         }
-        noteRepository.deleteById(id);
         tagCommandService.cleanupOrphanTagsAsync();
         evictNoteCaches();
     }

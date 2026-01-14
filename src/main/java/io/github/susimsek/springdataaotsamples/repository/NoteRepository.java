@@ -53,6 +53,24 @@ public interface NoteRepository
         return new PageImpl<>(ordered, pageable, idPage.getTotalElements());
     }
 
+    @Query("select n.deleted from Note n where n.id = :id")
+    Optional<Boolean> findDeletedFlagById(@Param("id") Long id);
+
+    @Query("select n.deleted from Note n where n.id = :id and n.owner = ?#{authentication.name}")
+    Optional<Boolean> findDeletedFlagByIdForCurrentUser(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("delete from Note n where n.id = :id and n.deleted = true")
+    int deletePermanentlyById(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query(
+            "delete from Note n where n.id = :id and n.deleted = true and n.owner ="
+                    + " ?#{authentication.name}")
+    int deletePermanentlyByIdForCurrentUser(@Param("id") Long id);
+
     @Modifying
     @Transactional
     @Query("delete from Note n where n.deleted = true and n.owner = :owner")

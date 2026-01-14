@@ -166,9 +166,8 @@ class NoteTrashServiceTest {
 
     @Test
     void deletePermanentlyShouldValidateDeletedFlag() {
-        Note note = new Note();
-        note.setDeleted(false);
-        when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
+        when(noteRepository.deletePermanentlyById(1L)).thenReturn(0);
+        when(noteRepository.findDeletedFlagById(1L)).thenReturn(Optional.of(false));
 
         assertThatThrownBy(() -> noteTrashService.deletePermanently(1L))
                 .isInstanceOf(InvalidPermanentDeleteException.class);
@@ -176,13 +175,11 @@ class NoteTrashServiceTest {
 
     @Test
     void deletePermanentlyShouldDeleteWhenDeleted() {
-        Note note = new Note();
-        note.setDeleted(true);
-        when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
+        when(noteRepository.deletePermanentlyById(1L)).thenReturn(1);
 
         noteTrashService.deletePermanently(1L);
 
-        verify(noteRepository).deleteById(1L);
+        verify(noteRepository).deletePermanentlyById(1L);
         verify(tagCommandService).cleanupOrphanTagsAsync();
         verify(cacheProvider)
                 .clearCaches(
@@ -191,13 +188,10 @@ class NoteTrashServiceTest {
 
     @Test
     void deletePermanentlyForCurrentUserShouldCheckOwnerAndDeletedFlag() {
-        Note note = new Note();
-        note.setDeleted(true);
-        when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
+        when(noteRepository.deletePermanentlyByIdForCurrentUser(1L)).thenReturn(1);
 
         noteTrashService.deletePermanentlyForCurrentUser(1L);
 
-        verify(noteAuthorizationService).ensureEditAccess(note);
-        verify(noteRepository).deleteById(1L);
+        verify(noteRepository).deletePermanentlyByIdForCurrentUser(1L);
     }
 }
