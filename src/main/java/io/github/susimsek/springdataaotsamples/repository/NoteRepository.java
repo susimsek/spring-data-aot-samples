@@ -25,9 +25,8 @@ public interface NoteRepository
                 SoftDeleteRepository<Note, Long>,
                 RevisionRepository<Note, Long, Long> {
 
-    @Override
     @EntityGraph(attributePaths = "tags")
-    Optional<Note> findOne(Specification<Note> spec);
+    Optional<Note> findByIdAndDeletedFalse(Long id);
 
     @EntityGraph(attributePaths = "tags")
     List<Note> findAllByIdIn(List<Long> ids);

@@ -34,7 +34,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -160,8 +159,7 @@ class NoteQueryServiceTest {
         Note note = org.mockito.Mockito.mock(Note.class);
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of());
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(java.util.Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(java.util.Optional.of(note));
         when(noteMapper.toDto(note)).thenReturn(dto);
 
         NoteDTO result = noteQueryService.findById(42L);
@@ -175,8 +173,7 @@ class NoteQueryServiceTest {
         Note note = org.mockito.Mockito.mock(Note.class);
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of());
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(java.util.Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(java.util.Optional.of(note));
         when(noteMapper.toDto(note)).thenReturn(dto);
 
         NoteDTO result = noteQueryService.findByIdForCurrentUser(42L);
@@ -187,16 +184,14 @@ class NoteQueryServiceTest {
 
     @Test
     void findByIdShouldThrowWhenNoteMissing() {
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(java.util.Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.empty());
 
         assertThrows(NoteNotFoundException.class, () -> noteQueryService.findById(1L));
     }
 
     @Test
     void findByIdForCurrentUserShouldThrowWhenNoteMissing() {
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(java.util.Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.empty());
 
         assertThrows(
                 NoteNotFoundException.class, () -> noteQueryService.findByIdForCurrentUser(1L));

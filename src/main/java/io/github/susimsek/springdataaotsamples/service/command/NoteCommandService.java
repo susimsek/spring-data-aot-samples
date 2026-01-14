@@ -16,7 +16,6 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.exception.UserNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
-import io.github.susimsek.springdataaotsamples.service.spec.NoteSpecifications;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -155,16 +153,7 @@ public class NoteCommandService {
 
     private Note findActiveNote(Long id) {
         return noteRepository
-                .findOne(
-                        Specification.where(NoteSpecifications.isNotDeleted())
-                                .and(
-                                        (root, cq, cb) ->
-                                                cb.equal(
-                                                        root.get(
-                                                                io.github.susimsek
-                                                                        .springdataaotsamples.domain
-                                                                        .Note_.id),
-                                                        id)))
+                .findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new NoteNotFoundException(id));
     }
 

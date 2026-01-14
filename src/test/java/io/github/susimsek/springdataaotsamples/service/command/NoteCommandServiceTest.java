@@ -36,7 +36,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -115,8 +114,7 @@ class NoteCommandServiceTest {
         NotePatchRequest request = new NotePatchRequest("Patched title", null, null, null, null);
         NoteDTO dto = sampleDto("Patched title", "c", false, null, Set.of());
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
 
@@ -139,8 +137,7 @@ class NoteCommandServiceTest {
         NoteDTO dto = sampleDto("Updated title", "Updated content", false, "#654321", Set.of("t1"));
         Set<Tag> resolvedTags = Set.of(new Tag(1L, "t1"));
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(tagCommandService.resolveTags(request.tags())).thenReturn(resolvedTags);
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
@@ -164,8 +161,7 @@ class NoteCommandServiceTest {
         NoteDTO dto = sampleDto("Updated title", "Updated content", true, "#654321", Set.of("t1"));
         Set<Tag> resolvedTags = Set.of(new Tag(1L, "t1"));
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(tagCommandService.resolveTags(request.tags())).thenReturn(resolvedTags);
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
@@ -182,8 +178,7 @@ class NoteCommandServiceTest {
         NoteUpdateRequest request =
                 new NoteUpdateRequest(
                         "Updated title", "Updated content", true, "#654321", Set.of("t1"));
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
         assertThrows(NoteNotFoundException.class, () -> noteCommandService.update(1L, request));
     }
@@ -196,8 +191,7 @@ class NoteCommandServiceTest {
         Set<Tag> resolvedTags = Set.of(new Tag(1L, "a"), new Tag(2L, "b"));
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of("a", "b"));
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(tagCommandService.resolveTags(request.tags())).thenReturn(resolvedTags);
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
@@ -212,8 +206,7 @@ class NoteCommandServiceTest {
     @Test
     void patchShouldThrowWhenNoteMissing() {
         NotePatchRequest request = new NotePatchRequest("t", null, null, null, null);
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
         assertThrows(NoteNotFoundException.class, () -> noteCommandService.patch(1L, request));
     }
@@ -226,8 +219,7 @@ class NoteCommandServiceTest {
         Set<Tag> resolvedTags = Set.of(new Tag(1L, "a"));
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of("a"));
 
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(tagCommandService.resolveTags(request.tags())).thenReturn(resolvedTags);
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
@@ -253,8 +245,7 @@ class NoteCommandServiceTest {
     void deleteForCurrentUserShouldAuthorizeAndEvictCaches() {
         Note note = new Note();
         note.setId(7L);
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(7L)).thenReturn(Optional.of(note));
         when(noteRepository.softDeleteById(7L)).thenReturn(1);
 
         noteCommandService.deleteForCurrentUser(7L);
@@ -265,8 +256,7 @@ class NoteCommandServiceTest {
 
     @Test
     void deleteForCurrentUserShouldThrowWhenNoteMissing() {
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(7L)).thenReturn(Optional.empty());
 
         assertThrows(
                 NoteNotFoundException.class, () -> noteCommandService.deleteForCurrentUser(7L));
@@ -279,8 +269,7 @@ class NoteCommandServiceTest {
     void deleteForCurrentUserShouldThrowWhenSoftDeleteFails() {
         Note note = new Note();
         note.setId(7L);
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(7L)).thenReturn(Optional.of(note));
         when(noteRepository.softDeleteById(7L)).thenReturn(0);
 
         assertThrows(
@@ -317,8 +306,7 @@ class NoteCommandServiceTest {
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of());
 
         when(userRepository.existsByUsername("bob")).thenReturn(true);
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(note));
         when(noteRepository.save(note)).thenReturn(note);
         when(noteMapper.toDto(note)).thenReturn(dto);
 
@@ -332,8 +320,7 @@ class NoteCommandServiceTest {
     @Test
     void changeOwnerShouldThrowWhenNoteMissing() {
         when(userRepository.existsByUsername("bob")).thenReturn(true);
-        when(noteRepository.findOne(org.mockito.ArgumentMatchers.<Specification<Note>>any()))
-                .thenReturn(Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
         assertThrows(NoteNotFoundException.class, () -> noteCommandService.changeOwner(1L, "bob"));
 
