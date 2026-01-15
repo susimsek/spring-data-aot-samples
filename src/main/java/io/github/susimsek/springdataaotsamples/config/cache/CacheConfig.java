@@ -10,6 +10,7 @@ import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import java.util.OptionalLong;
@@ -83,6 +84,7 @@ public class CacheConfig {
                 createCache(cm, Authority.class.getName());
                 createCache(cm, Note.class.getName());
                 createCache(cm, Note.class.getName() + ".tags");
+                createCache(cm, NoteRepository.NOTE_BY_ID_CACHE);
                 createCache(cm, NoteShareToken.class.getName());
                 createCache(cm, NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
                 createCache(cm, Tag.class.getName());

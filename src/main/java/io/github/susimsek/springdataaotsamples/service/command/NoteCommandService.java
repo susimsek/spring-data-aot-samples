@@ -181,7 +181,7 @@ public class NoteCommandService {
     }
 
     private void evictNoteCaches() {
-        cacheProvider.clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        cacheProvider.clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     private BulkActionResult executeBulk(

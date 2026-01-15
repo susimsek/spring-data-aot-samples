@@ -118,6 +118,6 @@ public class NoteTrashService {
 
     private void evictNoteCaches() {
         cacheProvider.clearCaches(
-                Note.class.getName(), Note.class.getName() + ".tags", Tag.class.getName());
+                Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
     }
 }

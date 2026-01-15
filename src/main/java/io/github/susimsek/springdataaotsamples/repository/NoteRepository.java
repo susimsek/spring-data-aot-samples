@@ -5,6 +5,7 @@ import io.github.susimsek.springdataaotsamples.repository.custom.NoteRepositoryC
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,10 @@ public interface NoteRepository
                 SoftDeleteRepository<Note, Long>,
                 RevisionRepository<Note, Long, Long> {
 
+    String NOTE_BY_ID_CACHE = "noteById";
+
     @EntityGraph(attributePaths = "tags")
+    @Cacheable(cacheNames = NOTE_BY_ID_CACHE, unless = "#result == null")
     Optional<Note> findByIdAndDeletedFalse(Long id);
 
     @EntityGraph(attributePaths = "tags")
