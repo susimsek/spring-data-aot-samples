@@ -108,17 +108,15 @@ class NoteSpecificationsTest {
     }
 
     @Test
-    void hasColorShouldMatchLowerCaseValue() {
+    void hasColorShouldMatchNormalizedValue() {
         Path<String> color = mock(Path.class);
-        Expression<String> lowered = mock(Expression.class);
         when(root.get(Note_.color)).thenReturn(color);
-        when(cb.lower(color)).thenReturn(lowered);
-        when(cb.equal(lowered, "#fff")).thenReturn(predicate);
+        when(cb.equal(color, "#fff")).thenReturn(predicate);
 
-        Predicate result = NoteSpecifications.hasColor("#fff").toPredicate(root, query, cb);
+        Predicate result = NoteSpecifications.hasColor(" #FfF ").toPredicate(root, query, cb);
 
         assertThat(result).isSameAs(predicate);
-        verify(cb).equal(lowered, "#fff");
+        verify(cb).equal(color, "#fff");
     }
 
     @Test

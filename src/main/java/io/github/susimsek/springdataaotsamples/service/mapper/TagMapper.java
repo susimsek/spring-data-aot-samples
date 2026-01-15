@@ -2,6 +2,12 @@ package io.github.susimsek.springdataaotsamples.service.mapper;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.springframework.util.CollectionUtils;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,20 +16,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-import org.springframework.util.CollectionUtils;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TagMapper extends EntityMapper<TagDTO, Tag> {
 
-    default Set<String> normalizeNames(Set<String> names) {
-        if (CollectionUtils.isEmpty(names)) {
-            return Set.of();
-        }
-        return names.stream()
-                .map(name -> name.trim().toLowerCase(Locale.ROOT))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+    default String normalizeName(String name) {
+        return name == null ? null : name.trim().toLowerCase(Locale.ROOT);
+    }
+
+    @AfterMapping
+    default void normalizeName(@MappingTarget Tag tag) {
+        tag.setName(normalizeName(tag.getName()));
     }
 
     default Map<String, Tag> toTagMapByName(List<Tag> tags) {

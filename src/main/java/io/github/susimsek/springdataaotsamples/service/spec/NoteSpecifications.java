@@ -6,6 +6,7 @@ import io.github.susimsek.springdataaotsamples.domain.Note_;
 import io.github.susimsek.springdataaotsamples.domain.SoftDeletableEntity_;
 import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import jakarta.persistence.criteria.JoinType;
+import java.util.Locale;
 import java.util.Set;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
@@ -42,7 +43,8 @@ public class NoteSpecifications {
         if (!StringUtils.hasText(color)) {
             return (root, cq, cb) -> cb.conjunction();
         }
-        return (root, cq, cb) -> cb.equal(cb.lower(root.get(Note_.color)), color);
+        var normalized = color.trim().toLowerCase(Locale.ROOT);
+        return (root, cq, cb) -> cb.equal(root.get(Note_.color), normalized);
     }
 
     public Specification<Note> isPinned(@Nullable Boolean pinned) {
