@@ -30,7 +30,8 @@ class SecurityUtilsTest {
                         .claim(SecurityUtils.USER_ID_CLAIM, 10L)
                         .build();
         JwtAuthenticationToken authentication =
-                new JwtAuthenticationToken(jwt, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                new JwtAuthenticationToken(
+                        jwt, List.of(new SimpleGrantedAuthority(AuthoritiesConstants.USER)));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         assertThat(SecurityUtils.getCurrentUserLogin()).contains("jwt-user");
@@ -56,7 +57,8 @@ class SecurityUtilsTest {
                         .claim(SecurityUtils.USER_ID_CLAIM, 42L)
                         .build();
         JwtAuthenticationToken authentication =
-                new JwtAuthenticationToken(jwt, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                new JwtAuthenticationToken(
+                        jwt, List.of(new SimpleGrantedAuthority(AuthoritiesConstants.USER)));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         assertThat(SecurityUtils.getCurrentUserId()).contains(42L);

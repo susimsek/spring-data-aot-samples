@@ -13,7 +13,7 @@ class UserPrincipalTest {
     @Test
     void fromShouldMapUserToPrincipal() {
         Authority auth = new Authority();
-        auth.setName("ROLE_USER");
+        auth.setName(AuthoritiesConstants.USER);
         User user = new User();
         user.setId(1L);
         user.setUsername("alice");
@@ -29,7 +29,7 @@ class UserPrincipalTest {
         assertThat(principal.isEnabled()).isTrue();
         assertThat(principal.getAuthorities())
                 .extracting(GrantedAuthority::getAuthority)
-                .containsExactly("ROLE_USER");
+                .containsExactly(AuthoritiesConstants.USER);
         assertThat(principal.isAccountNonExpired()).isTrue();
         assertThat(principal.isAccountNonLocked()).isTrue();
         assertThat(principal.isCredentialsNonExpired()).isTrue();

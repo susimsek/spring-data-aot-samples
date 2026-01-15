@@ -29,7 +29,7 @@ class DomainUserDetailsServiceTest {
 
     @Test
     void loadUserByUsernameShouldMapUserToPrincipal() {
-        User user = sampleUser(true, Set.of("ROLE_USER", "ROLE_ADMIN"));
+        User user = sampleUser(true, Set.of(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN));
         when(userRepository.findOneWithAuthoritiesByUsername("alice"))
                 .thenReturn(Optional.of(user));
 
@@ -39,7 +39,7 @@ class DomainUserDetailsServiceTest {
         assertThat(details.getPassword()).isEqualTo("secret");
         assertThat(details.isEnabled()).isTrue();
         assertThat(details.getAuthorities().stream().map(GrantedAuthority::getAuthority))
-                .containsExactlyInAnyOrder("ROLE_USER", "ROLE_ADMIN");
+                .containsExactlyInAnyOrder(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN);
         verify(userRepository).findOneWithAuthoritiesByUsername("alice");
     }
 

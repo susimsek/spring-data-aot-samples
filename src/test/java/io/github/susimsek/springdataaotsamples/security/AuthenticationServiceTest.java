@@ -54,7 +54,7 @@ class AuthenticationServiceTest {
                         "refresh",
                         Instant.now().plusSeconds(120),
                         "alice",
-                        Set.of("ROLE_USER"));
+                        Set.of(AuthoritiesConstants.USER));
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(auth);
         when(tokenService.generateToken(auth, true)).thenReturn(token);
 
@@ -70,7 +70,7 @@ class AuthenticationServiceTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("alice");
-        UserDTO dto = new UserDTO(1L, "alice", Set.of("ROLE_USER"));
+        UserDTO dto = new UserDTO(1L, "alice", Set.of(AuthoritiesConstants.USER));
         when(userRepository.findOneWithAuthoritiesByUsername("alice"))
                 .thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(dto);
@@ -124,7 +124,7 @@ class AuthenticationServiceTest {
                         "refresh",
                         Instant.now(),
                         "alice",
-                        Set.of("ROLE_USER"));
+                        Set.of(AuthoritiesConstants.USER));
         when(tokenService.refresh("refresh-token")).thenReturn(dto);
 
         TokenDTO result = authenticationService.refresh("refresh-token");

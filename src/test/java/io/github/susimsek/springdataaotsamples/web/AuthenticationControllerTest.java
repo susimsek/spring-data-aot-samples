@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
+import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
@@ -54,7 +55,7 @@ class AuthenticationControllerTest {
                         "refresh",
                         Instant.now().plusSeconds(120),
                         "alice",
-                        Set.of("ROLE_USER"));
+                        Set.of(AuthoritiesConstants.USER));
         when(authenticationService.login(any(LoginRequest.class))).thenReturn(token);
 
         mockMvc.perform(
@@ -76,7 +77,7 @@ class AuthenticationControllerTest {
     @Test
     @WithMockUser
     void meShouldReturnCurrentUser() throws Exception {
-        UserDTO dto = new UserDTO(1L, "alice", Set.of("ROLE_USER"));
+        UserDTO dto = new UserDTO(1L, "alice", Set.of(AuthoritiesConstants.USER));
         when(authenticationService.getCurrentUser()).thenReturn(dto);
 
         mockMvc.perform(get("/api/auth/me"))
@@ -116,7 +117,7 @@ class AuthenticationControllerTest {
                         "newRefresh",
                         Instant.now().plusSeconds(120),
                         "alice",
-                        Set.of("ROLE_USER"));
+                        Set.of(AuthoritiesConstants.USER));
         when(authenticationService.refresh("cookieRefresh")).thenReturn(token);
 
         try (MockedStatic<CookieUtils> cookies =

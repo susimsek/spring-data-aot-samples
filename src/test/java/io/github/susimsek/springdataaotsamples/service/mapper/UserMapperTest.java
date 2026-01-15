@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -19,13 +20,16 @@ class UserMapperTest {
         user.setId(42L);
         user.setUsername("alice");
         user.setAuthorities(
-                Set.of(new Authority(null, "ROLE_USER"), new Authority(null, "ROLE_ADMIN")));
+                Set.of(
+                        new Authority(null, AuthoritiesConstants.USER),
+                        new Authority(null, AuthoritiesConstants.ADMIN)));
 
         UserDTO dto = mapper.toDto(user);
 
         assertThat(dto.id()).isEqualTo(42L);
         assertThat(dto.username()).isEqualTo("alice");
-        assertThat(dto.authorities()).containsExactlyInAnyOrder("ROLE_USER", "ROLE_ADMIN");
+        assertThat(dto.authorities())
+                .containsExactlyInAnyOrder(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN);
     }
 
     @Test

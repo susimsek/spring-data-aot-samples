@@ -2,12 +2,11 @@ package gatling;
 
 import io.gatling.javaapi.http.HttpDsl;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 public final class GatlingDefaults {
 
