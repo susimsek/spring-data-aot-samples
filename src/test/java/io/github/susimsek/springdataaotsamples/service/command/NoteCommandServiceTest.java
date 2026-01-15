@@ -251,7 +251,7 @@ class NoteCommandServiceTest {
         noteCommandService.deleteForCurrentUser(7L);
 
         verify(noteAuthorizationService).ensureEditAccess(note);
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -285,7 +285,7 @@ class NoteCommandServiceTest {
 
         noteCommandService.delete(7L);
 
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -355,7 +355,7 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(2L);
         verify(noteRepository).softDeleteByIds(List.of(1L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -392,7 +392,7 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).isEmpty();
         verify(noteRepository).restoreByIds(List.of(1L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -414,7 +414,7 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -467,7 +467,7 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactlyInAnyOrder(2L, 3L);
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -491,7 +491,7 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).restoreByIds(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     @Test
@@ -514,7 +514,7 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), Note.class.getName() + ".tags");
+        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
     }
 
     private NoteDTO sampleDto(
