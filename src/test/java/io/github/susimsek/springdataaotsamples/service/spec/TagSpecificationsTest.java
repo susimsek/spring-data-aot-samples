@@ -10,7 +10,6 @@ import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.domain.Tag_;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -48,18 +47,16 @@ class TagSpecificationsTest {
     @Test
     void searchShouldCreateLikePredicate() {
         Path<String> namePath = mock(Path.class);
-        Expression<String> lower = mock(Expression.class);
         Predicate like = mock(Predicate.class);
 
         when(root.get(Tag_.name)).thenReturn(namePath);
-        when(cb.lower(namePath)).thenReturn(lower);
-        when(cb.like(lower, "%java%")).thenReturn(like);
+        when(cb.like(namePath, "%java%")).thenReturn(like);
 
         Specification<Tag> specification = TagSpecifications.search(" Java ");
         Predicate predicate = specification.toPredicate(root, query, cb);
 
         assertThat(predicate).isSameAs(like);
-        verify(cb).like(lower, "%java%");
+        verify(cb).like(namePath, "%java%");
     }
 
     @Test
@@ -77,17 +74,15 @@ class TagSpecificationsTest {
     @Test
     void startsWithShouldCreatePrefixPredicate() {
         Path<String> namePath = mock(Path.class);
-        Expression<String> lower = mock(Expression.class);
         Predicate like = mock(Predicate.class);
 
         when(root.get(Tag_.name)).thenReturn(namePath);
-        when(cb.lower(namePath)).thenReturn(lower);
-        when(cb.like(lower, "spr%")).thenReturn(like);
+        when(cb.like(namePath, "spr%")).thenReturn(like);
 
         Specification<Tag> specification = TagSpecifications.startsWith("  Spr ");
         Predicate predicate = specification.toPredicate(root, query, cb);
 
         assertThat(predicate).isSameAs(like);
-        verify(cb).like(lower, "spr%");
+        verify(cb).like(namePath, "spr%");
     }
 }
