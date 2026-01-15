@@ -2,6 +2,9 @@ package gatling;
 
 import io.gatling.javaapi.http.HttpDsl;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -41,27 +44,27 @@ public final class GatlingDefaults {
         return Duration.ofSeconds(Long.getLong("pauseSeconds", 10));
     }
 
-    public static String adminUsername() {
-        return Optional.ofNullable(System.getProperty("adminUsername")).orElse("admin");
+    public static String username() {
+        return Optional.ofNullable(System.getProperty("username")).orElse("user");
     }
 
-    public static String adminPassword() {
-        return Optional.ofNullable(System.getProperty("adminPassword")).orElse("admin");
-    }
-
-    public static String userUsername() {
-        return Optional.ofNullable(System.getProperty("userUsername")).orElse("user");
-    }
-
-    public static String userPassword() {
-        return Optional.ofNullable(System.getProperty("userPassword")).orElse("user");
+    public static String password() {
+        return Optional.ofNullable(System.getProperty("password")).orElse("user");
     }
 
     public static final Map<String, String> HEADERS_HTTP_AUTHENTICATION =
-            Map.of("Content-Type", "application/json", "Accept", "application/json");
+            Map.of(
+                    HttpHeaders.CONTENT_TYPE,
+                    MediaType.APPLICATION_JSON_VALUE,
+                    HttpHeaders.ACCEPT,
+                    MediaType.APPLICATION_JSON_VALUE);
 
     public static final Map<String, String> HEADERS_HTTP_AUTHENTICATED =
-            Map.of("Accept", "application/json", "Authorization", "Bearer #{access_token}");
+            Map.of(
+                    HttpHeaders.ACCEPT,
+                    MediaType.APPLICATION_JSON_VALUE,
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer #{access_token}");
 
     public static HttpProtocolBuilder httpProtocol() {
         return HttpDsl.http

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mockStatic;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 class CookieAwareBearerTokenResolverTest {
@@ -14,7 +15,7 @@ class CookieAwareBearerTokenResolverTest {
     @Test
     void resolveShouldPreferAuthorizationHeader() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer header-token");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer header-token");
         request.setCookies(
                 new jakarta.servlet.http.Cookie(SecurityUtils.AUTH_COOKIE, "cookie-token"));
 
@@ -64,7 +65,7 @@ class CookieAwareBearerTokenResolverTest {
         resolver.setAllowFormEncodedBodyParameter(true);
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer header-token");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer header-token");
         request.setParameter("access_token", "query-token");
 
         assertThat(resolver.resolve(request)).isEqualTo("header-token");

@@ -35,8 +35,8 @@ public class NoteSimulation extends Simulation {
                                             }
                                             """
                                                     .formatted(
-                                                            GatlingDefaults.userUsername(),
-                                                            GatlingDefaults.userPassword())))
+                                                            GatlingDefaults.username(),
+                                                            GatlingDefaults.password())))
                             .asJson()
                             .check(status().is(200))
                             .check(
