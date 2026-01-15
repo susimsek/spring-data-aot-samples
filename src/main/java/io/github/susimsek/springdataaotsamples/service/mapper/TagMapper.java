@@ -2,12 +2,6 @@ package io.github.susimsek.springdataaotsamples.service.mapper;
 
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.MappingTarget;
-import org.springframework.util.CollectionUtils;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,6 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
+import org.springframework.util.CollectionUtils;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TagMapper extends EntityMapper<TagDTO, Tag> {
