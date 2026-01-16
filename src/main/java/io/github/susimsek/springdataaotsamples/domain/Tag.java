@@ -53,7 +53,7 @@ public class Tag extends AuditableEntity {
         if (o == null) {
             return false;
         }
-        Class<?> oEffectiveClass =
+        Class<?> otherEffectiveClass =
                 o instanceof HibernateProxy hibernateProxy
                         ? hibernateProxy.getHibernateLazyInitializer().getPersistentClass()
                         : o.getClass();
@@ -61,7 +61,7 @@ public class Tag extends AuditableEntity {
                 this instanceof HibernateProxy hibernateProxy
                         ? hibernateProxy.getHibernateLazyInitializer().getPersistentClass()
                         : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) {
+        if (thisEffectiveClass != otherEffectiveClass) {
             return false;
         }
         Tag tag = (Tag) o;
