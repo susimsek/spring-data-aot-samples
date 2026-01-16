@@ -23,6 +23,11 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
     Note toEntity(NoteCreateRequest request);
 
+    @Override
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "tags", ignore = true)
+    Note toEntity(NoteDTO dto);
+
     @Mapping(target = "tags", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_DEFAULT)
     void updateEntity(NoteUpdateRequest request, @MappingTarget Note note);
@@ -30,11 +35,6 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     @Mapping(target = "tags", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void patchEntity(NotePatchRequest request, @MappingTarget Note note);
-
-    @Override
-    @Mapping(target = "version", ignore = true)
-    @Mapping(target = "tags", ignore = true)
-    Note toEntity(NoteDTO dto);
 
     @Override
     @Mapping(target = "tags", source = "tags")

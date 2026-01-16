@@ -53,6 +53,36 @@ public class NoteShareService {
         return create(note, request);
     }
 
+    private NoteShareDTO create(Note note, @NotNull CreateShareTokenRequest request) {
+        if (note.isDeleted()) {
+            throw new InvalidBearerTokenException("Cannot share a deleted note");
+        }
+        Instant now = Instant.now();
+        Instant expiresAt;
+        if (Boolean.TRUE.equals(request.noExpiry())) {
+            expiresAt = null;
+        } else if (request.expiresAt() != null) {
+            expiresAt = request.expiresAt();
+        } else {
+            expiresAt = now.plus(DEFAULT_TTL);
+        }
+
+        String rawToken = RandomUtils.hexToken(32);
+        NoteShareToken shareToken = new NoteShareToken();
+        shareToken.setNote(note);
+        shareToken.setPermission(SharePermission.READ);
+        shareToken.setTokenHash(rawToken);
+        shareToken.setExpiresAt(expiresAt);
+        shareToken.setOneTime(Boolean.TRUE.equals(request.oneTime()));
+        shareToken.setUseCount(0);
+        shareToken.setRevoked(false);
+
+        NoteShareToken saved = noteShareTokenRepository.save(shareToken);
+        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+
+        return toDto(saved, rawToken);
+    }
+
     @Transactional(readOnly = true)
     public Page<NoteShareDTO> listForCurrentUser(
             Long noteId,
@@ -158,36 +188,6 @@ public class NoteShareService {
         noteShareTokenRepository.saveAndFlush(token);
         cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
         return token;
-    }
-
-    private NoteShareDTO create(Note note, @NotNull CreateShareTokenRequest request) {
-        if (note.isDeleted()) {
-            throw new InvalidBearerTokenException("Cannot share a deleted note");
-        }
-        Instant now = Instant.now();
-        Instant expiresAt;
-        if (Boolean.TRUE.equals(request.noExpiry())) {
-            expiresAt = null;
-        } else if (request.expiresAt() != null) {
-            expiresAt = request.expiresAt();
-        } else {
-            expiresAt = now.plus(DEFAULT_TTL);
-        }
-
-        String rawToken = RandomUtils.hexToken(32);
-        NoteShareToken shareToken = new NoteShareToken();
-        shareToken.setNote(note);
-        shareToken.setPermission(SharePermission.READ);
-        shareToken.setTokenHash(rawToken);
-        shareToken.setExpiresAt(expiresAt);
-        shareToken.setOneTime(Boolean.TRUE.equals(request.oneTime()));
-        shareToken.setUseCount(0);
-        shareToken.setRevoked(false);
-
-        NoteShareToken saved = noteShareTokenRepository.save(shareToken);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
-
-        return toDto(saved, rawToken);
     }
 
     private Note loadNote(Long noteId) {
