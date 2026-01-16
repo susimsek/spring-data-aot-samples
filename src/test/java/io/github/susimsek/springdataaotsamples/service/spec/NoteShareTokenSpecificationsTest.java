@@ -1,12 +1,5 @@
 package io.github.susimsek.springdataaotsamples.service.spec;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import io.github.susimsek.springdataaotsamples.domain.AuditableEntity_;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
@@ -18,11 +11,20 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoteShareTokenSpecificationsTest {
@@ -103,11 +105,12 @@ class NoteShareTokenSpecificationsTest {
         Predicate titleLike = mock(Predicate.class);
         Predicate orPredicate = mock(Predicate.class);
 
-        when(root.get(NoteShareToken_.tokenHash)).thenReturn(tokenHash);
-        when(root.get(NoteShareToken_.note)).thenReturn(notePath);
+        when(root.get((jakarta.persistence.metamodel.SingularAttribute) isNull()))
+                .thenReturn((Path) tokenHash, (Path) notePath);
         when(notePath.get(Note_.title)).thenReturn(title);
-        when(cb.lower(any(Path.class))).thenReturn(lowered);
-        when(cb.like(lowered, "%abc%")).thenReturn(tokenLike, titleLike);
+        when(cb.lower(title)).thenReturn(lowered);
+        when(cb.like(tokenHash, "%abc%")).thenReturn(tokenLike);
+        when(cb.like(lowered, "%abc%")).thenReturn(titleLike);
         when(cb.or(tokenLike, titleLike)).thenReturn(orPredicate);
 
         Predicate result = NoteShareTokenSpecifications.search("Abc").toPredicate(root, query, cb);
