@@ -121,50 +121,45 @@ class NoteShareTokenSpecificationsTest {
     }
 
     private static void ensureJpaMetamodelInitialized() {
-        NoteShareToken_.tokenHash = namedStringAttribute("tokenHash");
-        NoteShareToken_.note = namedNoteAttribute("note");
-        NoteShareToken_.revoked = namedBooleanAttribute("revoked");
-        NoteShareToken_.expiresAt = namedInstantAttribute("expiresAt");
+        NoteShareToken_.tokenHash = namedStringAttribute();
+        NoteShareToken_.note = namedNoteAttribute();
+        NoteShareToken_.revoked = namedBooleanAttribute();
+        NoteShareToken_.expiresAt = namedInstantAttribute();
 
-        Note_.title = namedStringAttribute("title");
-        Note_.owner = namedStringAttribute("owner");
-        Note_.id = namedLongAttribute("id");
+        Note_.title = namedStringAttribute();
+        Note_.owner = namedStringAttribute();
+        Note_.id = namedLongAttribute();
 
-        AuditableEntity_.createdDate = namedInstantAttribute("createdDate");
+        AuditableEntity_.createdDate = namedInstantAttribute();
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, String> namedStringAttribute(String name) {
+    private static <T> SingularAttribute<T, String> namedStringAttribute() {
         SingularAttribute<T, String> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, Long> namedLongAttribute(String name) {
+    private static <T> SingularAttribute<T, Long> namedLongAttribute() {
         SingularAttribute<T, Long> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, Boolean> namedBooleanAttribute(String name) {
+    private static <T> SingularAttribute<T, Boolean> namedBooleanAttribute() {
         SingularAttribute<T, Boolean> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, Instant> namedInstantAttribute(String name) {
+    private static <T> SingularAttribute<T, Instant> namedInstantAttribute() {
         SingularAttribute<T, Instant> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
-    private static SingularAttribute<NoteShareToken, Note> namedNoteAttribute(String name) {
+    private static SingularAttribute<NoteShareToken, Note> namedNoteAttribute() {
         SingularAttribute<NoteShareToken, Note> attribute = mock(SingularAttribute.class);
-        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
