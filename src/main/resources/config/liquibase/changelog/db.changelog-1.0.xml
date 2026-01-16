@@ -140,4 +140,10 @@
         </loadData>
     </changeSet>
 
+    <changeSet id="5" author="codex">
+        <createIndex tableName="note_tag" indexName="idx_note_tag_tag_note">
+            <column name="tag_id"/>
+            <column name="note_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
