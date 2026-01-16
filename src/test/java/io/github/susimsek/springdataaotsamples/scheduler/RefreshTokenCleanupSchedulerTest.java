@@ -26,13 +26,13 @@ class RefreshTokenCleanupSchedulerTest {
 
     @Test
     void purgeExpiredAndRevokedShouldDeleteAndClearCache() {
-        Instant before = Instant.now();
-        Instant lowerBound = before.minusSeconds(1);
+        final Instant before = Instant.now();
+        final Instant lowerBound = before.minusSeconds(1);
 
         scheduler.purgeExpiredAndRevoked();
 
-        Instant after = Instant.now();
-        Instant upperBound = after.plusSeconds(1);
+        final Instant after = Instant.now();
+        final Instant upperBound = after.plusSeconds(1);
 
         ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
         var inOrder = inOrder(refreshTokenRepository, cacheProvider);
