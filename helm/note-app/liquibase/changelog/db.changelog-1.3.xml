@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="11" author="codex">
+    <changeSet id="4" author="codex">
         <createSequence sequenceName="refresh_token_seq"
                         startValue="1"
                         incrementBy="1"
@@ -39,7 +39,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="12" author="codex">
+    <changeSet id="4-relations" author="codex">
         <addForeignKeyConstraint baseTableName="refresh_token"
                                  baseColumnNames="user_id"
                                  referencedTableName="user_identity"
@@ -47,7 +47,7 @@
                                  constraintName="fk_refresh_token_user"/>
     </changeSet>
 
-    <changeSet id="13" author="codex">
+    <changeSet id="4-indexes" author="codex">
         <createIndex tableName="refresh_token" indexName="idx_refresh_token_user">
             <column name="user_id"/>
         </createIndex>

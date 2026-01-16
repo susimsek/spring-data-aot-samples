@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="5" author="codex">
+    <changeSet id="2" author="codex">
         <createSequence sequenceName="rev_seq"
                         startValue="1"
                         incrementBy="1"
@@ -80,7 +80,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="6" author="codex">
+    <changeSet id="2-relations" author="codex">
         <addPrimaryKey tableName="revinfo" columnNames="rev" constraintName="pk_revinfo"/>
 
         <addDefaultValue tableName="revinfo"
@@ -103,7 +103,7 @@
                                  constraintName="fk_note_tag_aud_rev"/>
     </changeSet>
 
-    <changeSet id="7" author="codex">
+    <changeSet id="2-data" author="codex">
         <loadData tableName="revinfo"
                   file="../data/revinfo.csv"
                   relativeToChangelogFile="true"

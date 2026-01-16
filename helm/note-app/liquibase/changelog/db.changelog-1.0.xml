@@ -86,7 +86,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="codex">
+    <changeSet id="1-relations" author="codex">
         <addPrimaryKey tableName="note_tag" columnNames="note_id, tag_id" constraintName="pk_note_tag"/>
         <addForeignKeyConstraint baseTableName="note_tag" baseColumnNames="note_id"
                                  referencedTableName="note" referencedColumnNames="id"
@@ -96,7 +96,7 @@
                                  constraintName="fk_note_tag_tag"/>
     </changeSet>
 
-    <changeSet id="3" author="codex">
+    <changeSet id="1-indexes" author="codex">
         <createIndex tableName="note" indexName="idx_note_owner_deleted_pinned_created">
             <column name="owner"/>
             <column name="deleted"/>
@@ -116,7 +116,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="4" author="codex">
+    <changeSet id="1-data" author="codex">
         <loadData tableName="note"
                   file="../data/note.csv"
                   relativeToChangelogFile="true"

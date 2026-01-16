@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="14" author="codex">
+    <changeSet id="5" author="codex">
         <createSequence sequenceName="note_share_token_seq"
                         startValue="1"
                         incrementBy="1"
@@ -48,7 +48,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="15" author="codex">
+    <changeSet id="5-relations" author="codex">
         <addForeignKeyConstraint baseTableName="note_share_token"
                                  baseColumnNames="note_id"
                                  referencedTableName="note"
@@ -56,7 +56,7 @@
                                  constraintName="fk_note_share_token_note"/>
     </changeSet>
 
-    <changeSet id="16" author="codex">
+    <changeSet id="5-indexes" author="codex">
         <createIndex tableName="note_share_token" indexName="idx_note_share_token_note">
             <column name="note_id"/>
         </createIndex>
