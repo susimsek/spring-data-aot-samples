@@ -305,6 +305,8 @@
                     <configLocation>checkstyle.xml</configLocation>
                     <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
+                    <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>
+                    <outputFileFormat>xml</outputFileFormat>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
                     <excludes>.git/**/*,target/**/*</excludes>
