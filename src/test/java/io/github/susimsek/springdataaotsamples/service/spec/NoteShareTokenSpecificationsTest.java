@@ -136,30 +136,35 @@ class NoteShareTokenSpecificationsTest {
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, String> namedStringAttribute(String name) {
         SingularAttribute<T, String> attribute = mock(SingularAttribute.class);
+        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, Long> namedLongAttribute(String name) {
         SingularAttribute<T, Long> attribute = mock(SingularAttribute.class);
+        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, Boolean> namedBooleanAttribute(String name) {
         SingularAttribute<T, Boolean> attribute = mock(SingularAttribute.class);
+        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
     private static <T> SingularAttribute<T, Instant> namedInstantAttribute(String name) {
         SingularAttribute<T, Instant> attribute = mock(SingularAttribute.class);
+        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
     @SuppressWarnings("unchecked")
     private static SingularAttribute<NoteShareToken, Note> namedNoteAttribute(String name) {
         SingularAttribute<NoteShareToken, Note> attribute = mock(SingularAttribute.class);
+        when(attribute.getName()).thenReturn(name);
         return attribute;
     }
 
