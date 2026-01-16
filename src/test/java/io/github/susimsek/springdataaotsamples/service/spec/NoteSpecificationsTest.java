@@ -154,13 +154,11 @@ class NoteSpecificationsTest {
         @SuppressWarnings("unchecked")
         SetJoin<Note, Tag> join = mock(SetJoin.class);
         Path<String> tagNamePath = mock(Path.class);
-        Expression<String> lowered = mock(Expression.class);
         Predicate inPredicate = mock(Predicate.class);
 
         doReturn(join).when(root).join(Note_.tags, JoinType.LEFT);
         when(join.get(Tag_.name)).thenReturn(tagNamePath);
-        when(cb.lower(tagNamePath)).thenReturn(lowered);
-        when(lowered.in(anyList())).thenReturn(inPredicate);
+        when(tagNamePath.in(anyList())).thenReturn(inPredicate);
 
         Predicate result =
                 NoteSpecifications.hasTags(Set.of("Java", "  ", "spring"))
@@ -168,7 +166,7 @@ class NoteSpecificationsTest {
 
         assertThat(result).isSameAs(inPredicate);
         verify(query).distinct(true);
-        verify(cb).lower(tagNamePath);
+        verify(tagNamePath).in(anyList());
     }
 
     @Test
@@ -183,17 +181,15 @@ class NoteSpecificationsTest {
     }
 
     @Test
-    void ownedByShouldMatchLoweredOwner() {
+    void ownedByShouldMatchTrimmedOwner() {
         Path<String> owner = mock(Path.class);
-        Expression<String> lowered = mock(Expression.class);
         when(root.get(Note_.owner)).thenReturn(owner);
-        when(cb.lower(owner)).thenReturn(lowered);
-        when(cb.equal(lowered, "alice")).thenReturn(predicate);
+        when(cb.equal(owner, "Alice")).thenReturn(predicate);
 
         Predicate result = NoteSpecifications.ownedBy(" Alice ").toPredicate(root, query, cb);
 
         assertThat(result).isSameAs(predicate);
-        verify(cb).equal(lowered, "alice");
+        verify(cb).equal(owner, "Alice");
     }
 
     @Test
