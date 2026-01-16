@@ -49,11 +49,13 @@ class EnumValueValidatorTest {
         HibernateConstraintViolationBuilder builder =
                 mock(HibernateConstraintViolationBuilder.class);
 
-        when(context.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(hibernateContext);
+        when(context.unwrap(HibernateConstraintValidatorContext.class))
+                .thenReturn(hibernateContext);
         when(hibernateContext.addMessageParameter(eq("allowedValues"), anyString()))
                 .thenReturn(hibernateContext);
         when(hibernateContext.getDefaultConstraintMessageTemplate()).thenReturn("{message}");
-        when(hibernateContext.buildConstraintViolationWithTemplate("{message}")).thenReturn(builder);
+        when(hibernateContext.buildConstraintViolationWithTemplate("{message}"))
+                .thenReturn(builder);
         when(builder.addConstraintViolation()).thenReturn(context);
 
         boolean valid = validator.isValid("BAZ", context);

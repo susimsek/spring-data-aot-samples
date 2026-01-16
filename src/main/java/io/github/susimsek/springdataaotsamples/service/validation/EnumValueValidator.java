@@ -37,7 +37,8 @@ public class EnumValueValidator implements ConstraintValidator<EnumValue, String
                     context.unwrap(HibernateConstraintValidatorContext.class)
                             .addMessageParameter("allowedValues", allowedDisplay);
 
-            hibernateContext.buildConstraintViolationWithTemplate(
+            hibernateContext
+                    .buildConstraintViolationWithTemplate(
                             hibernateContext.getDefaultConstraintMessageTemplate())
                     .addConstraintViolation();
         }
