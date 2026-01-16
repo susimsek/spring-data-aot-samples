@@ -9,6 +9,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.Locale;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,9 +20,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.envers.Audited;
 import org.hibernate.proxy.HibernateProxy;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Locale;
-import java.util.Objects;
 
 @Entity
 @Table(name = "tag")
