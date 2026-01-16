@@ -5,6 +5,7 @@ import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken_;
 import io.github.susimsek.springdataaotsamples.domain.Note_;
 import java.time.Instant;
+import java.util.Locale;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,10 +32,10 @@ public class NoteShareTokenSpecifications {
         if (!StringUtils.hasText(q)) {
             return (root, query, cb) -> cb.conjunction();
         }
-        String like = "%" + q.trim().toLowerCase() + "%";
+        String like = "%" + q.trim().toLowerCase(Locale.ROOT) + "%";
         return (root, query, cb) ->
                 cb.or(
-                        cb.like(cb.lower(root.get(NoteShareToken_.tokenHash)), like),
+                        cb.like(root.get(NoteShareToken_.tokenHash), like),
                         cb.like(cb.lower(root.get(NoteShareToken_.note).get(Note_.title)), like));
     }
 

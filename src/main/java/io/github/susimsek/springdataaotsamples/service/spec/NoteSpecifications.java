@@ -32,7 +32,7 @@ public class NoteSpecifications {
             return (root, cq, cb) -> cb.conjunction();
         }
         return (root, cq, cb) -> {
-            var like = "%" + query.toLowerCase() + "%";
+            var like = "%" + query.toLowerCase(Locale.ROOT) + "%";
             var title = cb.like(cb.lower(root.get(Note_.title)), like);
             var content = cb.like(cb.lower(root.get(Note_.content)), like);
             return cb.or(title, content);
@@ -61,7 +61,7 @@ public class NoteSpecifications {
         var normalized =
                 tags.stream()
                         .filter(StringUtils::hasText)
-                        .map(tag -> tag.trim().toLowerCase())
+                        .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
                         .toList();
         if (normalized.isEmpty()) {
             return (root, cq, cb) -> cb.conjunction();
@@ -70,7 +70,7 @@ public class NoteSpecifications {
             // Ensure we don't duplicate rows due to join
             cq.distinct(true);
             var join = root.join(Note_.tags, JoinType.LEFT);
-            return cb.lower(join.get(Tag_.name)).in(normalized);
+            return join.get(Tag_.name).in(normalized);
         };
     }
 
@@ -78,8 +78,7 @@ public class NoteSpecifications {
         if (!StringUtils.hasText(owner)) {
             return (root, cq, cb) -> cb.conjunction();
         }
-        return (root, cq, cb) ->
-                cb.equal(cb.lower(root.get(Note_.owner)), owner.trim().toLowerCase());
+        return (root, cq, cb) -> cb.equal(root.get(Note_.owner), owner.trim());
     }
 
     public Pageable prioritizePinned(Pageable pageable) {
