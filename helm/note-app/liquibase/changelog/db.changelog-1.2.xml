@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="10" author="codex">
+    <changeSet id="8" author="codex">
         <createSequence sequenceName="user_identity_seq"
                         startValue="1"
                         incrementBy="1"
@@ -36,9 +36,7 @@
             <column name="last_modified_by" type="varchar(100)"/>
             <column name="last_modified_date" type="timestamp"/>
         </createTable>
-    </changeSet>
 
-    <changeSet id="11" author="codex">
         <createSequence sequenceName="authority_seq"
                         startValue="1"
                         incrementBy="1"
@@ -72,7 +70,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="9" author="codex">
         <addPrimaryKey tableName="user_authority"
                        columnNames="user_id, authority_id"
                        constraintName="pk_user_authority"/>
@@ -90,7 +90,7 @@
                                  constraintName="fk_user_authority_authority"/>
     </changeSet>
 
-    <changeSet id="12" author="codex">
+    <changeSet id="10" author="codex">
         <loadData tableName="authority"
                   file="../data/authority.csv"
                   relativeToChangelogFile="true"

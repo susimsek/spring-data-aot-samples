@@ -46,13 +46,17 @@
             <column name="last_modified_by" type="varchar(100)"/>
             <column name="last_modified_date" type="timestamp" defaultValueComputed="${now}"/>
         </createTable>
+    </changeSet>
 
+    <changeSet id="15" author="codex">
         <addForeignKeyConstraint baseTableName="note_share_token"
                                  baseColumnNames="note_id"
                                  referencedTableName="note"
                                  referencedColumnNames="id"
                                  constraintName="fk_note_share_token_note"/>
+    </changeSet>
 
+    <changeSet id="16" author="codex">
         <createIndex tableName="note_share_token" indexName="idx_note_share_token_note">
             <column name="note_id"/>
         </createIndex>

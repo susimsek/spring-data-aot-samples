@@ -84,7 +84,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
 
+    <changeSet id="2" author="codex">
         <addPrimaryKey tableName="note_tag" columnNames="note_id, tag_id" constraintName="pk_note_tag"/>
         <addForeignKeyConstraint baseTableName="note_tag" baseColumnNames="note_id"
                                  referencedTableName="note" referencedColumnNames="id"
@@ -94,7 +96,27 @@
                                  constraintName="fk_note_tag_tag"/>
     </changeSet>
 
-    <changeSet id="2" author="codex">
+    <changeSet id="3" author="codex">
+        <createIndex tableName="note" indexName="idx_note_owner_deleted_pinned_created">
+            <column name="owner"/>
+            <column name="deleted"/>
+            <column name="pinned"/>
+            <column name="created_date"/>
+        </createIndex>
+
+        <createIndex tableName="note" indexName="idx_note_deleted_pinned_created">
+            <column name="deleted"/>
+            <column name="pinned"/>
+            <column name="created_date"/>
+        </createIndex>
+
+        <createIndex tableName="note_tag" indexName="idx_note_tag_tag_note">
+            <column name="tag_id"/>
+            <column name="note_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="4" author="codex">
         <loadData tableName="note"
                   file="../data/note.csv"
                   relativeToChangelogFile="true"
@@ -113,9 +135,7 @@
             <column header="deleted_by" type="string"/>
             <column header="deleted_date" type="timestamp"/>
         </loadData>
-    </changeSet>
 
-    <changeSet id="3" author="codex">
         <loadData tableName="tag"
                   file="../data/tag.csv"
                   relativeToChangelogFile="true"
@@ -126,9 +146,7 @@
             <column header="created_by" type="string"/>
             <column header="last_modified_by" type="string"/>
         </loadData>
-    </changeSet>
 
-    <changeSet id="4" author="codex">
         <loadData tableName="note_tag"
                   file="../data/note_tag.csv"
                   relativeToChangelogFile="true"
