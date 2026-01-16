@@ -1,13 +1,5 @@
 package io.github.susimsek.springdataaotsamples.service.spec;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import io.github.susimsek.springdataaotsamples.domain.AuditableEntity_;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
@@ -19,11 +11,19 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import java.time.Instant;
+import jakarta.persistence.metamodel.SingularAttribute;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoteShareTokenSpecificationsTest {
@@ -47,6 +47,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void ownedByShouldMatchOwner() {
+        ensureJpaMetamodelInitialized();
         Path<Note> notePath = mock(Path.class);
         Path<String> ownerPath = mock(Path.class);
         Predicate eq = mock(Predicate.class);
@@ -72,6 +73,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void forNoteShouldMatchNoteId() {
+        ensureJpaMetamodelInitialized();
         Path<Note> notePath = mock(Path.class);
         Path<Long> idPath = mock(Path.class);
         Predicate eq = mock(Predicate.class);
@@ -96,6 +98,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void searchShouldMatchTokenOrTitle() {
+        ensureJpaMetamodelInitialized();
         Path<String> tokenHash = mock(Path.class);
         Path<Note> notePath = mock(Path.class);
         Path<String> title = mock(Path.class);
@@ -104,8 +107,8 @@ class NoteShareTokenSpecificationsTest {
         Predicate titleLike = mock(Predicate.class);
         Predicate orPredicate = mock(Predicate.class);
 
-        when(root.get((jakarta.persistence.metamodel.SingularAttribute) isNull()))
-                .thenReturn((Path) tokenHash, (Path) notePath);
+        when(root.get(NoteShareToken_.tokenHash)).thenReturn(tokenHash);
+        when(root.get(NoteShareToken_.note)).thenReturn(notePath);
         when(notePath.get(Note_.title)).thenReturn(title);
         when(cb.lower(title)).thenReturn(lowered);
         when(cb.like(tokenHash, "%abc%")).thenReturn(tokenLike);
@@ -116,6 +119,49 @@ class NoteShareTokenSpecificationsTest {
 
         assertThat(result).isSameAs(orPredicate);
         verify(cb).or(tokenLike, titleLike);
+    }
+
+    private static void ensureJpaMetamodelInitialized() {
+        NoteShareToken_.tokenHash = namedStringAttribute("tokenHash");
+        NoteShareToken_.note = namedNoteAttribute("note");
+        NoteShareToken_.revoked = namedBooleanAttribute("revoked");
+        NoteShareToken_.expiresAt = namedInstantAttribute("expiresAt");
+
+        Note_.title = namedStringAttribute("title");
+        Note_.owner = namedStringAttribute("owner");
+        Note_.id = namedLongAttribute("id");
+
+        AuditableEntity_.createdDate = namedInstantAttribute("createdDate");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> SingularAttribute<T, String> namedStringAttribute(String name) {
+        SingularAttribute<T, String> attribute = mock(SingularAttribute.class);
+        return attribute;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> SingularAttribute<T, Long> namedLongAttribute(String name) {
+        SingularAttribute<T, Long> attribute = mock(SingularAttribute.class);
+        return attribute;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> SingularAttribute<T, Boolean> namedBooleanAttribute(String name) {
+        SingularAttribute<T, Boolean> attribute = mock(SingularAttribute.class);
+        return attribute;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> SingularAttribute<T, Instant> namedInstantAttribute(String name) {
+        SingularAttribute<T, Instant> attribute = mock(SingularAttribute.class);
+        return attribute;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static SingularAttribute<NoteShareToken, Note> namedNoteAttribute(String name) {
+        SingularAttribute<NoteShareToken, Note> attribute = mock(SingularAttribute.class);
+        return attribute;
     }
 
     @Test
@@ -130,6 +176,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void statusShouldHandleRevoked() {
+        ensureJpaMetamodelInitialized();
         Path<Boolean> revoked = mock(Path.class);
         Predicate isTrue = mock(Predicate.class);
         when(root.get(NoteShareToken_.revoked)).thenReturn(revoked);
@@ -143,6 +190,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void statusShouldHandleExpired() {
+        ensureJpaMetamodelInitialized();
         Path<Instant> expires = mock(Path.class);
         Predicate notNull = mock(Predicate.class);
         Predicate beforeNow = mock(Predicate.class);
@@ -166,6 +214,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void statusShouldHandleActive() {
+        ensureJpaMetamodelInitialized();
         Path<Boolean> revoked = mock(Path.class);
         Path<Instant> expires = mock(Path.class);
         Predicate revokedFalse = mock(Predicate.class);
@@ -176,7 +225,7 @@ class NoteShareTokenSpecificationsTest {
         Instant now = Instant.now();
 
         when(root.get(NoteShareToken_.revoked)).thenReturn(revoked);
-        when(cb.isFalse(any())).thenReturn(revokedFalse);
+        when(cb.isFalse(revoked)).thenReturn(revokedFalse);
         when(root.get(NoteShareToken_.expiresAt)).thenReturn(expires);
         when(cb.isNull(expires)).thenReturn(nullExpires);
         when(cb.greaterThan(expires, now)).thenReturn(futureExpires);
@@ -206,6 +255,7 @@ class NoteShareTokenSpecificationsTest {
 
     @Test
     void createdBetweenShouldHandleFromAndTo() {
+        ensureJpaMetamodelInitialized();
         Predicate conj = mock(Predicate.class);
         Predicate gte = mock(Predicate.class);
         Predicate lte = mock(Predicate.class);
