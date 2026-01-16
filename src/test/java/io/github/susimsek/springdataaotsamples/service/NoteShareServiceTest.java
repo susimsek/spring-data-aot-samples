@@ -94,7 +94,6 @@ class NoteShareServiceTest {
 
     @Test
     void listAllForCurrentUserShouldUseCurrentLogin() {
-        Pageable pageable = PageRequest.of(0, 5);
         Note note = new Note();
         note.setId(3L);
         note.setTitle("t");
@@ -103,6 +102,7 @@ class NoteShareServiceTest {
         token.setId(11L);
         token.setNote(note);
         token.setTokenHash("abc");
+        final Pageable pageable = PageRequest.of(0, 5);
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
         when(noteShareTokenRepository.findAll(
                         org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(),

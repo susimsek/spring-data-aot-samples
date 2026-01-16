@@ -47,13 +47,14 @@ class TokenServiceTest {
 
     @Test
     void generateTokenShouldEncodeAndPersistRefresh() {
-        Authentication auth = mock(Authentication.class);
         User user = new User();
         user.setId(10L);
         user.setUsername("alice");
         user.setEnabled(true);
         user.setAuthorities(Set.of());
         UserPrincipal principal = UserPrincipal.from(user);
+
+        Authentication auth = mock(Authentication.class);
         when(auth.getPrincipal()).thenReturn(principal);
         when(jwtEncoder.encode(any(JwtEncoderParameters.class)))
                 .thenReturn(

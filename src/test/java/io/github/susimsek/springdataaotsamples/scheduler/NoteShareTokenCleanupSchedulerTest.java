@@ -27,10 +27,12 @@ class NoteShareTokenCleanupSchedulerTest {
     @Test
     void purgeExpiredAndRevokedShouldDeleteAndClearCaches() {
         Instant before = Instant.now();
+        Instant lowerBound = before.minusSeconds(1);
 
         scheduler.purgeExpiredAndRevoked();
 
         Instant after = Instant.now();
+        Instant upperBound = after.plusSeconds(1);
 
         ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
         var inOrder = inOrder(noteShareTokenRepository, cacheProvider);
@@ -43,7 +45,7 @@ class NoteShareTokenCleanupSchedulerTest {
                         NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
 
         Instant captured = instantCaptor.getValue();
-        assertThat(captured).isNotNull().isBetween(before.minusSeconds(1), after.plusSeconds(1));
+        assertThat(captured).isNotNull().isBetween(lowerBound, upperBound);
 
         verify(noteShareTokenRepository).deleteByExpiresAtBefore(captured);
         verify(noteShareTokenRepository).deleteByRevokedTrue();
