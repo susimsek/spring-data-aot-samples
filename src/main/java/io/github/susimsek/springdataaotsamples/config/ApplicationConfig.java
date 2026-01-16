@@ -5,4 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ApplicationProperties.class)
-public class ApplicationConfig {}
+public class ApplicationConfig {
+}
