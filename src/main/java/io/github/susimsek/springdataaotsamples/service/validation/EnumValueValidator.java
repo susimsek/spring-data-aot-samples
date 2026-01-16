@@ -33,12 +33,12 @@ public class EnumValueValidator implements ConstraintValidator<EnumValue, String
         if (!valid) {
             context.disableDefaultConstraintViolation();
 
-            HibernateConstraintValidatorContext hContext =
+            HibernateConstraintValidatorContext hibernateContext =
                     context.unwrap(HibernateConstraintValidatorContext.class)
                             .addMessageParameter("allowedValues", allowedDisplay);
 
-            hContext.buildConstraintViolationWithTemplate(
-                            hContext.getDefaultConstraintMessageTemplate())
+            hibernateContext.buildConstraintViolationWithTemplate(
+                            hibernateContext.getDefaultConstraintMessageTemplate())
                     .addConstraintViolation();
         }
 

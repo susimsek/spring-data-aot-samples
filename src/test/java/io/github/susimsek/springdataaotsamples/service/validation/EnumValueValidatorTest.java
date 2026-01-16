@@ -44,15 +44,16 @@ class EnumValueValidatorTest {
         EnumValueValidator validator = validatorFor(SampleEnum.class);
 
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
-        HibernateConstraintValidatorContext hContext =
+        HibernateConstraintValidatorContext hibernateContext =
                 mock(HibernateConstraintValidatorContext.class);
         HibernateConstraintViolationBuilder builder =
                 mock(HibernateConstraintViolationBuilder.class);
 
-        when(context.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(hContext);
-        when(hContext.addMessageParameter(eq("allowedValues"), anyString())).thenReturn(hContext);
-        when(hContext.getDefaultConstraintMessageTemplate()).thenReturn("{message}");
-        when(hContext.buildConstraintViolationWithTemplate("{message}")).thenReturn(builder);
+        when(context.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(hibernateContext);
+        when(hibernateContext.addMessageParameter(eq("allowedValues"), anyString()))
+                .thenReturn(hibernateContext);
+        when(hibernateContext.getDefaultConstraintMessageTemplate()).thenReturn("{message}");
+        when(hibernateContext.buildConstraintViolationWithTemplate("{message}")).thenReturn(builder);
         when(builder.addConstraintViolation()).thenReturn(context);
 
         boolean valid = validator.isValid("BAZ", context);
@@ -61,7 +62,8 @@ class EnumValueValidatorTest {
         verify(context).disableDefaultConstraintViolation();
 
         ArgumentCaptor<String> allowedValuesCaptor = ArgumentCaptor.forClass(String.class);
-        verify(hContext).addMessageParameter(eq("allowedValues"), allowedValuesCaptor.capture());
+        verify(hibernateContext)
+                .addMessageParameter(eq("allowedValues"), allowedValuesCaptor.capture());
         assertThat(allowedValuesCaptor.getValue()).contains("FOO").contains("BAR");
     }
 
