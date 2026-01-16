@@ -9,10 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,4 +69,13 @@ public class Note extends SoftDeletableEntity {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<Tag> tags = new LinkedHashSet<>();
+
+    @PrePersist
+    @PreUpdate
+    private void normalizeColor() {
+        if (color == null) {
+            return;
+        }
+        color = color.trim().toLowerCase(Locale.ROOT);
+    }
 }

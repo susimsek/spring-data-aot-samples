@@ -6,6 +6,7 @@ import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class TagCommandService {
         }
         Set<String> normalized =
                 names.stream()
-                        .map(tagMapper::normalizeName)
+                        .map(this::normalizeTagName)
                         .collect(Collectors.toCollection(LinkedHashSet::new));
 
         List<Tag> existing = tagRepository.findByNameIn(normalized);
@@ -55,6 +56,10 @@ public class TagCommandService {
         }
 
         return tagMapper.toOrderedTags(normalized, byName);
+    }
+
+    private String normalizeTagName(String name) {
+        return name.trim().toLowerCase(Locale.ROOT);
     }
 
     @Async

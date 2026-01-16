@@ -7,9 +7,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Set;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -51,14 +49,6 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
     @Mapping(target = "deletedDate", expression = "java(null)")
     @Mapping(target = "version", ignore = true)
     void applyRevision(Note source, @MappingTarget Note target);
-
-    @AfterMapping
-    default void normalizeColor(@MappingTarget Note note) {
-        if (note.getColor() == null) {
-            return;
-        }
-        note.setColor(note.getColor().trim().toLowerCase(Locale.ROOT));
-    }
 
     @Named("cloneTags")
     static Set<Tag> cloneTags(Set<Tag> tags) {
