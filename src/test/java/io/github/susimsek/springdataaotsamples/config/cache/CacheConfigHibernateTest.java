@@ -50,10 +50,7 @@ class CacheConfigHibernateTest {
         invokeCreateCache(cfg, cm, "existing");
 
         verify(cache).clear();
-        verify(cm, never())
-                .createCache(
-                        ArgumentMatchers.eq("existing"),
-                        ArgumentMatchers.any());
+        verify(cm, never()).createCache(ArgumentMatchers.eq("existing"), ArgumentMatchers.any());
     }
 
     @Test

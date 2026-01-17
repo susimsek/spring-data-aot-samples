@@ -47,8 +47,7 @@ class NoteRevisionServiceTest {
 
         Revision<Long, Note> rev = Revision.of(mockMeta(1L), note);
         Page<Revision<Long, Note>> page = new PageImpl<>(List.of(rev));
-        when(noteRepository.findRevisions(
-                        1L, PageRequest.of(0, 5, RevisionSort.desc())))
+        when(noteRepository.findRevisions(1L, PageRequest.of(0, 5, RevisionSort.desc())))
                 .thenReturn(page);
         NoteRevisionDTO dto =
                 new NoteRevisionDTO(1L, "ADD", Instant.now(), "alice", sampleDto("a"));
@@ -129,8 +128,7 @@ class NoteRevisionServiceTest {
         note.setId(5L);
         when(noteRepository.findById(5L)).thenReturn(Optional.of(note));
         Revision<Long, Note> rev = Revision.of(mockMeta(6L), note);
-        when(noteRepository.findRevisions(
-                        5L, PageRequest.of(0, 3, RevisionSort.desc())))
+        when(noteRepository.findRevisions(5L, PageRequest.of(0, 3, RevisionSort.desc())))
                 .thenReturn(new PageImpl<>(List.of(rev)));
         NoteRevisionDTO dto =
                 new NoteRevisionDTO(6L, "MOD", Instant.now(), "alice", sampleDto("t"));

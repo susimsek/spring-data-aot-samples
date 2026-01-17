@@ -69,7 +69,8 @@ public class CacheConfig {
         }
 
         @Bean
-        public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(CacheManager jcacheManager) {
+        public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(
+                CacheManager jcacheManager) {
             return props -> props.put(ConfigSettings.CACHE_MANAGER, jcacheManager);
         }
 

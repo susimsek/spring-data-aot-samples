@@ -41,9 +41,7 @@ class TagQueryServiceTest {
         ensureJpaMetamodelInitialized();
         Tag tag = new Tag(1L, "java");
         Page<Tag> page = new PageImpl<>(List.of(tag));
-        when(tagRepository.findAll(
-                        ArgumentMatchers.<Specification<Tag>>any(),
-                        any(Pageable.class)))
+        when(tagRepository.findAll(ArgumentMatchers.<Specification<Tag>>any(), any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(1L, "java"));
 
@@ -54,9 +52,7 @@ class TagQueryServiceTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
-                .findAll(
-                        ArgumentMatchers.<Specification<Tag>>any(),
-                        pageableCaptor.capture());
+                .findAll(ArgumentMatchers.<Specification<Tag>>any(), pageableCaptor.capture());
         Pageable used = pageableCaptor.getValue();
         assertThat(used.getSort().getOrderFor("name")).isNotNull();
         assertThat(used.getSort().getOrderFor("name").getDirection()).isEqualTo(Sort.Direction.ASC);
@@ -67,9 +63,7 @@ class TagQueryServiceTest {
         ensureJpaMetamodelInitialized();
         Tag tag = new Tag(2L, "spring");
         Page<Tag> page = new PageImpl<>(List.of(tag));
-        when(tagRepository.findAll(
-                        ArgumentMatchers.<Specification<Tag>>any(),
-                        any(Pageable.class)))
+        when(tagRepository.findAll(ArgumentMatchers.<Specification<Tag>>any(), any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(2L, "spring"));
 
@@ -80,9 +74,7 @@ class TagQueryServiceTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
-                .findAll(
-                        ArgumentMatchers.<Specification<Tag>>any(),
-                        pageableCaptor.capture());
+                .findAll(ArgumentMatchers.<Specification<Tag>>any(), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("createdDate")).isNotNull();
     }
 

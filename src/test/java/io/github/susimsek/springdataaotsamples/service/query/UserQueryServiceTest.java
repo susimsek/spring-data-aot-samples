@@ -38,8 +38,7 @@ class UserQueryServiceTest {
         Page<User> page = new PageImpl<>(List.of(user));
 
         when(userRepository.findAll(
-                        ArgumentMatchers.<Specification<User>>any(),
-                        any(Pageable.class)))
+                        ArgumentMatchers.<Specification<User>>any(), any(Pageable.class)))
                 .thenReturn(page);
 
         Page<UserSearchDTO> result = userQueryService.searchUsernames("ali", PageRequest.of(0, 5));
@@ -55,9 +54,7 @@ class UserQueryServiceTest {
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(userRepository)
-                .findAll(
-                        ArgumentMatchers.<Specification<User>>any(),
-                        pageableCaptor.capture());
+                .findAll(ArgumentMatchers.<Specification<User>>any(), pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(5);
         assertThat(pageableCaptor.getValue().getPageNumber()).isZero();
     }

@@ -51,8 +51,7 @@ public class NoteShareTokenSpecifications {
                             cb.and(
                                     cb.isNotNull(root.get(NoteShareToken_.expiresAt)),
                                     cb.lessThan(
-                                            root.get(NoteShareToken_.expiresAt),
-                                            Instant.now()));
+                                            root.get(NoteShareToken_.expiresAt), Instant.now()));
                     case "active" ->
                             cb.and(
                                     cb.isFalse(root.get(NoteShareToken_.revoked)),

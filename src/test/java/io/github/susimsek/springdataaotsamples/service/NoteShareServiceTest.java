@@ -106,8 +106,7 @@ class NoteShareServiceTest {
         final Pageable pageable = PageRequest.of(0, 5);
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
         when(noteShareTokenRepository.findAll(
-                        ArgumentMatchers.<Specification<NoteShareToken>>any(),
-                        any(Pageable.class)))
+                        ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
@@ -215,8 +214,7 @@ class NoteShareServiceTest {
         note.setId(1L);
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
         when(noteShareTokenRepository.findAll(
-                        ArgumentMatchers.<Specification<NoteShareToken>>any(),
-                        any(Pageable.class)))
+                        ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
 
         noteShareService.listForCurrentUser(1L, PageRequest.of(0, 5), null, null, null, null);
