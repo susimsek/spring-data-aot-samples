@@ -77,7 +77,7 @@ class AuthenticationControllerTest {
     @Test
     @WithMockUser
     void meShouldReturnCurrentUser() throws Exception {
-        UserDTO dto = new UserDTO(1L, "alice", Set.of(AuthoritiesConstants.USER));
+        UserDTO dto = new UserDTO(1L, "alice", "alice@example.com", Set.of(AuthoritiesConstants.USER));
         when(authenticationService.getCurrentUser()).thenReturn(dto);
 
         mockMvc.perform(get("/api/auth/me"))

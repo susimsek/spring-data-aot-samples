@@ -83,6 +83,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ### DTO Design
 
 - DTOs live in `service/dto`; prefer `record` + Bean Validation annotations.
+- Use `*Request` for input DTOs; avoid the `*Response` suffix for output types (prefer `*DTO` or a domain-specific name).
+- Service layer should not return JPA entities directly; services should return DTOs (or primitives) and keep entities internal to the persistence/service implementation.
 
 ### Null Safety
 
@@ -104,7 +106,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 - Prefer throwing `service/exception/*` (extends `ApiException`) for domain/service errors; `web/error/GlobalExceptionHandler` maps them to `ProblemDetail`.
 - Use Bean Validation (`@Valid`) for request DTOs; validation failures are returned as `ProblemDetail` with `violations`.
-- If you add new message codes for error titles/details, update `src/main/resources/i18n`.
+- If you add new message codes for error titles/details, update `src/main/resources/i18n/messages.properties` (i18n-backed `ProblemDetail`).
 
 ### Security
 

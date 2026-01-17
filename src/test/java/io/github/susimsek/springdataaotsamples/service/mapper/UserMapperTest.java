@@ -19,6 +19,7 @@ class UserMapperTest {
         User user = new User();
         user.setId(42L);
         user.setUsername("alice");
+        user.setEmail("alice@example.com");
         user.setAuthorities(
                 Set.of(
                         new Authority(null, AuthoritiesConstants.USER),
@@ -28,6 +29,7 @@ class UserMapperTest {
 
         assertThat(dto.id()).isEqualTo(42L);
         assertThat(dto.username()).isEqualTo("alice");
+        assertThat(dto.email()).isEqualTo("alice@example.com");
         assertThat(dto.authorities())
                 .containsExactlyInAnyOrder(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN);
     }

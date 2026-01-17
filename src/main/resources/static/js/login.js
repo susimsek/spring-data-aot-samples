@@ -9,6 +9,7 @@ const {showToast} = Helpers;
 const urlParams = new URLSearchParams(globalThis.location.search);
 const rawRedirect = urlParams.get('redirect');
 const redirectTarget = rawRedirect && !rawRedirect.includes('/login') ? rawRedirect : '/';
+const registered = urlParams.get('registered');
 
 const form = document.getElementById('loginForm');
 const alertBox = document.getElementById('loginAlert');
@@ -129,6 +130,9 @@ function init() {
     disablePasswordSizeValidation();
     Theme.init({button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel'});
     bindLiveValidation();
+    if (registered) {
+        showToast('Account created. Please sign in.', 'success');
+    }
 }
 
 init();

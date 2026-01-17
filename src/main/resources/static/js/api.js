@@ -22,7 +22,7 @@ const Api = (() => {
     let refreshInFlight = null;
     const redirectToLogin = () => {
         const path = globalThis.location.pathname || '';
-        if (path.includes('/login')) {
+        if (path.includes('/login') || path.includes('/register')) {
             return;
         }
         State.clearToken();
@@ -87,6 +87,15 @@ const Api = (() => {
 
     const login = async (payload) => {
         const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify(payload)
+        });
+        return parseResponse(res);
+    };
+
+    const register = async (payload) => {
+        const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: jsonHeaders(),
             body: JSON.stringify(payload)
@@ -308,6 +317,7 @@ const Api = (() => {
     return {
         ApiError,
         login,
+        register,
         currentUser,
         logout,
         refresh,

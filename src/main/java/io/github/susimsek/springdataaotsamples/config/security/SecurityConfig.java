@@ -78,6 +78,8 @@ public class SecurityConfig {
                         auth ->
                                 auth.requestMatchers("/api/auth/login", "/api/auth/refresh")
                                         .permitAll()
+                                        .requestMatchers("/api/auth/register")
+                                        .permitAll()
                                         .requestMatchers("/api/auth/logout", "/api/auth/me")
                                         .authenticated()
                                         .requestMatchers("/api/share/**")
@@ -104,6 +106,7 @@ public class SecurityConfig {
                                                 "/share.html",
                                                 "/share/**",
                                                 "/login.html",
+                                                "/register.html",
                                                 "/403.html",
                                                 "/404.html",
                                                 "/favicon.ico",

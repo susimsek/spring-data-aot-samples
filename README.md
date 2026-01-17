@@ -82,6 +82,7 @@ Swagger UI is enabled in `dev` and disabled in `prod` (see `application-dev.yml`
 ## API Quick Overview
 Auth:
 - `POST /api/auth/login`
+- `POST /api/auth/register`
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`

@@ -7,5 +7,6 @@ import java.util.Set;
 public record UserDTO(
         @Schema(description = "User identifier") Long id,
         @Schema(description = "Authenticated username", example = "admin") String username,
+        @Schema(description = "Email address", example = "admin@example.com") String email,
         @Schema(description = "Granted authorities", example = "[\"ROLE_USER\"]")
                 Set<String> authorities) {}

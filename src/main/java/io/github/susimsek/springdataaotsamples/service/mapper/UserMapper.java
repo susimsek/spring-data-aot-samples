@@ -2,6 +2,8 @@ package io.github.susimsek.springdataaotsamples.service.mapper;
 
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.User;
+import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +18,14 @@ public interface UserMapper {
 
     @Mapping(target = "authorities", source = "authorities", qualifiedByName = "authorityNames")
     UserDTO toDto(User user);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "enabled", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
+    User toEntity(RegisterRequest request);
+
+    RegistrationDTO toRegistrationDto(User user);
 
     @Named("authorityNames")
     default Set<String> authorityNames(Set<Authority> authorities) {

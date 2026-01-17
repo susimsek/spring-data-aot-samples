@@ -3,8 +3,11 @@ package io.github.susimsek.springdataaotsamples.web;
 import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
@@ -19,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseCookie;
@@ -37,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final UserCommandService userCommandService;
 
     @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
@@ -64,6 +69,27 @@ public class AuthenticationController {
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(token);
+    }
+
+    @SecurityRequirements
+    @Operation(summary = "Register", description = "Creates a new user account.")
+    @ApiResponse(
+            responseCode = "201",
+            description = "User registered",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RegistrationDTO.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "Username or email already exists",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)))
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RegistrationDTO> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userCommandService.register(request));
     }
 
     @Operation(

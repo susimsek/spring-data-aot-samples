@@ -21,6 +21,9 @@
             <column name="username" type="varchar(100)">
                 <constraints nullable="false" unique="true"/>
             </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
             <column name="password" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
@@ -97,7 +100,6 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="numeric"/>
             <column header="name" type="string"/>
             <column header="created_by" type="string"/>
             <column header="last_modified_by" type="string"/>
@@ -109,8 +111,8 @@
                   separator=";"
                   usePreparedStatements="true"
                   encoding="UTF-8">
-            <column header="id" type="numeric"/>
             <column header="username" type="string"/>
+            <column header="email" type="string"/>
             <column header="password" type="string"/>
             <column header="enabled" type="boolean"/>
             <column header="created_by" type="string"/>
