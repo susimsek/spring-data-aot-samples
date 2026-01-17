@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,7 +38,7 @@ class UserQueryServiceTest {
         Page<User> page = new PageImpl<>(List.of(user));
 
         when(userRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<User>>any(),
+                        ArgumentMatchers.<Specification<User>>any(),
                         any(Pageable.class)))
                 .thenReturn(page);
 
@@ -55,7 +56,7 @@ class UserQueryServiceTest {
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(userRepository)
                 .findAll(
-                        org.mockito.ArgumentMatchers.<Specification<User>>any(),
+                        ArgumentMatchers.<Specification<User>>any(),
                         pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(5);
         assertThat(pageableCaptor.getValue().getPageNumber()).isZero();

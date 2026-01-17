@@ -15,6 +15,7 @@ import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -175,7 +176,7 @@ class TokenServiceTest {
     private ApplicationProperties buildProps() {
         ApplicationProperties properties = new ApplicationProperties();
         properties.getSecurity().getJwt().setIssuer("http://issuer");
-        properties.getSecurity().getJwt().setAudience(java.util.List.of("aud"));
+        properties.getSecurity().getJwt().setAudience(List.of("aud"));
         properties.getSecurity().getJwt().setAccessTokenTtl(Duration.ofSeconds(60));
         properties.getSecurity().getJwt().setRefreshTokenTtl(Duration.ofSeconds(120));
         properties.getSecurity().getJwt().setRefreshTokenTtlForRememberMe(Duration.ofSeconds(180));

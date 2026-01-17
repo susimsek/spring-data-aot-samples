@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -24,7 +25,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.method.HandlerMethod;
 
 @Configuration(proxyBeanMethods = false)
@@ -82,9 +82,9 @@ public class OpenApiConfig {
                                 .content(
                                         new Content()
                                                 .addMediaType(
-                                                        MediaType.APPLICATION_JSON_VALUE,
-                                                        new io.swagger.v3.oas.models.media
-                                                                        .MediaType()
+                                                        org.springframework.http.MediaType
+                                                                .APPLICATION_JSON_VALUE,
+                                                        new MediaType()
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(
@@ -100,9 +100,9 @@ public class OpenApiConfig {
                                 .content(
                                         new Content()
                                                 .addMediaType(
-                                                        MediaType.APPLICATION_JSON_VALUE,
-                                                        new io.swagger.v3.oas.models.media
-                                                                        .MediaType()
+                                                        org.springframework.http.MediaType
+                                                                .APPLICATION_JSON_VALUE,
+                                                        new MediaType()
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(
@@ -116,14 +116,14 @@ public class OpenApiConfig {
                 .getResponses()
                 .addApiResponse(
                         "500",
-                        new io.swagger.v3.oas.models.responses.ApiResponse()
+                        new ApiResponse()
                                 .description("Internal Server Error")
                                 .content(
                                         new Content()
                                                 .addMediaType(
-                                                        MediaType.APPLICATION_JSON_VALUE,
-                                                        new io.swagger.v3.oas.models.media
-                                                                        .MediaType()
+                                                        org.springframework.http.MediaType
+                                                                .APPLICATION_JSON_VALUE,
+                                                        new MediaType()
                                                                 .schema(
                                                                         new Schema<ProblemDetail>()
                                                                                 .$ref(

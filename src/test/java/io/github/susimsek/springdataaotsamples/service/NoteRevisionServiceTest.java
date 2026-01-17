@@ -14,6 +14,7 @@ import io.github.susimsek.springdataaotsamples.service.exception.RevisionNotFoun
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteRevisionMapper;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.history.Revision;
 import org.springframework.data.history.RevisionMetadata;
+import org.springframework.data.history.RevisionSort;
 
 @ExtendWith(MockitoExtension.class)
 class NoteRevisionServiceTest {
@@ -44,10 +46,9 @@ class NoteRevisionServiceTest {
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
 
         Revision<Long, Note> rev = Revision.of(mockMeta(1L), note);
-        Page<Revision<Long, Note>> page = new PageImpl<>(java.util.List.of(rev));
+        Page<Revision<Long, Note>> page = new PageImpl<>(List.of(rev));
         when(noteRepository.findRevisions(
-                        1L,
-                        PageRequest.of(0, 5, org.springframework.data.history.RevisionSort.desc())))
+                        1L, PageRequest.of(0, 5, RevisionSort.desc())))
                 .thenReturn(page);
         NoteRevisionDTO dto =
                 new NoteRevisionDTO(1L, "ADD", Instant.now(), "alice", sampleDto("a"));
@@ -129,9 +130,8 @@ class NoteRevisionServiceTest {
         when(noteRepository.findById(5L)).thenReturn(Optional.of(note));
         Revision<Long, Note> rev = Revision.of(mockMeta(6L), note);
         when(noteRepository.findRevisions(
-                        5L,
-                        PageRequest.of(0, 3, org.springframework.data.history.RevisionSort.desc())))
-                .thenReturn(new PageImpl<>(java.util.List.of(rev)));
+                        5L, PageRequest.of(0, 3, RevisionSort.desc())))
+                .thenReturn(new PageImpl<>(List.of(rev)));
         NoteRevisionDTO dto =
                 new NoteRevisionDTO(6L, "MOD", Instant.now(), "alice", sampleDto("t"));
         when(noteRevisionMapper.toRevisionDto(rev)).thenReturn(dto);

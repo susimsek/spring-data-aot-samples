@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,9 +42,9 @@ class TagCommandServiceTest {
         Tag java = new Tag(1L, "java");
         Tag spring = new Tag(2L, "spring");
 
-        when(tagRepository.findByNameIn(org.mockito.ArgumentMatchers.<Set<String>>any()))
+        when(tagRepository.findByNameIn(ArgumentMatchers.<Set<String>>any()))
                 .thenReturn(List.of(java));
-        when(tagRepository.saveAllAndFlush(org.mockito.ArgumentMatchers.<Iterable<Tag>>any()))
+        when(tagRepository.saveAllAndFlush(ArgumentMatchers.<Iterable<Tag>>any()))
                 .thenReturn(List.of(spring));
 
         Set<Tag> result = tagCommandService.resolveTags(names);
@@ -63,12 +64,12 @@ class TagCommandServiceTest {
         Set<String> names = Set.of("updated");
         Tag existing = new Tag(1L, "updated");
 
-        when(tagRepository.findByNameIn(org.mockito.ArgumentMatchers.<Set<String>>any()))
+        when(tagRepository.findByNameIn(ArgumentMatchers.<Set<String>>any()))
                 .thenReturn(List.of())
                 .thenReturn(List.of(existing));
         doThrow(new DataIntegrityViolationException("duplicate"))
                 .when(tagRepository)
-                .saveAllAndFlush(org.mockito.ArgumentMatchers.<Iterable<Tag>>any());
+                .saveAllAndFlush(ArgumentMatchers.<Iterable<Tag>>any());
 
         Set<Tag> result = tagCommandService.resolveTags(names);
 

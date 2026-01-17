@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,6 +24,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -133,7 +136,7 @@ class GlobalExceptionHandlerTest {
                 GlobalExceptionHandler.class.getDeclaredMethod(
                         "buildProblemDetail",
                         Exception.class,
-                        org.springframework.http.HttpStatusCode.class,
+                        HttpStatusCode.class,
                         String.class,
                         String.class,
                         String.class,
@@ -147,7 +150,7 @@ class GlobalExceptionHandlerTest {
                         method.invoke(
                                 handler,
                                 new IllegalArgumentException("boom"),
-                                org.springframework.http.HttpStatus.BAD_REQUEST,
+                                HttpStatus.BAD_REQUEST,
                                 "problemDetail.title.test",
                                 "default detail",
                                 "problemDetail.detail.test",
@@ -159,6 +162,6 @@ class GlobalExceptionHandlerTest {
                         eq(args),
                         nullable(String.class),
                         any(Locale.class));
-        org.assertj.core.api.Assertions.assertThat(body).isNotNull();
+        assertThat(body).isNotNull();
     }
 }

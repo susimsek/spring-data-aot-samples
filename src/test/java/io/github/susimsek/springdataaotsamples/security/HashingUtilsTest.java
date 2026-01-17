@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -22,7 +23,7 @@ class HashingUtilsTest {
     void sha256HexShouldWrapCheckedExceptions() {
         try (MockedStatic<MessageDigest> digest = Mockito.mockStatic(MessageDigest.class)) {
             digest.when(() -> MessageDigest.getInstance("SHA-256"))
-                    .thenThrow(new java.security.NoSuchAlgorithmException("missing"));
+                    .thenThrow(new NoSuchAlgorithmException("missing"));
 
             assertThatThrownBy(() -> HashingUtils.sha256Hex("secret"))
                     .isInstanceOf(IllegalStateException.class)

@@ -14,13 +14,13 @@ import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import java.util.OptionalLong;
+import javax.cache.CacheManager;
 import javax.cache.Caching;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.cache.jcache.ConfigSettings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.cache.autoconfigure.JCacheManagerCustomizer;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +34,7 @@ public class CacheConfig {
     private final ApplicationProperties applicationProperties;
 
     @Bean
-    public CacheManager cacheManager() {
+    public org.springframework.cache.CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
         cacheManager.setCaffeine(buildCaffeineConfig(cacheProperties()));
         return cacheManager;
@@ -61,7 +61,7 @@ public class CacheConfig {
         private final ApplicationProperties applicationProperties;
 
         @Bean
-        public javax.cache.CacheManager jcacheManager(JCacheManagerCustomizer customizer) {
+        public CacheManager jcacheManager(JCacheManagerCustomizer customizer) {
             var provider = Caching.getCachingProvider(CaffeineCachingProvider.class.getName());
             var manager = provider.getCacheManager();
             customizer.customize(manager);
@@ -69,8 +69,7 @@ public class CacheConfig {
         }
 
         @Bean
-        public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(
-                javax.cache.CacheManager jcacheManager) {
+        public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(CacheManager jcacheManager) {
             return props -> props.put(ConfigSettings.CACHE_MANAGER, jcacheManager);
         }
 
@@ -93,7 +92,7 @@ public class CacheConfig {
             };
         }
 
-        private void createCache(javax.cache.CacheManager cm, String cacheName) {
+        private void createCache(CacheManager cm, String cacheName) {
             var existing = cm.getCache(cacheName);
             if (existing != null) {
                 existing.clear();

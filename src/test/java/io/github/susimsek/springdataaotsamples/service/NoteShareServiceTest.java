@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -105,7 +106,7 @@ class NoteShareServiceTest {
         final Pageable pageable = PageRequest.of(0, 5);
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(),
+                        ArgumentMatchers.<Specification<NoteShareToken>>any(),
                         any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
@@ -214,7 +215,7 @@ class NoteShareServiceTest {
         note.setId(1L);
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
         when(noteShareTokenRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<NoteShareToken>>any(),
+                        ArgumentMatchers.<Specification<NoteShareToken>>any(),
                         any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
 

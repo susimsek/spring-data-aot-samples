@@ -3,6 +3,8 @@ package io.github.susimsek.springdataaotsamples.service.query;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -20,6 +22,7 @@ import jakarta.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Proxy;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -85,7 +88,7 @@ class NoteQueryServiceTest {
     void findAllShouldPrioritizePinnedInSortAndMapResults() {
         ensureJpaMetamodelInitialized();
         Pageable pageable = PageRequest.of(0, 10);
-        Note note = org.mockito.Mockito.mock(Note.class);
+        Note note = mock(Note.class);
         NoteDTO dto = sampleDto("t", "c", false, "#123456", Set.of("tag"));
 
         when(noteRepository.findAllWithTags(any(), any()))
@@ -156,24 +159,24 @@ class NoteQueryServiceTest {
 
     @Test
     void findByIdShouldMapWhenFound() {
-        Note note = org.mockito.Mockito.mock(Note.class);
+        Note note = mock(Note.class);
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of());
 
-        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(java.util.Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(Optional.of(note));
         when(noteMapper.toDto(note)).thenReturn(dto);
 
         NoteDTO result = noteQueryService.findById(42L);
 
         assertThat(result).isEqualTo(dto);
-        verify(noteAuthorizationService, org.mockito.Mockito.never()).ensureReadAccess(any());
+        verify(noteAuthorizationService, never()).ensureReadAccess(any());
     }
 
     @Test
     void findByIdForCurrentUserShouldAuthorizeAndMap() {
-        Note note = org.mockito.Mockito.mock(Note.class);
+        Note note = mock(Note.class);
         NoteDTO dto = sampleDto("t", "c", false, null, Set.of());
 
-        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(java.util.Optional.of(note));
+        when(noteRepository.findByIdAndDeletedFalse(42L)).thenReturn(Optional.of(note));
         when(noteMapper.toDto(note)).thenReturn(dto);
 
         NoteDTO result = noteQueryService.findByIdForCurrentUser(42L);
@@ -184,14 +187,14 @@ class NoteQueryServiceTest {
 
     @Test
     void findByIdShouldThrowWhenNoteMissing() {
-        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
         assertThrows(NoteNotFoundException.class, () -> noteQueryService.findById(1L));
     }
 
     @Test
     void findByIdForCurrentUserShouldThrowWhenNoteMissing() {
-        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.empty());
+        when(noteRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.empty());
 
         assertThrows(
                 NoteNotFoundException.class, () -> noteQueryService.findByIdForCurrentUser(1L));

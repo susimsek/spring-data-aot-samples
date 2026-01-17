@@ -17,6 +17,7 @@ import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.springframework.boot.cache.autoconfigure.JCacheManagerCustomizer;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 
@@ -28,7 +29,7 @@ class CacheConfigHibernateTest {
         CacheConfig.HibernateSecondLevelCacheConfiguration cfg =
                 new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
 
-        javax.cache.CacheManager jcacheManager = cfg.jcacheManager(cm -> {});
+        CacheManager jcacheManager = cfg.jcacheManager(cm -> {});
         HibernatePropertiesCustomizer customizer = cfg.hibernatePropertiesCustomizer(jcacheManager);
         JCacheManagerCustomizer cacheCustomizer = cfg.cacheManagerCustomizer();
 
@@ -51,8 +52,8 @@ class CacheConfigHibernateTest {
         verify(cache).clear();
         verify(cm, never())
                 .createCache(
-                        org.mockito.ArgumentMatchers.eq("existing"),
-                        org.mockito.ArgumentMatchers.any());
+                        ArgumentMatchers.eq("existing"),
+                        ArgumentMatchers.any());
     }
 
     @Test
@@ -68,7 +69,7 @@ class CacheConfigHibernateTest {
 
         invokeCreateCache(cfg, cm, "newCache");
 
-        verify(cm).createCache(org.mockito.ArgumentMatchers.eq("newCache"), captor.capture());
+        verify(cm).createCache(ArgumentMatchers.eq("newCache"), captor.capture());
         CaffeineConfiguration<?, ?> caffeine = (CaffeineConfiguration<?, ?>) captor.getValue();
         assertThat(caffeine.getMaximumSize()).isEqualTo(OptionalLong.of(42));
         assertThat(caffeine.getExpireAfterWrite())

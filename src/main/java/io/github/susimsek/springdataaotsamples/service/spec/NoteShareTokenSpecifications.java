@@ -52,7 +52,7 @@ public class NoteShareTokenSpecifications {
                                     cb.isNotNull(root.get(NoteShareToken_.expiresAt)),
                                     cb.lessThan(
                                             root.get(NoteShareToken_.expiresAt),
-                                            java.time.Instant.now()));
+                                            Instant.now()));
                     case "active" ->
                             cb.and(
                                     cb.isFalse(root.get(NoteShareToken_.revoked)),
@@ -60,7 +60,7 @@ public class NoteShareTokenSpecifications {
                                             cb.isNull(root.get(NoteShareToken_.expiresAt)),
                                             cb.greaterThan(
                                                     root.get(NoteShareToken_.expiresAt),
-                                                    java.time.Instant.now())));
+                                                    Instant.now())));
                     default -> cb.conjunction();
                 };
     }

@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.http.HttpHeaders;
@@ -16,8 +17,7 @@ class CookieAwareBearerTokenResolverTest {
     void resolveShouldPreferAuthorizationHeader() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer header-token");
-        request.setCookies(
-                new jakarta.servlet.http.Cookie(SecurityUtils.AUTH_COOKIE, "cookie-token"));
+        request.setCookies(new Cookie(SecurityUtils.AUTH_COOKIE, "cookie-token"));
 
         String token = resolver.resolve(request);
 

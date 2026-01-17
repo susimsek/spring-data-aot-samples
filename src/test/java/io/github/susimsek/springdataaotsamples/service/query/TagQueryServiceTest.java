@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,7 +42,7 @@ class TagQueryServiceTest {
         Tag tag = new Tag(1L, "java");
         Page<Tag> page = new PageImpl<>(List.of(tag));
         when(tagRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        ArgumentMatchers.<Specification<Tag>>any(),
                         any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(1L, "java"));
@@ -54,7 +55,7 @@ class TagQueryServiceTest {
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
                 .findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        ArgumentMatchers.<Specification<Tag>>any(),
                         pageableCaptor.capture());
         Pageable used = pageableCaptor.getValue();
         assertThat(used.getSort().getOrderFor("name")).isNotNull();
@@ -67,7 +68,7 @@ class TagQueryServiceTest {
         Tag tag = new Tag(2L, "spring");
         Page<Tag> page = new PageImpl<>(List.of(tag));
         when(tagRepository.findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        ArgumentMatchers.<Specification<Tag>>any(),
                         any(Pageable.class)))
                 .thenReturn(page);
         when(tagMapper.toDto(tag)).thenReturn(new TagDTO(2L, "spring"));
@@ -80,7 +81,7 @@ class TagQueryServiceTest {
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(tagRepository)
                 .findAll(
-                        org.mockito.ArgumentMatchers.<Specification<Tag>>any(),
+                        ArgumentMatchers.<Specification<Tag>>any(),
                         pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("createdDate")).isNotNull();
     }

@@ -52,6 +52,6 @@ public interface NoteMapper extends EntityMapper<NoteDTO, Note> {
 
     @Named("cloneTags")
     static Set<Tag> cloneTags(Set<Tag> tags) {
-        return tags != null ? new LinkedHashSet<>(tags) : java.util.Set.of();
+        return tags != null ? new LinkedHashSet<>(tags) : Set.of();
     }
 }

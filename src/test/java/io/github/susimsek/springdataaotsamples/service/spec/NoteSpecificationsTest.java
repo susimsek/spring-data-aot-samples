@@ -25,6 +25,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.SetJoin;
 import jakarta.persistence.metamodel.SingularAttribute;
+import java.time.Instant;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -235,7 +236,7 @@ class NoteSpecificationsTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> SingularAttribute<T, java.time.Instant> namedInstantAttribute() {
+    private static <T> SingularAttribute<T, Instant> namedInstantAttribute() {
         return mock(SingularAttribute.class);
     }
 }
