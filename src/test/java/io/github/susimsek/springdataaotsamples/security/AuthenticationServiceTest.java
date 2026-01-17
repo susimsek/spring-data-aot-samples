@@ -70,7 +70,8 @@ class AuthenticationServiceTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("alice");
-        UserDTO dto = new UserDTO(1L, "alice", "alice@example.com", Set.of(AuthoritiesConstants.USER));
+        UserDTO dto =
+                new UserDTO(1L, "alice", "alice@example.com", Set.of(AuthoritiesConstants.USER));
         when(userRepository.findOneWithAuthoritiesByUsername("alice"))
                 .thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(dto);

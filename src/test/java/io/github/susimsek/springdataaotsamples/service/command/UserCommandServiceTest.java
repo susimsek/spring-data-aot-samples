@@ -38,7 +38,8 @@ class UserCommandServiceTest {
 
     @Test
     void registerShouldCreateEnabledUserWithRoleUser() {
-        RegisterRequest request = new RegisterRequest("newuser", "newuser@example.com", "change-me");
+        RegisterRequest request =
+                new RegisterRequest("newuser", "newuser@example.com", "change-me");
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("newuser@example.com")).thenReturn(false);
         when(passwordEncoder.encode("change-me")).thenReturn("{bcrypt}hash");
@@ -75,7 +76,8 @@ class UserCommandServiceTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getEmail()).isEqualTo("newuser@example.com");
-        verify(cacheProvider).clearCaches(User.class.getName(), UserRepository.USER_BY_USERNAME_CACHE);
+        verify(cacheProvider)
+                .clearCaches(User.class.getName(), UserRepository.USER_BY_USERNAME_CACHE);
     }
 
     @Test
