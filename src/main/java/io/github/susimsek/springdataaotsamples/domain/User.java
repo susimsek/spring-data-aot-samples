@@ -44,7 +44,7 @@ public class User extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_identity_seq")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 50)
     private String username;
 
     @Column(nullable = false, unique = true, length = 255)

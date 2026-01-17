@@ -39,10 +39,10 @@
                 <div class="mb-3">
                     <label class="form-label" for="registerUsername">Username</label>
                     <input id="registerUsername" name="username" type="text" class="form-control"
-                           autocomplete="username" inputmode="text" required minlength="3" maxlength="100"
+                           autocomplete="username" inputmode="text" required minlength="3" maxlength="50"
                            placeholder="Username">
                     <div class="invalid-feedback" data-error-type="registerUsername-required">Username is required.</div>
-                    <div class="invalid-feedback d-none" data-error-type="registerUsername-size">Size must be between 3 and 100 characters.</div>
+                    <div class="invalid-feedback d-none" data-error-type="registerUsername-size">Size must be between 3 and 50 characters.</div>
                     <div class="invalid-feedback d-none" data-error-type="registerUsername-pattern">Only letters, numbers, underscores or hyphens allowed.</div>
                 </div>
                 <div class="mb-3">
@@ -58,20 +58,20 @@
                     <label class="form-label" for="registerPassword">Password</label>
                     <div class="input-group has-validation">
                         <input id="registerPassword" name="password" type="password" class="form-control"
-                               autocomplete="new-password" required minlength="8" maxlength="255" placeholder="Password">
+                               autocomplete="new-password" required minlength="8" maxlength="64" placeholder="Password">
                         <button class="btn btn-outline-secondary" type="button" id="registerPasswordToggle"
                                 aria-label="Show password" aria-pressed="false">
                             <i class="fa-solid fa-eye" id="registerPasswordToggleIcon" aria-hidden="true"></i>
                         </button>
                         <div class="invalid-feedback" data-error-type="registerPassword-required">Password is required.</div>
-                        <div class="invalid-feedback d-none" data-error-type="registerPassword-size">Size must be between 8 and 255 characters.</div>
+                        <div class="invalid-feedback d-none" data-error-type="registerPassword-size">Size must be between 8 and 64 characters.</div>
                     <div class="invalid-feedback d-none" data-error-type="registerPassword-pattern">Field must contain at least one uppercase letter, one lowercase letter, and one digit.</div>
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="registerPasswordConfirm">Confirm password</label>
                     <input id="registerPasswordConfirm" type="password" class="form-control"
-                           autocomplete="new-password" required minlength="8" maxlength="255" placeholder="Confirm password">
+                           autocomplete="new-password" required minlength="8" maxlength="64" placeholder="Confirm password">
                     <div class="invalid-feedback" data-error-type="registerPasswordConfirm-required">Confirmation is required.</div>
                     <div class="invalid-feedback d-none" id="registerPasswordConfirmMismatch">Passwords do not match.</div>
                 </div>
