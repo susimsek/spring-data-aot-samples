@@ -66,6 +66,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Tests live under `src/test/java`.
 - Unit tests: `*Test.java`
 - Integration tests: `*IT*.java` and the `@IntegrationTest` meta-annotation
+- Run a single unit test: `./mvnw -Dtest=TokenServiceTest test`
+- Run a single integration test: `./mvnw -Dit.test=NoteControllerIT failsafe:integration-test failsafe:verify`
 - Performance (Gatling): `src/test/java/gatling/simulations` and `./mvnw gatling:test`
 
 ## Native Image & AOT Guidance
