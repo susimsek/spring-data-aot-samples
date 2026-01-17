@@ -44,6 +44,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
     - `error`: API error model + `@ControllerAdvice` exception mapping
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Static web assets (UI): `src/main/resources/static` (served HTML pages, icons, and other static resources)
+  - JavaScript modules: `src/main/resources/static/js`
 - i18n messages: `src/main/resources/i18n` (e.g. `messages.properties`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - Docker compose: `src/main/docker/*.yml`
@@ -156,6 +157,19 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - DTOs live in `service/dto`; add `@Schema(description=..., example=...)` on record components that are exposed via the API.
   - For enums exposed via the API, add `@Schema` on the enum (and/or constants) to make values and meaning clear.
 
+### Static UI (HTML/JS)
+
+- Static pages live under `src/main/resources/static` and use Bootstrap + Font Awesome via WebJars; there is no custom `.css` file today.
+- JavaScript is plain ES modules under `src/main/resources/static/js` (no bundler); import via relative paths and load entrypoints with `type="module"`.
+- Theme handling is centralized in `Theme` (`localStorage` key `theme`); include `/js/theme.js` early to avoid a flash of wrong theme and call `Theme.init(...)` on pages with a toggle.
+- API calls from the UI should go through `Api` (`/js/api.js`); it handles JSON parsing, consistent `ApiError`, and a 401 → refresh → retry flow (cookie-based auth).
+- Forms and client-side validation:
+  - Prefer HTML5 constraints (`required`, `minlength`/`maxlength`, `type`, etc.) and keep forms `novalidate` when using custom display logic.
+  - Use `Validation.toggleInlineMessages` / `Validation.toggleSizeMessages` and `invalid-feedback` blocks for consistent UX; the convention is `data-error-type="<inputId>-required"` and `data-error-type="<inputId>-size"`.
+  - For cross-field validation (e.g., date ranges), set `is-invalid` on the relevant inputs and show a dedicated error container (see the shared links custom date modal).
+- Prefer `textContent` for rendering; when you must build HTML, use `Helpers.escapeHtml` / `Render.escapeHtml` and avoid injecting untrusted values into `innerHTML` or inline styles.
+- Keep inline `style="..."` usage minimal; prefer Bootstrap utility classes.
+
 ## Common Mistakes to Avoid
 
 - Skipping the layer flow (`web` → `service` → `repository`) and pushing business logic into controllers.
@@ -167,3 +181,5 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Returning undocumented error shapes; keep API errors consistent with `ProblemDetail` + `violations`.
 - Adding new validators outside `service/validation` (native/AOT scanning will miss them).
 - Using fully qualified names everywhere instead of imports (only use FQNs to resolve ambiguity).
+- Rendering untrusted values via `innerHTML` without escaping (XSS risk); prefer `textContent` or escape helpers.
+- Adding/altering a form input but forgetting to add HTML constraints and matching `invalid-feedback` elements (users end up with silent failures or inconsistent validation UX).
