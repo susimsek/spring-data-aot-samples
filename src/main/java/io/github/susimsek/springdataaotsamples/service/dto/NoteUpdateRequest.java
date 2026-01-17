@@ -11,19 +11,11 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(description = "Payload to fully update a note")
 public record NoteUpdateRequest(
-        @Schema(
-                        description = "Note title",
-                        minLength = 3,
-                        maxLength = 255,
-                        example = "Updated note title")
+        @Schema(description = "Note title", example = "Updated note title")
                 @NotBlank
                 @Size(min = 3, max = 255)
                 String title,
-        @Schema(
-                        description = "Note content",
-                        minLength = 10,
-                        maxLength = 1024,
-                        example = "Updated content")
+        @Schema(description = "Note content", example = "Updated content")
                 @NotBlank
                 @Size(min = 10, max = 1024)
                 String content,

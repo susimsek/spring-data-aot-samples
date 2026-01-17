@@ -16,6 +16,8 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import jakarta.validation.Valid;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,10 +62,41 @@ public class OpenApiConfig {
     @Bean
     public OperationCustomizer securityResponsesCustomizer() {
         return (Operation operation, HandlerMethod handlerMethod) -> {
+            addValidationErrorResponse(operation, handlerMethod);
             addSecurityErrorResponse(operation, handlerMethod);
             addDefaultErrorResponse(operation);
             return operation;
         };
+    }
+
+    private void addValidationErrorResponse(Operation operation, HandlerMethod handlerMethod) {
+        boolean hasValidParameter =
+                Arrays.stream(handlerMethod.getMethodParameters())
+                        .anyMatch(parameter -> parameter.hasParameterAnnotation(Valid.class));
+        if (!hasValidParameter) {
+            return;
+        }
+        if (operation.getResponses() != null && operation.getResponses().containsKey("400")) {
+            return;
+        }
+        operation
+                .getResponses()
+                .addApiResponse(
+                        "400",
+                        new ApiResponse()
+                                .description("Invalid input")
+                                .content(
+                                        new Content()
+                                                .addMediaType(
+                                                        org.springframework.http.MediaType
+                                                                .APPLICATION_JSON_VALUE,
+                                                        new MediaType()
+                                                                .schema(
+                                                                        new Schema<ProblemDetail>()
+                                                                                .$ref(
+                                                                                        PROBLEM_DETAIL_REF))
+                                                                .example(
+                                                                        getInvalidInputExample()))));
     }
 
     private void addSecurityErrorResponse(Operation operation, HandlerMethod handlerMethod) {
@@ -144,6 +177,33 @@ public class OpenApiConfig {
         return createProblemExample(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred. Please try again later.");
+    }
+
+    private Map<String, Object> getInvalidInputExample() {
+        Map<String, Object> example =
+                createProblemExample(
+                        HttpStatus.BAD_REQUEST, "One or more validation errors occurred.");
+        example.put(
+                "violations",
+                List.of(
+                        createViolationExample(
+                                "NotBlank",
+                                "registerRequest",
+                                "username",
+                                "",
+                                "This field cannot be blank.")));
+        return example;
+    }
+
+    private Map<String, Object> createViolationExample(
+            String code, String objectName, String field, Object rejectedValue, String message) {
+        Map<String, Object> violation = new LinkedHashMap<>();
+        violation.put("code", code);
+        violation.put("object", objectName);
+        violation.put("field", field);
+        violation.put("rejectedValue", rejectedValue);
+        violation.put("message", message);
+        return violation;
     }
 
     private Map<String, Object> createProblemExample(HttpStatus status, String detail) {

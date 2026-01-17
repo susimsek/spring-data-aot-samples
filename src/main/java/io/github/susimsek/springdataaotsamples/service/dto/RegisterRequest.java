@@ -9,17 +9,17 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "User registration payload")
 public record RegisterRequest(
-        @Schema(description = "Username (used for login)", example = "newuser", maxLength = 100)
+        @Schema(description = "Username (used for login)", example = "newuser")
                 @NotBlank
                 @Size(min = 3, max = 100)
                 @Username
                 String username,
-        @Schema(description = "Email address", example = "newuser@example.com", maxLength = 255)
+        @Schema(description = "Email address", example = "newuser@example.com")
                 @NotBlank
                 @Size(max = 255)
                 @Email
                 String email,
-        @Schema(description = "Password", example = "change-me", maxLength = 255)
+        @Schema(description = "Password", example = "Change-me1!")
                 @NotBlank
                 @Size(min = 8, max = 255)
                 @Password

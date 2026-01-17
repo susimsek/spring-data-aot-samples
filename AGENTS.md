@@ -122,6 +122,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Keep query logic in `service/query` and use `service/spec` (JPA `Specification`) for composable filters.
 - For pageable queries that need to fetch tags/collections, follow the `NoteRepository#findAllWithTags` pattern to avoid pagination + join pitfalls.
 - Use soft delete via `SoftDeleteRepository` for “trash” semantics; reserve permanent deletes for explicit purge paths.
+- If an input needs normalization (trim/lowercase/canonicalization), do it once at the right boundary:
+  - Persisted fields: normalize at the entity layer via `@PrePersist` / `@PreUpdate` (see `User#normalize()`) to keep DB state consistent.
+  - Non-persisted/request-only values: normalize in the DTO mapping/validation layer (and avoid duplicating the same normalization across services/controllers).
 
 ### Caching
 
@@ -157,6 +160,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Annotation conventions:
   - Put `@Tag(name=..., description=...)` at controller level and `@Operation(summary=..., description=...)` at handler level.
   - Document parameters with `@Parameter` (path/query) and use `@ParameterObject` for `Pageable` so paging/sorting appear in Swagger UI.
+  - `400` for `@Valid` handlers is added via `OpenApiConfig`; don’t repeat it per endpoint unless you need a special case.
   - Add `@ApiResponse` entries for non-2xx outcomes you can return (e.g. `400/404/409`) and use `web.error.ProblemDetail` as the documented error schema for consistency with the global examples.
 - DTO schema:
   - DTOs live in `service/dto`; add `@Schema(description=..., example=...)` on record components that are exposed via the API.
