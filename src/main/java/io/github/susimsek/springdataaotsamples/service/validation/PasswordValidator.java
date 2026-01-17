@@ -10,8 +10,7 @@ import org.springframework.util.StringUtils;
 public class PasswordValidator implements ConstraintValidator<Password, String> {
 
     private static final Pattern PASSWORD_PATTERN =
-            Pattern.compile(
-                    "^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-\\[\\]{};':\"\\\\|,.<>/?])(?!.*\\s).+$");
+            Pattern.compile("^(?=.*[A-ZÇĞİÖŞÜ])(?=.*[a-zçğıöşü])(?=.*\\d).+$");
 
     @Override
     public boolean isValid(@Nullable String value, ConstraintValidatorContext context) {
