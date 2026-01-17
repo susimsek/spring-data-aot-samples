@@ -11,7 +11,7 @@ public class PasswordValidator implements ConstraintValidator<Password, String> 
 
     private static final Pattern PASSWORD_PATTERN =
             Pattern.compile(
-                    "^(?=.*[a-zçğıöşüı])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=[\\]{};':\"\\\\|,.<>/?])(?!.*\\s).+$");
+                    "^(?=.*[a-zçğıöşüı])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-\\[\\]{};':\"\\\\|,.<>/?])(?!.*\\s).+$");
 
     @Override
     public boolean isValid(@Nullable String value, ConstraintValidatorContext context) {
