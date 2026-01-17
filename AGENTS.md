@@ -15,6 +15,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile`        |
 | Build container image (JVM)          | `./mvnw -Pprod -DskipTests jib:dockerBuild`              |
 | Build container image (native)       | `./mvnw -Pprod,native -DskipTests jib:dockerBuild`       |
+| Run (Spring Boot docker-compose)     | `./mvnw -Pprod,docker-compose spring-boot:run`           |
 
 ## Requirements
 
@@ -167,7 +168,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - API calls from the UI should go through `Api` (`/js/api.js`); it handles JSON parsing, consistent `ApiError`, and a 401 → refresh → retry flow (cookie-based auth).
 - Forms and client-side validation:
   - Prefer HTML5 constraints (`required`, `minlength`/`maxlength`, `type`, etc.) and keep forms `novalidate` when using custom display logic.
-  - Use `Validation.toggleInlineMessages` / `Validation.toggleSizeMessages` and `invalid-feedback` blocks for consistent UX; the convention is `data-error-type="<inputId>-required"` and `data-error-type="<inputId>-size"`.
+  - Use shared helpers from `src/main/resources/static/js/validation.js` (`getSizeState`, `toggleInlineMessages`, `toggleSizeMessages`, `togglePatternMessage`) instead of re-implementing size/required logic per form.
+  - Keep feedback blocks consistent: `data-error-type="<inputId>-required"`, `data-error-type="<inputId>-size"`, and for regex/custom checks `data-error-type="<inputId>-pattern"`.
+  - For regex/custom checks, set `input.setCustomValidity(...)` and let `toggleInlineMessages(...)` drive `is-valid`/`is-invalid`; show the pattern message via `togglePatternMessage(...)` (typically only after size passes so users see one message at a time).
   - For cross-field validation (e.g., date ranges), set `is-invalid` on the relevant inputs and show a dedicated error container (see the shared links custom date modal).
 - Prefer `textContent` for rendering; when you must build HTML, use `Helpers.escapeHtml` / `Render.escapeHtml` and avoid injecting untrusted values into `innerHTML` or inline styles.
 - Keep inline `style="..."` usage minimal; prefer Bootstrap utility classes.
