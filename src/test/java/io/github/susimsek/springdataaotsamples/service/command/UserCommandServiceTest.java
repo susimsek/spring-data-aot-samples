@@ -14,6 +14,7 @@ import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
+import io.github.susimsek.springdataaotsamples.service.exception.EmailAlreadyExistsException;
 import io.github.susimsek.springdataaotsamples.service.exception.UsernameAlreadyExistsException;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import java.util.Optional;
@@ -90,5 +91,15 @@ class UserCommandServiceTest {
 
         assertThatThrownBy(() -> userCommandService.register(request))
                 .isInstanceOf(UsernameAlreadyExistsException.class);
+    }
+
+    @Test
+    void registerShouldThrowWhenEmailExists() {
+        RegisterRequest request = new RegisterRequest("newuser", "admin@example.com", "change-me");
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        when(userRepository.existsByEmail("admin@example.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> userCommandService.register(request))
+                .isInstanceOf(EmailAlreadyExistsException.class);
     }
 }
