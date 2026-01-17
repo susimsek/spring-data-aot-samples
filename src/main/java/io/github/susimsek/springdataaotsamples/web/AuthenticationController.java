@@ -3,7 +3,6 @@ package io.github.susimsek.springdataaotsamples.web;
 import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
-import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
@@ -41,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final UserCommandService userCommandService;
 
     @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticates user and returns JWT access token.")
@@ -89,7 +87,7 @@ public class AuthenticationController {
                             schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RegistrationDTO> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userCommandService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(request));
     }
 
     @Operation(

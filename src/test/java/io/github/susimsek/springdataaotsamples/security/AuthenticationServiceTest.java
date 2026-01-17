@@ -12,6 +12,7 @@ import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
+import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
@@ -36,6 +37,7 @@ class AuthenticationServiceTest {
 
     @Mock private AuthenticationManager authenticationManager;
     @Mock private TokenService tokenService;
+    @Mock private UserCommandService userCommandService;
     @Mock private UserRepository userRepository;
     @Mock private RefreshTokenRepository refreshTokenRepository;
     @Mock private UserMapper userMapper;

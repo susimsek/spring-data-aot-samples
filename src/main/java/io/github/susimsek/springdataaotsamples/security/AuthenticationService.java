@@ -2,7 +2,10 @@ package io.github.susimsek.springdataaotsamples.security;
 
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
+import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
@@ -21,6 +24,7 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final UserCommandService userCommandService;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserMapper userMapper;
@@ -36,6 +40,10 @@ public class AuthenticationService {
 
     public TokenDTO refresh(@Nullable String refreshToken) {
         return tokenService.refresh(refreshToken);
+    }
+
+    public RegistrationDTO register(RegisterRequest request) {
+        return userCommandService.register(request);
     }
 
     public UserDTO getCurrentUser() {
