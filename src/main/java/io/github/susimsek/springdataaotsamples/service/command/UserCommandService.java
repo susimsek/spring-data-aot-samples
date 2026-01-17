@@ -68,6 +68,9 @@ public class UserCommandService {
     }
 
     private void evictUserCaches() {
-        cacheProvider.clearCaches(User.class.getName(), UserRepository.USER_BY_USERNAME_CACHE);
+        cacheProvider.clearCaches(
+                User.class.getName(),
+                UserRepository.USER_BY_USERNAME_CACHE,
+                UserRepository.USER_BY_EMAIL_CACHE);
     }
 }

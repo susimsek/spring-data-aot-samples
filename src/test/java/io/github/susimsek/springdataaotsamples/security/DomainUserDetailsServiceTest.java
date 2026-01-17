@@ -44,6 +44,54 @@ class DomainUserDetailsServiceTest {
     }
 
     @Test
+    void loadUserByUsernameShouldNormalizeUsername() {
+        User user = sampleUser(true, Set.of(AuthoritiesConstants.USER));
+        when(userRepository.findOneWithAuthoritiesByUsername("alice"))
+                .thenReturn(Optional.of(user));
+
+        UserDetails details = domainUserDetailsService.loadUserByUsername("  Alice ");
+
+        assertThat(details.getUsername()).isEqualTo("alice");
+        verify(userRepository).findOneWithAuthoritiesByUsername("alice");
+    }
+
+    @Test
+    void loadUserByUsernameShouldLoadByEmail() {
+        User user = sampleUser(true, Set.of(AuthoritiesConstants.USER));
+        when(userRepository.findOneWithAuthoritiesByEmail("alice@example.com"))
+                .thenReturn(Optional.of(user));
+
+        UserDetails details = domainUserDetailsService.loadUserByUsername("alice@example.com");
+
+        assertThat(details.getUsername()).isEqualTo("alice");
+        verify(userRepository).findOneWithAuthoritiesByEmail("alice@example.com");
+    }
+
+    @Test
+    void loadUserByUsernameShouldNormalizeEmail() {
+        User user = sampleUser(true, Set.of(AuthoritiesConstants.USER));
+        when(userRepository.findOneWithAuthoritiesByEmail("alice@example.com"))
+                .thenReturn(Optional.of(user));
+
+        UserDetails details = domainUserDetailsService.loadUserByUsername("  Alice@Example.com ");
+
+        assertThat(details.getUsername()).isEqualTo("alice");
+        verify(userRepository).findOneWithAuthoritiesByEmail("alice@example.com");
+    }
+
+    @Test
+    void loadUserByUsernameShouldThrowWhenEmailMissing() {
+        when(userRepository.findOneWithAuthoritiesByEmail("missing@example.com"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                UsernameNotFoundException.class,
+                () -> domainUserDetailsService.loadUserByUsername("missing@example.com"));
+
+        verify(userRepository).findOneWithAuthoritiesByEmail("missing@example.com");
+    }
+
+    @Test
     void loadUserByUsernameShouldThrowWhenUserMissing() {
         when(userRepository.findOneWithAuthoritiesByUsername("missing"))
                 .thenReturn(Optional.empty());
@@ -59,6 +107,7 @@ class DomainUserDetailsServiceTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("alice");
+        user.setEmail("alice@example.com");
         user.setPassword("secret");
         user.setEnabled(enabled);
         Set<Authority> userAuthorities = new HashSet<>();

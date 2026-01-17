@@ -12,10 +12,15 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     String USER_BY_USERNAME_CACHE = "userByUsername";
+    String USER_BY_EMAIL_CACHE = "userByEmail";
 
     @EntityGraph(value = "User.withAuthorities")
     @Cacheable(cacheNames = USER_BY_USERNAME_CACHE, key = "#username", unless = "#result == null")
     Optional<User> findOneWithAuthoritiesByUsername(String username);
+
+    @EntityGraph(value = "User.withAuthorities")
+    @Cacheable(cacheNames = USER_BY_EMAIL_CACHE, key = "#email", unless = "#result == null")
+    Optional<User> findOneWithAuthoritiesByEmail(String email);
 
     @EntityGraph(value = "User.withAuthorities")
     Optional<User> findOneWithAuthoritiesById(Long id);

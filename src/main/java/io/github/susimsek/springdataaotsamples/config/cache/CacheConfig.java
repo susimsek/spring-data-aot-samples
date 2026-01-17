@@ -90,6 +90,7 @@ public class CacheConfig {
                 createCache(cm, Tag.class.getName());
                 createCache(cm, RefreshToken.class.getName());
                 createCache(cm, UserRepository.USER_BY_USERNAME_CACHE);
+                createCache(cm, UserRepository.USER_BY_EMAIL_CACHE);
             };
         }
 

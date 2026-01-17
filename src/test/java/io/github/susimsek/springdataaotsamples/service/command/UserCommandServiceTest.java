@@ -77,7 +77,10 @@ class UserCommandServiceTest {
         verify(userRepository).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getEmail()).isEqualTo("newuser@example.com");
         verify(cacheProvider)
-                .clearCaches(User.class.getName(), UserRepository.USER_BY_USERNAME_CACHE);
+                .clearCaches(
+                        User.class.getName(),
+                        UserRepository.USER_BY_USERNAME_CACHE,
+                        UserRepository.USER_BY_EMAIL_CACHE);
     }
 
     @Test
