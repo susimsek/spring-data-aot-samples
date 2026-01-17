@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.web.error;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -55,6 +56,11 @@ class GlobalExceptionHandlerTestController {
     @GetMapping("/unhandled")
     Object unhandled() {
         throw new IllegalStateException("boom");
+    }
+
+    @GetMapping("/data-integrity")
+    Object dataIntegrity() {
+        throw new DataIntegrityViolationException("duplicate");
     }
 
     @GetMapping("/html-notfound")

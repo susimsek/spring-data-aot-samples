@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -143,6 +144,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         response.setStatus(HttpStatus.NOT_FOUND.value());
         model.addAttribute("errorMessage", ex.getMessage());
         return "forward:/404";
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public @Nullable ResponseEntity<Object> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+        ProblemDetail body =
+                this.buildProblemDetail(
+                        ex,
+                        HttpStatus.CONFLICT,
+                        "problemDetail.title.dataIntegrityViolation",
+                        "Request conflicts with existing data.",
+                        "problemDetail.dataIntegrityViolation",
+                        null);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.CONFLICT, request);
     }
 
     @ExceptionHandler(Exception.class)

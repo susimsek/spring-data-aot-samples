@@ -120,6 +120,13 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void shouldHandleDataIntegrityViolation() throws Exception {
+        mockMvc.perform(get("/test/data-integrity"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Request conflicts with existing data."));
+    }
+
+    @Test
     void shouldForwardTo404PageForHtmlRequests() throws Exception {
         mockMvc.perform(get("/test/html-notfound").accept(MediaType.TEXT_HTML))
                 .andExpect(status().isNotFound())

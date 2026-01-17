@@ -62,7 +62,7 @@ class UserCommandServiceTest {
                             User user = invocation.getArgument(0);
                             return new RegistrationDTO(user.getId(), user.getUsername());
                         });
-        when(userRepository.saveAndFlush(any(User.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(
                         invocation -> {
                             User user = invocation.getArgument(0);
@@ -75,7 +75,7 @@ class UserCommandServiceTest {
         assertThat(created.id()).isEqualTo(10L);
         assertThat(created.username()).isEqualTo("newuser");
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).saveAndFlush(userCaptor.capture());
+        verify(userRepository).save(userCaptor.capture());
         assertThat(userCaptor.getValue().getEmail()).isEqualTo("newuser@example.com");
         verify(cacheProvider)
                 .clearCaches(

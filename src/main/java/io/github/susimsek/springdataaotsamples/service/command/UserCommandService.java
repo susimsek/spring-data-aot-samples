@@ -12,7 +12,6 @@ import io.github.susimsek.springdataaotsamples.service.exception.UsernameAlready
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,20 +48,7 @@ public class UserCommandService {
                                                 new IllegalStateException(
                                                         "Authority not found: "
                                                                 + AuthoritiesConstants.USER)));
-        User saved;
-        try {
-            saved = userRepository.saveAndFlush(user);
-        } catch (DataIntegrityViolationException ex) {
-            String persistedUsername = user.getUsername();
-            String persistedEmail = user.getEmail();
-            if (userRepository.existsByUsername(persistedUsername)) {
-                throw new UsernameAlreadyExistsException(persistedUsername);
-            }
-            if (userRepository.existsByEmail(persistedEmail)) {
-                throw new EmailAlreadyExistsException(persistedEmail);
-            }
-            throw ex;
-        }
+        User saved = userRepository.save(user);
         evictUserCaches();
         return userMapper.toRegistrationDto(saved);
     }
