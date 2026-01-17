@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.dto.UserSearchDTO;
+import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 class UserQueryServiceTest {
 
     @Mock private UserRepository userRepository;
+    @Mock private UserMapper userMapper;
 
     @InjectMocks private UserQueryService userQueryService;
 

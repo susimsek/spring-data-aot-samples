@@ -87,7 +87,8 @@ public class AuthenticationController {
                             schema = @Schema(implementation = ProblemDetail.class)))
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RegistrationDTO> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authenticationService.register(request));
     }
 
     @Operation(

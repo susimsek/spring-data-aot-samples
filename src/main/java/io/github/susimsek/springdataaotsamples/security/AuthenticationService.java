@@ -1,14 +1,13 @@
 package io.github.susimsek.springdataaotsamples.security;
 
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
-import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
-import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
+import io.github.susimsek.springdataaotsamples.service.query.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,9 +24,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final UserCommandService userCommandService;
-    private final UserRepository userRepository;
+    private final UserQueryService userQueryService;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserMapper userMapper;
 
     public TokenDTO login(LoginRequest request) {
         Authentication authentication =
@@ -50,11 +48,7 @@ public class AuthenticationService {
         var login =
                 SecurityUtils.getCurrentUserLogin()
                         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        var user =
-                userRepository
-                        .findOneWithAuthoritiesByUsername(login)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return userMapper.toDto(user);
+        return userQueryService.getUserWithAuthoritiesByUsername(login);
     }
 
     public void logout(@Nullable String refreshToken) {

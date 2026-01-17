@@ -9,14 +9,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
-import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
-import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
-import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
+import io.github.susimsek.springdataaotsamples.service.query.UserQueryService;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
@@ -38,9 +36,8 @@ class AuthenticationServiceTest {
     @Mock private AuthenticationManager authenticationManager;
     @Mock private TokenService tokenService;
     @Mock private UserCommandService userCommandService;
-    @Mock private UserRepository userRepository;
+    @Mock private UserQueryService userQueryService;
     @Mock private RefreshTokenRepository refreshTokenRepository;
-    @Mock private UserMapper userMapper;
 
     @InjectMocks private AuthenticationService authenticationService;
 
@@ -69,14 +66,9 @@ class AuthenticationServiceTest {
 
     @Test
     void getCurrentUserShouldLoadUserAndMap() {
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("alice");
         UserDTO dto =
                 new UserDTO(1L, "alice", "alice@example.com", Set.of(AuthoritiesConstants.USER));
-        when(userRepository.findOneWithAuthoritiesByUsername("alice"))
-                .thenReturn(Optional.of(user));
-        when(userMapper.toDto(user)).thenReturn(dto);
+        when(userQueryService.getUserWithAuthoritiesByUsername("alice")).thenReturn(dto);
 
         try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
