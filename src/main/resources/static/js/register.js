@@ -38,7 +38,7 @@ const passwordConfirmRequiredMsg = document.querySelector(
 const passwordMismatchMsg = document.getElementById('registerPasswordConfirmMismatch');
 
 const USERNAME_PATTERN = /^[A-Za-z0-9._-]+$/;
-const PASSWORD_PATTERN = /^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[!@#$%^&*()_+\-\[\]{};':"\\|,.<>\/?])(?!.*\s).+$/;
+const PASSWORD_PATTERN = /^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[][!@#$%^&*()_+{};':"\\|,.<>/?-])(?!.*\s).+$/;
 
 function hideAlert() {
     if (alertBox) {
