@@ -7,15 +7,20 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import io.github.susimsek.springdataaotsamples.service.validation.PasswordValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+import jakarta.validation.ReportAsSingleViolation;
+import jakarta.validation.constraints.Pattern;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = PasswordValidator.class)
+@Constraint(validatedBy = {})
+@Pattern(
+        regexp = "^(?=.*[A-ZÇĞİÖŞÜ])(?=.*[a-zçğıöşü])(?=.*\\d).+$",
+        message = "{app.validation.password.message}")
+@ReportAsSingleViolation
 @Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
 @Retention(RUNTIME)
 public @interface Password {
