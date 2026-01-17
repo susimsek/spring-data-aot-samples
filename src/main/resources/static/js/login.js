@@ -17,6 +17,8 @@ const submitBtn = document.getElementById('loginSubmit');
 const spinner = document.getElementById('loginSpinner');
 const usernameInput = document.getElementById('loginUsername');
 const passwordInput = document.getElementById('loginPassword');
+const passwordToggleBtn = document.getElementById('loginPasswordToggle');
+const passwordToggleIcon = document.getElementById('loginPasswordToggleIcon');
 const rememberMeInput = document.getElementById('loginRememberMe');
 const {toggleInlineMessages} = Validation;
 const usernameRequiredMsg = document.querySelector('[data-error-type="loginUsername-required"]');
@@ -68,6 +70,20 @@ function bindLiveValidation() {
     }
 }
 
+function bindPasswordToggle() {
+    if (!passwordInput || !passwordToggleBtn || !passwordToggleIcon) return;
+    passwordToggleBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        const willShow = passwordInput.type === 'password';
+        passwordInput.type = willShow ? 'text' : 'password';
+        passwordToggleBtn.setAttribute('aria-label', willShow ? 'Hide password' : 'Show password');
+        passwordToggleBtn.setAttribute('aria-pressed', willShow ? 'true' : 'false');
+        passwordToggleIcon.classList.remove('fa-eye', 'fa-eye-slash');
+        passwordToggleIcon.classList.add(willShow ? 'fa-eye-slash' : 'fa-eye');
+        passwordInput.focus();
+    });
+}
+
 async function handleSubmit(event) {
     event.preventDefault();
     if (!form) return;
@@ -115,6 +131,12 @@ async function handleSubmit(event) {
     }
     form.reset();
     clearValidation();
+    if (passwordInput && passwordToggleBtn && passwordToggleIcon) {
+        passwordInput.type = 'password';
+        passwordToggleBtn.setAttribute('aria-label', 'Show password');
+        passwordToggleIcon.classList.add('fa-eye');
+        passwordToggleIcon.classList.remove('fa-eye-slash');
+    }
     showToast('Signed in', 'success');
     globalThis.location.replace(redirectTarget);
 }
@@ -130,6 +152,7 @@ function init() {
     disablePasswordSizeValidation();
     Theme.init({button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel'});
     bindLiveValidation();
+    bindPasswordToggle();
     if (registered) {
         showToast('Account created. Please sign in.', 'success');
     }

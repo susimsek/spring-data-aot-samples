@@ -56,11 +56,17 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="registerPassword">Password</label>
-                    <input id="registerPassword" name="password" type="password" class="form-control"
-                           autocomplete="new-password" required minlength="8" maxlength="255" placeholder="Password">
-                    <div class="invalid-feedback" data-error-type="registerPassword-required">Password is required.</div>
-                    <div class="invalid-feedback d-none" data-error-type="registerPassword-size">Size must be between 8 and 255 characters.</div>
-                    <div class="invalid-feedback d-none" data-error-type="registerPassword-pattern">Password must include an uppercase letter, a lowercase letter, a digit, and a special character, with no spaces.</div>
+                    <div class="input-group has-validation">
+                        <input id="registerPassword" name="password" type="password" class="form-control"
+                               autocomplete="new-password" required minlength="8" maxlength="255" placeholder="Password">
+                        <button class="btn btn-outline-secondary" type="button" id="registerPasswordToggle"
+                                aria-label="Show password" aria-pressed="false">
+                            <i class="fa-solid fa-eye" id="registerPasswordToggleIcon" aria-hidden="true"></i>
+                        </button>
+                        <div class="invalid-feedback" data-error-type="registerPassword-required">Password is required.</div>
+                        <div class="invalid-feedback d-none" data-error-type="registerPassword-size">Size must be between 8 and 255 characters.</div>
+                        <div class="invalid-feedback d-none" data-error-type="registerPassword-pattern">Password must include an uppercase letter, a lowercase letter, a digit, and a special character, with no spaces.</div>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="registerPasswordConfirm">Confirm password</label>

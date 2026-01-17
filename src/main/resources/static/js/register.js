@@ -20,6 +20,8 @@ const usernameInput = document.getElementById('registerUsername');
 const emailInput = document.getElementById('registerEmail');
 const passwordInput = document.getElementById('registerPassword');
 const passwordConfirmInput = document.getElementById('registerPasswordConfirm');
+const passwordToggleBtn = document.getElementById('registerPasswordToggle');
+const passwordToggleIcon = document.getElementById('registerPasswordToggleIcon');
 
 const usernameRequiredMsg = document.querySelector('[data-error-type="registerUsername-required"]');
 const usernameSizeMsg = document.querySelector('[data-error-type="registerUsername-size"]');
@@ -141,6 +143,20 @@ function bindLiveValidation() {
     });
 }
 
+function bindPasswordToggle() {
+    if (!passwordInput || !passwordToggleBtn || !passwordToggleIcon) return;
+    passwordToggleBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        const willShow = passwordInput.type === 'password';
+        passwordInput.type = willShow ? 'text' : 'password';
+        passwordToggleBtn.setAttribute('aria-label', willShow ? 'Hide password' : 'Show password');
+        passwordToggleBtn.setAttribute('aria-pressed', willShow ? 'true' : 'false');
+        passwordToggleIcon.classList.remove('fa-eye', 'fa-eye-slash');
+        passwordToggleIcon.classList.add(willShow ? 'fa-eye-slash' : 'fa-eye');
+        passwordInput.focus();
+    });
+}
+
 async function handleSubmit(event) {
     event.preventDefault();
     if (!form) return;
@@ -182,6 +198,13 @@ async function handleSubmit(event) {
     const registeredUsername = response?.username || username;
     form.reset();
     clearValidation();
+    if (passwordInput && passwordToggleBtn && passwordToggleIcon) {
+        passwordInput.type = 'password';
+        passwordToggleBtn.setAttribute('aria-label', 'Show password');
+        passwordToggleBtn.setAttribute('aria-pressed', 'false');
+        passwordToggleIcon.classList.add('fa-eye');
+        passwordToggleIcon.classList.remove('fa-eye-slash');
+    }
     showToast(`Account created for ${registeredUsername}. Please sign in.`, 'success');
     globalThis.location.replace(
         `/login.html?registered=1&redirect=${encodeURIComponent(redirectTarget)}`
@@ -192,6 +215,7 @@ function init() {
     clearToken();
     Theme.init({button: '#themeToggle', icon: '#themeToggleIcon', label: '#themeToggleLabel'});
     bindLiveValidation();
+    bindPasswordToggle();
     usernameInput?.focus();
     form?.addEventListener('submit', handleSubmit);
 }
