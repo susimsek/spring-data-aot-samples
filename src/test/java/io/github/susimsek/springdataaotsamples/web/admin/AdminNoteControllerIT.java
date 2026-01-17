@@ -71,7 +71,8 @@ class AdminNoteControllerIT {
         mockMvc.perform(get("/api/admin/notes").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[*].owner").value(containsInAnyOrder("admin", "user")))
+                .andExpect(
+                        jsonPath("$.content[*].owner").value(containsInAnyOrder("admin", "user")))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(10));
     }
