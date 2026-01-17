@@ -6,7 +6,7 @@ import Validation from './validation.js';
 
 const {clearToken} = State;
 const {showToast} = Helpers;
-const {toggleInlineMessages, toggleSizeMessages} = Validation;
+const {getSizeState, toggleInlineMessages, toggleSizeMessages, togglePatternMessage} = Validation;
 
 const urlParams = new URLSearchParams(globalThis.location.search);
 const rawRedirect = urlParams.get('redirect');
@@ -29,12 +29,14 @@ const emailSizeMsg = document.querySelector('[data-error-type="registerEmail-siz
 const emailFormatMsg = document.querySelector('[data-error-type="registerEmail-format"]');
 const passwordRequiredMsg = document.querySelector('[data-error-type="registerPassword-required"]');
 const passwordSizeMsg = document.querySelector('[data-error-type="registerPassword-size"]');
+const passwordPatternMsg = document.querySelector('[data-error-type="registerPassword-pattern"]');
 const passwordConfirmRequiredMsg = document.querySelector(
     '[data-error-type="registerPasswordConfirm-required"]'
 );
 const passwordMismatchMsg = document.getElementById('registerPasswordConfirmMismatch');
 
 const USERNAME_PATTERN = /^[A-Za-z0-9._-]+$/;
+const PASSWORD_PATTERN = /^(?=.*[a-zçğıöşüı])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[^A-Za-z0-9ÇĞİÖŞÜçğıöşüı])(?!.*\s).+$/;
 
 function hideAlert() {
     if (alertBox) {
@@ -68,15 +70,9 @@ function validateUsername(showValid) {
     toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg, showValid);
     const value = (usernameInput.value || '').trim();
     const ok = value.length === 0 || USERNAME_PATTERN.test(value);
-    if (usernamePatternMsg) {
-        usernamePatternMsg.classList.toggle('d-none', ok || value.length === 0);
-    }
-    if (!ok) {
-        usernameInput.classList.add('is-invalid');
-        if (showValid) {
-            usernameInput.classList.remove('is-valid');
-        }
-    }
+    usernameInput.setCustomValidity(ok ? '' : 'username-pattern');
+    toggleInlineMessages(usernameInput, usernameRequiredMsg, usernameSizeMsg, showValid);
+    togglePatternMessage(usernameInput, usernamePatternMsg);
     return ok;
 }
 
@@ -99,13 +95,20 @@ function validateEmail(showValid) {
 
 function validatePasswords(showValid) {
     if (!passwordInput || !passwordConfirmInput) return true;
-    toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg, showValid);
-    toggleInlineMessages(passwordConfirmInput, passwordConfirmRequiredMsg, null, showValid);
-    toggleSizeMessages(passwordConfirmInput);
-
     const pass = passwordInput.value || '';
     const confirm = passwordConfirmInput.value || '';
     const match = pass.length === 0 || confirm.length === 0 || pass === confirm;
+
+    const {requiredInvalid, tooShort, tooLong} = getSizeState(passwordInput);
+    const sizeOk = !requiredInvalid && !(tooShort || tooLong);
+    const patternOk = pass.length === 0 || PASSWORD_PATTERN.test(pass);
+    passwordInput.setCustomValidity(sizeOk && !patternOk ? 'password-pattern' : '');
+    toggleInlineMessages(passwordInput, passwordRequiredMsg, passwordSizeMsg, showValid);
+
+    togglePatternMessage(passwordInput, passwordPatternMsg, {requireSizeOk: true});
+
+    toggleInlineMessages(passwordConfirmInput, passwordConfirmRequiredMsg, null, showValid);
+    toggleSizeMessages(passwordConfirmInput);
 
     if (passwordMismatchMsg) {
         passwordMismatchMsg.classList.toggle('d-none', match);
@@ -116,25 +119,25 @@ function validatePasswords(showValid) {
     } else {
         passwordConfirmInput.classList.remove('is-valid');
     }
-    return match;
+    return match && passwordInput.checkValidity();
 }
 
 function bindLiveValidation() {
     usernameInput?.addEventListener('input', () => {
         hideAlert();
-        validateUsername(false);
+        validateUsername(true);
     });
     emailInput?.addEventListener('input', () => {
         hideAlert();
-        validateEmail(false);
+        validateEmail(true);
     });
     passwordInput?.addEventListener('input', () => {
         hideAlert();
-        validatePasswords(false);
+        validatePasswords(true);
     });
     passwordConfirmInput?.addEventListener('input', () => {
         hideAlert();
-        validatePasswords(false);
+        validatePasswords(true);
     });
 }
 
@@ -143,15 +146,13 @@ async function handleSubmit(event) {
     if (!form) return;
     clearValidation();
 
-    const usernameOk = validateUsername(false);
-    const emailOk = validateEmail(false);
-    const passOk = validatePasswords(false);
+    const usernameOk = validateUsername(true);
+    const emailOk = validateEmail(true);
+    const passOk = validatePasswords(true);
+    form.classList.add('was-validated');
     if (!form.checkValidity() || !usernameOk || !emailOk || !passOk) {
-        [usernameInput, emailInput, passwordInput, passwordConfirmInput].forEach((input) => {
-            if (input && !input.checkValidity()) {
-                input.classList.add('is-invalid');
-            }
-        });
+        const firstInvalid = form.querySelector('input.is-invalid, input:invalid');
+        firstInvalid?.focus();
         return;
     }
 

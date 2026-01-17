@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.service.dto;
 
+import io.github.susimsek.springdataaotsamples.service.validation.constraints.Password;
 import io.github.susimsek.springdataaotsamples.service.validation.constraints.Username;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -20,5 +21,6 @@ public record RegisterRequest(
                 String email,
         @Schema(description = "Password", example = "change-me", maxLength = 255)
                 @NotBlank
-                @Size(min = 6, max = 255)
+                @Size(min = 8, max = 255)
+                @Password
                 String password) {}
