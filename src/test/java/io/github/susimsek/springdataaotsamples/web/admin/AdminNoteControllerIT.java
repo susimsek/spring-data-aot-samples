@@ -65,20 +65,20 @@ class AdminNoteControllerIT {
 
     @Test
     void findAllShouldReturnAllNotes() throws Exception {
-        createNote("Admin list A", "alice");
-        createNote("Admin list B", "bob");
+        createNote("Admin list A", "admin");
+        createNote("Admin list B", "user");
 
         mockMvc.perform(get("/api/admin/notes").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[*].owner").value(containsInAnyOrder("alice", "bob")))
+                .andExpect(jsonPath("$.content[*].owner").value(containsInAnyOrder("admin", "user")))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(10));
     }
 
     @Test
     void findByIdShouldReturnNote() throws Exception {
-        Note note = createNote("Admin find note", "alice");
+        Note note = createNote("Admin find note", "admin");
 
         mockMvc.perform(get("/api/admin/notes/{id}", note.getId()))
                 .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class AdminNoteControllerIT {
 
     @Test
     void updateShouldReturnUpdatedNote() throws Exception {
-        Note note = createNote("Admin old title", "alice");
+        Note note = createNote("Admin old title", "admin");
         NoteUpdateRequest request =
                 new NoteUpdateRequest(
                         "Admin updated title", "Updated content", false, "#123456", Set.of());
@@ -103,7 +103,7 @@ class AdminNoteControllerIT {
 
     @Test
     void patchShouldReturnPatchedNote() throws Exception {
-        Note note = createNote("Admin original", "alice");
+        Note note = createNote("Admin original", "admin");
         NotePatchRequest request =
                 new NotePatchRequest("Admin patched", "Partial content", null, null, null);
 
@@ -118,7 +118,7 @@ class AdminNoteControllerIT {
 
     @Test
     void deleteShouldSoftDeleteNote() throws Exception {
-        Note note = createNote("Admin delete note", "alice");
+        Note note = createNote("Admin delete note", "admin");
 
         mockMvc.perform(delete("/api/admin/notes/{id}", note.getId()))
                 .andExpect(status().isNoContent());
@@ -129,7 +129,7 @@ class AdminNoteControllerIT {
 
     @Test
     void findDeletedShouldReturnPagedNotes() throws Exception {
-        Note note = createDeletedNote("Admin deleted note", "alice");
+        Note note = createDeletedNote("Admin deleted note", "admin");
 
         mockMvc.perform(get("/api/admin/notes/deleted").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
@@ -139,7 +139,7 @@ class AdminNoteControllerIT {
 
     @Test
     void restoreShouldReturnNoContent() throws Exception {
-        Note note = createDeletedNote("Admin restore note", "alice");
+        Note note = createDeletedNote("Admin restore note", "admin");
 
         mockMvc.perform(post("/api/admin/notes/{id}/restore", note.getId()))
                 .andExpect(status().isNoContent());
@@ -150,7 +150,7 @@ class AdminNoteControllerIT {
 
     @Test
     void deletePermanentlyShouldRemoveNote() throws Exception {
-        Note note = createDeletedNote("Admin permanent note", "alice");
+        Note note = createDeletedNote("Admin permanent note", "admin");
 
         mockMvc.perform(delete("/api/admin/notes/{id}/permanent", note.getId()))
                 .andExpect(status().isNoContent());
@@ -160,7 +160,7 @@ class AdminNoteControllerIT {
 
     @Test
     void emptyTrashShouldRemoveDeletedNotes() throws Exception {
-        createDeletedNote("Admin trash", "alice");
+        createDeletedNote("Admin trash", "admin");
 
         mockMvc.perform(delete("/api/admin/notes/deleted")).andExpect(status().isNoContent());
 
@@ -170,8 +170,8 @@ class AdminNoteControllerIT {
 
     @Test
     void bulkShouldReturnProcessedAndFailed() throws Exception {
-        Note active = createNote("Admin bulk active", "alice");
-        Note alreadyDeleted = createDeletedNote("Admin bulk deleted", "bob");
+        Note active = createNote("Admin bulk active", "admin");
+        Note alreadyDeleted = createDeletedNote("Admin bulk deleted", "user");
         BulkActionRequest request =
                 new BulkActionRequest(
                         "DELETE_SOFT", Set.of(active.getId(), alreadyDeleted.getId()));
@@ -225,15 +225,15 @@ class AdminNoteControllerIT {
 
     @Test
     void changeOwnerShouldUpdateOwnerWhenUserExists() throws Exception {
-        Note note = createNote("Admin change owner", "alice");
-        OwnerChangeRequest request = new OwnerChangeRequest("user1");
+        Note note = createNote("Admin change owner", "admin");
+        OwnerChangeRequest request = new OwnerChangeRequest("user");
 
         mockMvc.perform(
                         post("/api/admin/notes/{id}/owner", note.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.owner").value("user1"));
+                .andExpect(jsonPath("$.owner").value("user"));
     }
 
     private Note createNote(String title, String owner) {
@@ -254,7 +254,7 @@ class AdminNoteControllerIT {
     }
 
     private Note createNoteWithRevisions() {
-        Note note = createNote("Admin revision note", "alice");
+        Note note = createNote("Admin revision note", "admin");
         note.setTitle("Admin revision note v2");
         note.setContent("Updated revision content");
         noteRepository.saveAndFlush(note);
