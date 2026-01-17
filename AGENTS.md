@@ -4,18 +4,17 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Quick Reference
 
-| Action                               | Command                                                  |
-|--------------------------------------|----------------------------------------------------------|
-| Run (dev, H2)                        | `./mvnw spring-boot:run`                                 |
-| Run (prod, PostgreSQL)               | `./mvnw -Pprod spring-boot:run`                          |
-| Unit tests                           | `./mvnw test`                                            |
-| Full verify (includes ITs + quality) | `./mvnw verify`                                          |
-| Package                              | `./mvnw -DskipTests package`                             |
-| Apply formatting (Spotless)          | `./mvnw -DskipTests spotless:apply`                      |
-| Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile`        |
-| Build container image (JVM)          | `./mvnw -Pprod -DskipTests jib:dockerBuild`              |
-| Build container image (native)       | `./mvnw -Pprod,native -DskipTests jib:dockerBuild`       |
-| Run (Spring Boot docker-compose)     | `./mvnw -Pprod,docker-compose spring-boot:run`           |
+| Action                               | Command                                           |
+|--------------------------------------|---------------------------------------------------|
+| Run (dev, H2)                        | `./mvnw spring-boot:run`                          |
+| Run (prod, PostgreSQL)               | `./mvnw -Pprod spring-boot:run`                   |
+| Unit tests                           | `./mvnw test`                                     |
+| Full verify (tests + quality gates)  | `./mvnw verify`                                   |
+| Check formatting (Spotless)          | `./mvnw -DskipTests spotless:check`               |
+| Apply formatting (Spotless)          | `./mvnw -DskipTests spotless:apply`               |
+| Checkstyle (no tests)                | `./mvnw -DskipTests checkstyle:check`             |
+| Package                              | `./mvnw -DskipTests package`                      |
+| Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile` |
 
 ## Requirements
 
@@ -27,27 +26,27 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Application: `src/main/java/io/github/susimsek/springdataaotsamples`
   - `config`: Spring configurations (including AOT)
     - `apidoc`: OpenAPI / Swagger UI configuration (Springdoc)
-    - `cache`: caching setup (Spring Cache + Hibernate second-level cache via JCache)
+    - `cache`: caching setup (Spring Cache + Hibernate second-level cache)
     - `security`: Spring Security configuration (filter chain, method security, etc.)
   - `domain`: JPA entities and enums
   - `repository`: Spring Data repositories (including custom impls)
-  - `security`: Security components (services, tokens, principals, utilities)
-  - `scheduler`: Scheduled jobs (cleanup, maintenance)
+  - `security`: security components (tokens, principals, utilities)
+  - `scheduler`: scheduled jobs (cleanup, maintenance)
   - `service`: business logic
     - `command`: write/side-effect operations
     - `query`: read/query operations
-    - `dto`: request/response models (mostly `record`)
+    - `dto`: request/response models (prefer `record`)
     - `exception`: service-layer exception types
     - `mapper`: MapStruct mappers
     - `spec`: JPA `Specification` builders
     - `validation`: custom constraints + validators
-  - `web`: Presentation layer (REST endpoints, MVC views, and exception handling)
+  - `web`: presentation layer (REST endpoints, MVC views, exception handling)
     - `error`: API error model + `@ControllerAdvice` exception mapping
 - Configuration: `src/main/resources/config` (`application*.yml`)
-- Static web assets (UI): `src/main/resources/static` (served HTML pages, icons, and other static resources)
-  - JavaScript modules: `src/main/resources/static/js`
-- i18n messages: `src/main/resources/i18n` (e.g. `messages.properties`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
+- i18n messages: `src/main/resources/i18n`
+- Static web assets (UI): `src/main/resources/static`
+  - JavaScript modules: `src/main/resources/static/js`
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
 - Tests: `src/test/java` and `src/test/resources`
@@ -58,14 +57,14 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - Check: `./mvnw -DskipTests spotless:check`
   - Apply: `./mvnw -DskipTests spotless:apply`
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
-- Follow `.editorconfig` (LF, no trailing whitespace, Java indent = 4).
+- Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
 
 ## Testing Guide
 
 - Tests live under `src/test/java`.
 - Unit tests: `*Test.java`
-- Integration tests: `*IT*.java` and the `@IntegrationTest` meta-annotation
+- Integration tests: `*IT*.java` and the `@IntegrationTest` meta-annotation.
 - Run a single unit test: `./mvnw -Dtest=TokenServiceTest test`
 - Run a single integration test: `./mvnw -Dit.test=NoteControllerIT failsafe:integration-test failsafe:verify`
 - Performance (Gatling): `src/test/java/gatling/simulations` and `./mvnw gatling:test`
@@ -74,9 +73,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 - Native builds rely on runtime hints in `src/main/java/.../config/aot/NativeConfig.java`.
   - If you add Liquibase resources, validators, or reflection-requiring types, update the hints accordingly.
-- Place new custom validation constraints/validators under `service/validation` (the scanner targets this package).
+- Place new custom validation constraints/validators under `service/validation` (the AOT scanner targets this package).
 
-## Development Guideline
+## Development Guidelines
 
 ### Architecture
 
