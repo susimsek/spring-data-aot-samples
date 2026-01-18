@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.service.command;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
+import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.AuthorityRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
@@ -39,15 +40,15 @@ public class UserCommandService {
         User user = userMapper.toEntity(request);
         user.setPassword(Objects.requireNonNull(passwordEncoder.encode(request.password())));
         user.setEnabled(true);
-        user.getAuthorities()
-                .add(
-                        authorityRepository
-                                .findByName(AuthoritiesConstants.USER)
-                                .orElseThrow(
-                                        () ->
-                                                new IllegalStateException(
-                                                        "Authority not found: "
-                                                                + AuthoritiesConstants.USER)));
+        Authority authority =
+                authorityRepository
+                        .findByName(AuthoritiesConstants.USER)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Authority not found: "
+                                                        + AuthoritiesConstants.USER));
+        user.getAuthorities().add(authority);
         User saved = userRepository.save(user);
         evictUserCaches();
         return userMapper.toRegistrationDto(saved);
