@@ -228,7 +228,7 @@ public class NoteShareService {
                         .and(NoteShareTokenSpecifications.search(q))
                         .and(NoteShareTokenSpecifications.status(status))
                         .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        var page = noteShareTokenRepository.findAllWithNote(spec, effective);
+        var page = noteShareTokenRepository.findAll(spec, effective);
         List<NoteShareDTO> content = page.getContent().stream().map(this::toDto).toList();
         return new PageImpl<>(content, effective, page.getTotalElements());
     }
@@ -245,7 +245,7 @@ public class NoteShareService {
                         .and(NoteShareTokenSpecifications.search(q))
                         .and(NoteShareTokenSpecifications.status(status))
                         .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        return noteShareTokenRepository.findAllWithNote(spec, pageable);
+        return noteShareTokenRepository.findAll(spec, pageable);
     }
 
     private Page<NoteShareToken> searchAll(
@@ -254,7 +254,7 @@ public class NoteShareService {
                 Specification.where(NoteShareTokenSpecifications.search(q))
                         .and(NoteShareTokenSpecifications.status(status))
                         .and(NoteShareTokenSpecifications.createdBetween(createdFrom, createdTo));
-        return noteShareTokenRepository.findAllWithNote(spec, pageable);
+        return noteShareTokenRepository.findAll(spec, pageable);
     }
 
     private Pageable resolvePageable(Pageable pageable) {
