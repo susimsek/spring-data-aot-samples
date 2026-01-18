@@ -1,7 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
-import io.github.susimsek.springdataaotsamples.service.exception.InvalidPasswordException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Stream;
@@ -41,23 +40,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public @Nullable ResponseEntity<Object> handleApiException(
             ApiException ex, WebRequest request) {
-        return this.handleExceptionInternal(
-                ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
-    }
-
-    @ExceptionHandler(InvalidPasswordException.class)
-    public @Nullable ResponseEntity<Object> handleInvalidPassword(
-            InvalidPasswordException ex, WebRequest request) {
-        ProblemDetail body =
-                this.buildProblemDetail(
-                        ex,
-                        HttpStatus.BAD_REQUEST,
-                        "problemDetail.title.invalidPassword",
-                        ex.getDefaultDetail(),
-                        ex.getDetailMessageCode(),
-                        null);
-        return this.handleExceptionInternal(
-                ex, body, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request);
+        ProblemDetail body = ex.updateAndGetBody(messageSource, LocaleContextHolder.getLocale());
+        return this.handleExceptionInternal(ex, body, ex.getHeaders(), ex.getStatusCode(), request);
     }
 
     @SuppressWarnings("java:S2638")

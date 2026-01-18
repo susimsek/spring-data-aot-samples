@@ -7,11 +7,19 @@ import org.springframework.http.HttpStatus;
 public class InvalidPasswordException extends ApiException {
 
     private final String detailMessageCode;
-    private final String defaultDetail;
 
     public InvalidPasswordException(String detailMessageCode, String defaultDetail) {
         super(HttpStatus.BAD_REQUEST, "Invalid password", defaultDetail);
         this.detailMessageCode = detailMessageCode;
-        this.defaultDetail = defaultDetail;
+    }
+
+    @Override
+    public String getTitleMessageCode() {
+        return "problemDetail.title.invalidPassword";
+    }
+
+    @Override
+    public String getDetailMessageCode() {
+        return detailMessageCode;
     }
 }
