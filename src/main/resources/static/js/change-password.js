@@ -26,7 +26,6 @@ const newPasswordConfirmInput = document.getElementById('newPasswordConfirm');
 const currentPasswordRequiredMsg = document.querySelector(
     '[data-error-type="currentPassword-required"]'
 );
-const currentPasswordSizeMsg = document.querySelector('[data-error-type="currentPassword-size"]');
 
 const newPasswordRequiredMsg = document.querySelector('[data-error-type="newPassword-required"]');
 const newPasswordSizeMsg = document.querySelector('[data-error-type="newPassword-size"]');
@@ -69,7 +68,6 @@ function clearValidation() {
 function validateCurrentPassword(showValid) {
     if (!currentPasswordInput) return true;
     toggleInlineMessages(currentPasswordInput, currentPasswordRequiredMsg, null, showValid);
-    toggleSizeMessages(currentPasswordInput, {sizeMessageEl: currentPasswordSizeMsg});
     return currentPasswordInput.checkValidity();
 }
 
