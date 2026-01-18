@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidCredentialsException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Stream;
@@ -42,6 +43,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ApiException ex, WebRequest request) {
         return this.handleExceptionInternal(
                 ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public @Nullable ResponseEntity<Object> handleInvalidCredentials(
+            InvalidCredentialsException ex, WebRequest request) {
+        ProblemDetail body =
+                this.buildProblemDetail(
+                        ex,
+                        HttpStatus.BAD_REQUEST,
+                        "problemDetail.title.invalidCredentials",
+                        ex.getDefaultDetail(),
+                        ex.getDetailMessageCode(),
+                        null);
+        return this.handleExceptionInternal(
+                ex, body, HttpHeaders.EMPTY, HttpStatus.BAD_REQUEST, request);
     }
 
     @SuppressWarnings("java:S2638")
@@ -154,7 +170,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         ex,
                         HttpStatus.CONFLICT,
                         "problemDetail.title.dataIntegrityViolation",
-                        "Request conflicts with existing data.",
+                        "The request violates a data integrity constraint.",
                         "problemDetail.dataIntegrityViolation",
                         null);
         return this.handleExceptionInternal(

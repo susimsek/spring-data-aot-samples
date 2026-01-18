@@ -123,7 +123,16 @@ class GlobalExceptionHandlerTest {
     void shouldHandleDataIntegrityViolation() throws Exception {
         mockMvc.perform(get("/test/data-integrity"))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("Request conflicts with existing data."));
+                .andExpect(
+                        jsonPath("$.detail")
+                                .value("The request violates a data integrity constraint."));
+    }
+
+    @Test
+    void shouldHandleInvalidCredentials() throws Exception {
+        mockMvc.perform(get("/test/invalid-credentials/current-password"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Current password is incorrect."));
     }
 
     @Test

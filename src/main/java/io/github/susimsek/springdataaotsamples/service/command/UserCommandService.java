@@ -6,13 +6,16 @@ import io.github.susimsek.springdataaotsamples.domain.User;
 import io.github.susimsek.springdataaotsamples.repository.AuthorityRepository;
 import io.github.susimsek.springdataaotsamples.repository.UserRepository;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
+import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.EmailAlreadyExistsException;
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidCredentialsException;
 import io.github.susimsek.springdataaotsamples.service.exception.UsernameAlreadyExistsException;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,27 @@ public class UserCommandService {
         User saved = userRepository.save(user);
         evictUserCaches();
         return userMapper.toRegistrationDto(saved);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user =
+                userRepository
+                        .findOneWithAuthoritiesById(userId)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException(
+                    "problemDetail.invalidCredentials.currentPassword",
+                    "Current password is incorrect.");
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException(
+                    "problemDetail.invalidCredentials.samePassword",
+                    "New password must be different from current password.");
+        }
+        user.setPassword(Objects.requireNonNull(passwordEncoder.encode(request.newPassword())));
+        userRepository.save(user);
+        evictUserCaches();
     }
 
     private void evictUserCaches() {

@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.security;
 
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
+import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -62,5 +64,14 @@ public class AuthenticationService {
                     token.setRevoked(true);
                     refreshTokenRepository.save(token);
                 });
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        Long userId =
+                SecurityUtils.getCurrentUserId()
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        userCommandService.changePassword(userId, request);
+        refreshTokenRepository.revokeAllByUserId(userId);
     }
 }

@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.web;
 import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RefreshTokenRequest;
@@ -166,5 +167,27 @@ public class AuthenticationController {
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(token);
+    }
+
+    @Operation(
+            summary = "Change password",
+            description = "Changes password for the authenticated user.")
+    @ApiResponse(responseCode = "204", description = "Password changed")
+    @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or invalid credentials",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)))
+    @PostMapping(value = "/change-password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authenticationService.changePassword(request);
+        ResponseCookie clearCookie = CookieUtils.clearAuthCookie();
+        ResponseCookie clearRefresh = CookieUtils.clearRefreshCookie();
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, clearRefresh.toString())
+                .build();
     }
 }

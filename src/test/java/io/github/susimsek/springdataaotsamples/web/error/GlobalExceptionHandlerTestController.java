@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidCredentialsException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -61,6 +62,13 @@ class GlobalExceptionHandlerTestController {
     @GetMapping("/data-integrity")
     Object dataIntegrity() {
         throw new DataIntegrityViolationException("duplicate");
+    }
+
+    @GetMapping("/invalid-credentials/current-password")
+    Object invalidCredentialsCurrentPassword() {
+        throw new InvalidCredentialsException(
+                "problemDetail.invalidCredentials.currentPassword",
+                "Current password is incorrect.");
     }
 
     @GetMapping("/html-notfound")

@@ -16,6 +16,7 @@ import io.github.susimsek.springdataaotsamples.security.AuthenticationService;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.security.CookieUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
+import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LogoutRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
@@ -139,5 +140,27 @@ class AuthenticationControllerTest {
                                                     containsString("AUTH-TOKEN"),
                                                     containsString("REFRESH-TOKEN"))));
         }
+    }
+
+    @Test
+    @WithMockUser
+    void changePasswordShouldReturnNoContent() throws Exception {
+        doNothing().when(authenticationService).changePassword(any(ChangePasswordRequest.class));
+
+        mockMvc.perform(
+                        post("/api/auth/change-password")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        jsonMapper.writeValueAsString(
+                                                new ChangePasswordRequest("old", "Change-me1"))))
+                .andExpect(status().isNoContent())
+                .andExpect(
+                        header().stringValues(
+                                        HttpHeaders.SET_COOKIE,
+                                        hasItems(
+                                                containsString("AUTH-TOKEN"),
+                                                containsString("Max-Age=0"),
+                                                containsString("REFRESH-TOKEN"))));
+        verify(authenticationService).changePassword(any(ChangePasswordRequest.class));
     }
 }

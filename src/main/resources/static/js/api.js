@@ -103,6 +103,14 @@ const Api = (() => {
         return parseResponse(res);
     };
 
+    const changePassword = async (payload) => {
+        return request('/api/auth/change-password', {
+            method: 'POST',
+            headers: jsonHeaders(),
+            body: JSON.stringify(payload)
+        });
+    };
+
     const currentUser = async () => {
         return request('/api/auth/me', {headers: jsonHeaders()});
     };
@@ -318,6 +326,7 @@ const Api = (() => {
         ApiError,
         login,
         register,
+        changePassword,
         currentUser,
         logout,
         refresh,
