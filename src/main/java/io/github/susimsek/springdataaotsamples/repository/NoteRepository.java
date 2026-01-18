@@ -63,6 +63,12 @@ public interface NoteRepository
     @Query("select n.deleted from Note n where n.id = :id and n.owner = ?#{authentication.name}")
     Optional<Boolean> findDeletedFlagByIdForCurrentUser(@Param("id") Long id);
 
+    @Query("select n.id from Note n where n.deleted = true")
+    List<Long> findDeletedIds();
+
+    @Query("select n.id from Note n where n.deleted = true and n.owner = :owner")
+    List<Long> findDeletedIdsByOwner(@Param("owner") String owner);
+
     @Modifying
     @Transactional
     @Query("delete from Note n where n.id = :id and n.deleted = true")

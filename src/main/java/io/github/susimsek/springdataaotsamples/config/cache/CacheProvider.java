@@ -1,8 +1,8 @@
 package io.github.susimsek.springdataaotsamples.config.cache;
 
-import java.util.Arrays;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 
@@ -12,13 +12,19 @@ public class CacheProvider {
 
     private final CacheManager cacheManager;
 
-    public void clearCaches(String... cacheNames) {
-        Arrays.stream(cacheNames).forEach(this::clearCache);
+    public void clearCache(String cacheName, Object key) {
+        Cache cache =
+                Objects.requireNonNull(
+                        cacheManager.getCache(cacheName), cacheName + " cache not configured");
+        cache.evictIfPresent(key);
     }
 
-    public void clearCache(String cacheName) {
-        Objects.requireNonNull(
-                        cacheManager.getCache(cacheName), cacheName + " cache not configured")
-                .clear();
+    public void clearCache(String cacheName, Iterable<?> keys) {
+        Cache cache =
+                Objects.requireNonNull(
+                        cacheManager.getCache(cacheName), cacheName + " cache not configured");
+        for (Object key : keys) {
+            cache.evictIfPresent(key);
+        }
     }
 }

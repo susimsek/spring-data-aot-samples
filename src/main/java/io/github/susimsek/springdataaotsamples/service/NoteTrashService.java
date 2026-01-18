@@ -2,7 +2,6 @@ package io.github.susimsek.springdataaotsamples.service;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
-import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
@@ -11,6 +10,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,7 +49,7 @@ public class NoteTrashService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     @Transactional
@@ -63,14 +63,15 @@ public class NoteTrashService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     @Transactional
     public void emptyTrash() {
+        List<Long> deletedIds = noteRepository.findDeletedIds();
         noteRepository.purgeDeleted();
         tagCommandService.cleanupOrphanTagsAsync();
-        evictNoteCaches();
+        evictNoteCachesByIds(deletedIds);
     }
 
     @Transactional
@@ -78,9 +79,10 @@ public class NoteTrashService {
         var username =
                 SecurityUtils.getCurrentUserLogin()
                         .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
+        List<Long> deletedIds = noteRepository.findDeletedIdsByOwner(username);
         noteRepository.purgeDeletedByOwner(username);
         tagCommandService.cleanupOrphanTagsAsync();
-        evictNoteCaches();
+        evictNoteCachesByIds(deletedIds);
     }
 
     @Transactional
@@ -94,7 +96,7 @@ public class NoteTrashService {
             throw new NoteNotFoundException(id);
         }
         tagCommandService.cleanupOrphanTagsAsync();
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     @Transactional
@@ -108,7 +110,7 @@ public class NoteTrashService {
             throw new NoteNotFoundException(id);
         }
         tagCommandService.cleanupOrphanTagsAsync();
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     private String getCurrentUsername() {
@@ -116,8 +118,13 @@ public class NoteTrashService {
                 .orElseThrow(() -> new UsernameNotFoundException("Current user not found"));
     }
 
-    private void evictNoteCaches() {
-        cacheProvider.clearCaches(
-                Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
+    private void evictNoteCachesById(Long noteId) {
+        cacheProvider.clearCache(Note.class.getName(), noteId);
+        cacheProvider.clearCache(NoteRepository.NOTE_BY_ID_CACHE, noteId);
+    }
+
+    private void evictNoteCachesByIds(List<Long> noteIds) {
+        cacheProvider.clearCache(Note.class.getName(), noteIds);
+        cacheProvider.clearCache(NoteRepository.NOTE_BY_ID_CACHE, noteIds);
     }
 }

@@ -2,11 +2,14 @@ package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface NoteShareTokenRepository
         extends JpaRepository<NoteShareToken, Long>, JpaSpecificationExecutor<NoteShareToken> {
@@ -23,7 +26,13 @@ public interface NoteShareTokenRepository
     @EntityGraph(attributePaths = {"note"})
     Optional<NoteShareToken> findOneWithNoteById(Long id);
 
-    long deleteByExpiresAtBefore(Instant now);
+    @Query("select t.id from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
+    List<Long> findIdsExpiredOrRevoked(Instant now);
 
-    long deleteByRevokedTrue();
+    @Query("select t.tokenHash from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
+    List<String> findTokenHashesExpiredOrRevoked(Instant now);
+
+    @Modifying
+    @Query("delete from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
+    int deleteExpiredOrRevoked(Instant now);
 }

@@ -17,6 +17,7 @@ import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundExc
 import io.github.susimsek.springdataaotsamples.service.exception.UserNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.mapper.NoteMapper;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,6 +86,7 @@ public class NoteCommandService {
         var note = findActiveNote(id);
         note.setOwner(owner);
         var saved = noteRepository.save(note);
+        evictNoteCachesById(saved.getId());
         return noteMapper.toDto(saved);
     }
 
@@ -94,7 +96,7 @@ public class NoteCommandService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     @Transactional
@@ -105,7 +107,7 @@ public class NoteCommandService {
         if (updated == 0) {
             throw new NoteNotFoundException(id);
         }
-        evictNoteCaches();
+        evictNoteCachesById(id);
     }
 
     @Transactional
@@ -123,9 +125,6 @@ public class NoteCommandService {
                         .filter(id -> !notesById.containsKey(id))
                         .collect(Collectors.toCollection(ArrayList::new));
         var result = executeBulk(action, notesById, failed);
-        if (result.processedCount() > 0) {
-            evictNoteCaches();
-        }
         return result;
     }
 
@@ -145,9 +144,6 @@ public class NoteCommandService {
                         .filter(id -> !notesById.containsKey(id))
                         .collect(Collectors.toCollection(ArrayList::new));
         var result = executeBulk(action, notesById, failed);
-        if (result.processedCount() > 0) {
-            evictNoteCaches();
-        }
         return result;
     }
 
@@ -177,57 +173,73 @@ public class NoteCommandService {
 
     private NoteDTO save(Note note) {
         var saved = noteRepository.save(note);
+        evictNoteCachesById(saved.getId());
         return noteMapper.toDto(saved);
     }
 
-    private void evictNoteCaches() {
-        cacheProvider.clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+    private void evictNoteCachesById(Long noteId) {
+        cacheProvider.clearCache(Note.class.getName(), noteId);
+        cacheProvider.clearCache(NoteRepository.NOTE_BY_ID_CACHE, noteId);
+    }
+
+    private void evictNoteCachesByIds(Collection<Long> noteIds) {
+        cacheProvider.clearCache(Note.class.getName(), noteIds);
+        cacheProvider.clearCache(NoteRepository.NOTE_BY_ID_CACHE, noteIds);
     }
 
     private BulkActionResult executeBulk(
             BulkAction action, Map<Long, Note> notesById, List<Long> failed) {
-        int processed =
-                switch (action) {
-                    case DELETE_SOFT -> {
-                        var toDelete =
-                                notesById.values().stream()
-                                        .filter(note -> !note.isDeleted())
-                                        .map(Note::getId)
-                                        .toList();
+        List<Long> affectedIds = List.of();
+        int processed = 0;
+
+        switch (action) {
+            case DELETE_SOFT -> {
+                var toDelete =
+                        notesById.values().stream()
+                                .filter(note -> !note.isDeleted())
+                                .map(Note::getId)
+                                .toList();
+                notesById.values().stream()
+                        .filter(Note::isDeleted)
+                        .map(Note::getId)
+                        .forEach(failed::add);
+                processed = toDelete.isEmpty() ? 0 : noteRepository.softDeleteByIds(toDelete);
+                affectedIds = toDelete;
+            }
+            case RESTORE -> {
+                var toRestore =
                         notesById.values().stream()
                                 .filter(Note::isDeleted)
                                 .map(Note::getId)
-                                .forEach(failed::add);
-                        yield toDelete.isEmpty() ? 0 : noteRepository.softDeleteByIds(toDelete);
-                    }
-                    case RESTORE -> {
-                        var toRestore =
-                                notesById.values().stream()
-                                        .filter(Note::isDeleted)
-                                        .map(Note::getId)
-                                        .toList();
+                                .toList();
+                notesById.values().stream()
+                        .filter(note -> !note.isDeleted())
+                        .map(Note::getId)
+                        .forEach(failed::add);
+                processed = toRestore.isEmpty() ? 0 : noteRepository.restoreByIds(toRestore);
+                affectedIds = toRestore;
+            }
+            case DELETE_FOREVER -> {
+                var deletable =
                         notesById.values().stream()
-                                .filter(note -> !note.isDeleted())
+                                .filter(Note::isDeleted)
                                 .map(Note::getId)
-                                .forEach(failed::add);
-                        yield toRestore.isEmpty() ? 0 : noteRepository.restoreByIds(toRestore);
-                    }
-                    case DELETE_FOREVER -> {
-                        var deletable =
-                                notesById.values().stream()
-                                        .filter(Note::isDeleted)
-                                        .map(Note::getId)
-                                        .toList();
-                        notesById.values().stream()
-                                .filter(note -> !note.isDeleted())
-                                .map(Note::getId)
-                                .forEach(failed::add);
-                        if (!deletable.isEmpty()) {
-                            noteRepository.deleteAllByIdInBatch(deletable);
-                        }
-                        yield deletable.size();
-                    }
-                };
+                                .toList();
+                notesById.values().stream()
+                        .filter(note -> !note.isDeleted())
+                        .map(Note::getId)
+                        .forEach(failed::add);
+                if (!deletable.isEmpty()) {
+                    noteRepository.deleteAllByIdInBatch(deletable);
+                }
+                processed = deletable.size();
+                affectedIds = deletable;
+            }
+        }
+
+        if (processed > 0 && !affectedIds.isEmpty()) {
+            evictNoteCachesByIds(affectedIds);
+        }
         return new BulkActionResult(processed, failed);
     }
 }

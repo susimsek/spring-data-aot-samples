@@ -92,7 +92,7 @@ class TagCommandServiceTest {
         tagCommandService.cleanupOrphanTagsAsync();
 
         verify(tagRepository).deleteAllByIdInBatch(orphanIds);
-        verify(cacheProvider).clearCache(Tag.class.getName());
+        verify(cacheProvider).clearCache(Tag.class.getName(), orphanIds);
     }
 
     @Test

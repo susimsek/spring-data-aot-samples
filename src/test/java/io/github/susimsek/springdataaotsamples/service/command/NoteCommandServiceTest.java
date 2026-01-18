@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.service.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -74,6 +75,7 @@ class NoteCommandServiceTest {
                         "My first note", "Hello auditing world", true, "#2563eb", Set.of("audit"));
 
         Note noteEntity = new Note();
+        noteEntity.setId(1L);
         NoteDTO dto =
                 sampleDto(
                         "My first note", "Hello auditing world", true, "#2563eb", Set.of("audit"));
@@ -92,6 +94,8 @@ class NoteCommandServiceTest {
         verify(noteRepository).save(noteCaptor.capture());
         assertThat(noteCaptor.getValue().getOwner()).isEqualTo("alice");
         assertThat(noteCaptor.getValue().getTags()).isEqualTo(resolvedTags);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -124,6 +128,8 @@ class NoteCommandServiceTest {
         verify(noteAuthorizationService).ensureEditAccess(note);
         verify(noteMapper).patchEntity(request, note);
         verify(tagCommandService, never()).resolveTags(any());
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -148,6 +154,8 @@ class NoteCommandServiceTest {
         verify(noteAuthorizationService).ensureEditAccess(note);
         verify(noteMapper).updateEntity(request, note);
         assertThat(note.getTags()).isEqualTo(resolvedTags);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -171,6 +179,8 @@ class NoteCommandServiceTest {
         assertThat(result).isEqualTo(dto);
         verify(noteMapper).updateEntity(request, note);
         assertThat(note.getTags()).isEqualTo(resolvedTags);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -201,6 +211,8 @@ class NoteCommandServiceTest {
         assertThat(result).isEqualTo(dto);
         verify(tagCommandService).resolveTags(request.tags());
         assertThat(note.getTags()).isEqualTo(resolvedTags);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -230,6 +242,8 @@ class NoteCommandServiceTest {
         verify(noteAuthorizationService).ensureEditAccess(note);
         verify(tagCommandService).resolveTags(request.tags());
         assertThat(note.getTags()).isEqualTo(resolvedTags);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -238,7 +252,8 @@ class NoteCommandServiceTest {
 
         assertThrows(NoteNotFoundException.class, () -> noteCommandService.delete(7L));
 
-        verify(cacheProvider, never()).clearCaches(any(), any());
+        verify(cacheProvider, never()).clearCache(anyString(), any(Object.class));
+        verify(cacheProvider, never()).clearCache(anyString(), any(Iterable.class));
     }
 
     @Test
@@ -251,7 +266,8 @@ class NoteCommandServiceTest {
         noteCommandService.deleteForCurrentUser(7L);
 
         verify(noteAuthorizationService).ensureEditAccess(note);
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), 7L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 7L);
     }
 
     @Test
@@ -262,7 +278,8 @@ class NoteCommandServiceTest {
                 NoteNotFoundException.class, () -> noteCommandService.deleteForCurrentUser(7L));
 
         verify(noteAuthorizationService, never()).ensureEditAccess(any(Note.class));
-        verify(cacheProvider, never()).clearCaches(any(), any());
+        verify(cacheProvider, never()).clearCache(anyString(), any(Object.class));
+        verify(cacheProvider, never()).clearCache(anyString(), any(Iterable.class));
     }
 
     @Test
@@ -276,7 +293,8 @@ class NoteCommandServiceTest {
                 NoteNotFoundException.class, () -> noteCommandService.deleteForCurrentUser(7L));
 
         verify(noteAuthorizationService).ensureEditAccess(note);
-        verify(cacheProvider, never()).clearCaches(any(), any());
+        verify(cacheProvider, never()).clearCache(anyString(), any(Object.class));
+        verify(cacheProvider, never()).clearCache(anyString(), any(Iterable.class));
     }
 
     @Test
@@ -285,7 +303,8 @@ class NoteCommandServiceTest {
 
         noteCommandService.delete(7L);
 
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), 7L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 7L);
     }
 
     @Test
@@ -315,6 +334,8 @@ class NoteCommandServiceTest {
         assertThat(result).isEqualTo(dto);
         assertThat(note.getOwner()).isEqualTo("bob");
         verify(noteRepository).save(note);
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -355,7 +376,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(2L);
         verify(noteRepository).softDeleteByIds(List.of(1L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(1L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(1L));
     }
 
     @Test
@@ -373,7 +395,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isZero();
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository, never()).restoreByIds(any());
-        verify(cacheProvider, never()).clearCaches(any(), any());
+        verify(cacheProvider, never()).clearCache(anyString(), any(Object.class));
+        verify(cacheProvider, never()).clearCache(anyString(), any(Iterable.class));
     }
 
     @Test
@@ -392,7 +415,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).isEmpty();
         verify(noteRepository).restoreByIds(List.of(1L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(1L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(1L));
     }
 
     @Test
@@ -414,7 +438,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(2L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(2L));
     }
 
     @Test
@@ -432,7 +457,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isZero();
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository, never()).deleteAllByIdInBatch(any());
-        verify(cacheProvider, never()).clearCaches(any(), any());
+        verify(cacheProvider, never()).clearCache(anyString(), any(Object.class));
+        verify(cacheProvider, never()).clearCache(anyString(), any(Iterable.class));
     }
 
     @Test
@@ -467,7 +493,8 @@ class NoteCommandServiceTest {
 
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactlyInAnyOrder(2L, 3L);
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(1L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(1L));
     }
 
     @Test
@@ -491,7 +518,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).restoreByIds(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(2L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(2L));
     }
 
     @Test
@@ -514,7 +542,8 @@ class NoteCommandServiceTest {
         assertThat(result.processedCount()).isEqualTo(1);
         assertThat(result.failedIds()).containsExactly(1L);
         verify(noteRepository).deleteAllByIdInBatch(List.of(2L));
-        verify(cacheProvider).clearCaches(Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE);
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(2L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(2L));
     }
 
     private NoteDTO sampleDto(

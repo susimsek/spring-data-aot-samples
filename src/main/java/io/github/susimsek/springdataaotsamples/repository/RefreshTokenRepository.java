@@ -2,6 +2,7 @@ package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,7 +23,10 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
             """)
     int revokeAllByUserId(Long userId);
 
-    long deleteByExpiresAtBefore(Instant cutoff);
+    @Query("select t.id from RefreshToken t where t.expiresAt < :now or t.revoked = true")
+    List<Long> findIdsExpiredOrRevoked(Instant now);
 
-    long deleteByRevokedTrue();
+    @Modifying
+    @Query("delete from RefreshToken t where t.expiresAt < :now or t.revoked = true")
+    int deleteExpiredOrRevoked(Instant now);
 }

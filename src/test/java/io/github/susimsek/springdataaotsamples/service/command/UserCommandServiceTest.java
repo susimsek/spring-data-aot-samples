@@ -77,11 +77,9 @@ class UserCommandServiceTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         assertThat(userCaptor.getValue().getEmail()).isEqualTo("newuser@example.com");
-        verify(cacheProvider)
-                .clearCaches(
-                        User.class.getName(),
-                        UserRepository.USER_BY_USERNAME_CACHE,
-                        UserRepository.USER_BY_EMAIL_CACHE);
+        verify(cacheProvider).clearCache(User.class.getName(), 10L);
+        verify(cacheProvider).clearCache(UserRepository.USER_BY_USERNAME_CACHE, "newuser");
+        verify(cacheProvider).clearCache(UserRepository.USER_BY_EMAIL_CACHE, "newuser@example.com");
     }
 
     @Test

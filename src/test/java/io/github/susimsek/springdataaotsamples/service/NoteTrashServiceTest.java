@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Note;
-import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.command.TagCommandService;
@@ -19,6 +18,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NoteDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPermanentDeleteException;
 import io.github.susimsek.springdataaotsamples.service.exception.NoteNotFoundException;
 import io.github.susimsek.springdataaotsamples.service.query.NoteQueryService;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -111,9 +111,8 @@ class NoteTrashServiceTest {
 
         noteTrashService.restore(1L);
 
-        verify(cacheProvider)
-                .clearCaches(
-                        Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -126,9 +125,8 @@ class NoteTrashServiceTest {
         noteTrashService.restoreForCurrentUser(1L);
 
         verify(noteAuthorizationService).ensureEditAccess(note);
-        verify(cacheProvider)
-                .clearCaches(
-                        Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test
@@ -143,24 +141,30 @@ class NoteTrashServiceTest {
 
     @Test
     void emptyTrashShouldPurgeAndCleanup() {
+        when(noteRepository.findDeletedIds()).thenReturn(List.of(1L, 2L));
+
         noteTrashService.emptyTrash();
 
+        verify(noteRepository).findDeletedIds();
         verify(noteRepository).purgeDeleted();
         verify(tagCommandService).cleanupOrphanTagsAsync();
-        verify(cacheProvider)
-                .clearCaches(
-                        Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
+        verify(cacheProvider).clearCache(Note.class.getName(), List.of(1L, 2L));
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(1L, 2L));
     }
 
     @Test
     void emptyTrashForCurrentUserShouldUseCurrentUser() {
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
+            when(noteRepository.findDeletedIdsByOwner("alice")).thenReturn(List.of(7L));
 
             noteTrashService.emptyTrashForCurrentUser();
 
+            verify(noteRepository).findDeletedIdsByOwner("alice");
             verify(noteRepository).purgeDeletedByOwner("alice");
             verify(tagCommandService).cleanupOrphanTagsAsync();
+            verify(cacheProvider).clearCache(Note.class.getName(), List.of(7L));
+            verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, List.of(7L));
         }
     }
 
@@ -181,9 +185,8 @@ class NoteTrashServiceTest {
 
         verify(noteRepository).deletePermanentlyById(1L);
         verify(tagCommandService).cleanupOrphanTagsAsync();
-        verify(cacheProvider)
-                .clearCaches(
-                        Note.class.getName(), NoteRepository.NOTE_BY_ID_CACHE, Tag.class.getName());
+        verify(cacheProvider).clearCache(Note.class.getName(), 1L);
+        verify(cacheProvider).clearCache(NoteRepository.NOTE_BY_ID_CACHE, 1L);
     }
 
     @Test

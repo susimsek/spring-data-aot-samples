@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
@@ -72,7 +73,8 @@ class NoteShareServiceTest {
             assertThat(dto.oneTime()).isTrue();
             assertThat(dto.noteId()).isEqualTo(10L);
             verify(cacheProvider)
-                    .clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+                    .clearCache(
+                            NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw-token");
         }
     }
 
@@ -130,6 +132,7 @@ class NoteShareServiceTest {
         NoteShareToken token = new NoteShareToken();
         token.setId(2L);
         token.setNote(note);
+        token.setTokenHash("hash");
         token.setRevoked(false);
         when(noteShareTokenRepository.findOneWithNoteById(2L)).thenReturn(Optional.of(token));
 
@@ -137,7 +140,8 @@ class NoteShareServiceTest {
 
         assertThat(token.isRevoked()).isTrue();
         verify(noteShareTokenRepository).save(token);
-        verify(cacheProvider).clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        verify(cacheProvider)
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "hash");
     }
 
     @Test
@@ -173,7 +177,14 @@ class NoteShareServiceTest {
 
         assertThat(result.getUseCount()).isEqualTo(1);
         assertThat(result.isRevoked()).isTrue();
-        verify(cacheProvider).clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        verify(cacheProvider)
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
+        verify(cacheProvider)
+                .clearCache(
+                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE,
+                        HashingUtils.sha256Hex("raw"));
+        verify(cacheProvider)
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "hash");
     }
 
     @Test
@@ -182,6 +193,7 @@ class NoteShareServiceTest {
         NoteShareToken token = new NoteShareToken();
         token.setId(4L);
         token.setNote(note);
+        token.setTokenHash(HashingUtils.sha256Hex("raw"));
         token.setUseCount(0);
         when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse("raw"))
                 .thenReturn(Optional.empty());
@@ -192,6 +204,12 @@ class NoteShareServiceTest {
         noteShareService.validateAndConsume("raw");
 
         verify(noteShareTokenRepository).saveAndFlush(token);
+        verify(cacheProvider)
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
+        verify(cacheProvider)
+                .clearCache(
+                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE,
+                        HashingUtils.sha256Hex("raw"));
     }
 
     @Test
@@ -206,6 +224,7 @@ class NoteShareServiceTest {
 
         assertThatThrownBy(() -> noteShareService.validateAndConsume("raw"))
                 .isInstanceOf(InvalidBearerTokenException.class);
+        verifyNoInteractions(cacheProvider);
     }
 
     @Test

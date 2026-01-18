@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +79,7 @@ public class NoteShareService {
         shareToken.setRevoked(false);
 
         NoteShareToken saved = noteShareTokenRepository.save(shareToken);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        evictShareTokenCache(rawToken);
 
         return toDto(saved, rawToken);
     }
@@ -143,7 +144,7 @@ public class NoteShareService {
         }
         token.setRevoked(true);
         noteShareTokenRepository.save(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        evictShareTokenCache(token.getTokenHash());
     }
 
     @Transactional
@@ -158,7 +159,7 @@ public class NoteShareService {
         }
         token.setRevoked(true);
         noteShareTokenRepository.save(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        evictShareTokenCache(token.getTokenHash());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -186,8 +187,17 @@ public class NoteShareService {
             token.setRevoked(true);
         }
         noteShareTokenRepository.saveAndFlush(token);
-        cacheProvider.clearCaches(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        evictShareTokenCache(rawToken, HashingUtils.sha256Hex(rawToken), token.getTokenHash());
         return token;
+    }
+
+    private void evictShareTokenCache(String... keys) {
+        for (String key : keys) {
+            if (StringUtils.hasText(key)) {
+                cacheProvider.clearCache(
+                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, key);
+            }
+        }
     }
 
     private Note loadNote(Long noteId) {

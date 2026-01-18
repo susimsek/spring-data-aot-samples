@@ -53,7 +53,7 @@ public class UserCommandService {
                                                         + AuthoritiesConstants.USER));
         user.getAuthorities().add(authority);
         User saved = userRepository.save(user);
-        evictUserCaches();
+        evictUserCaches(saved);
         return userMapper.toRegistrationDto(saved);
     }
 
@@ -75,13 +75,12 @@ public class UserCommandService {
         }
         user.setPassword(Objects.requireNonNull(passwordEncoder.encode(request.newPassword())));
         userRepository.save(user);
-        evictUserCaches();
+        evictUserCaches(user);
     }
 
-    private void evictUserCaches() {
-        cacheProvider.clearCaches(
-                User.class.getName(),
-                UserRepository.USER_BY_USERNAME_CACHE,
-                UserRepository.USER_BY_EMAIL_CACHE);
+    private void evictUserCaches(User user) {
+        cacheProvider.clearCache(User.class.getName(), user.getId());
+        cacheProvider.clearCache(UserRepository.USER_BY_USERNAME_CACHE, user.getUsername());
+        cacheProvider.clearCache(UserRepository.USER_BY_EMAIL_CACHE, user.getEmail());
     }
 }

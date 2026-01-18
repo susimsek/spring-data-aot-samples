@@ -17,8 +17,9 @@ public class RefreshTokenCleanupScheduler {
 
     @Scheduled(cron = "0 0 1 * * ?")
     public void purgeExpiredAndRevoked() {
-        refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
-        refreshTokenRepository.deleteByRevokedTrue();
-        cacheProvider.clearCache(RefreshToken.class.getName());
+        Instant now = Instant.now();
+        var idsToEvict = refreshTokenRepository.findIdsExpiredOrRevoked(now);
+        refreshTokenRepository.deleteExpiredOrRevoked(now);
+        cacheProvider.clearCache(RefreshToken.class.getName(), idsToEvict);
     }
 }

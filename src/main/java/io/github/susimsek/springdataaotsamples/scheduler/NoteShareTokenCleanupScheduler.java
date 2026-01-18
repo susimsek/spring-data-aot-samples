@@ -17,10 +17,14 @@ public class NoteShareTokenCleanupScheduler {
 
     @Scheduled(cron = "0 30 1 * * ?")
     public void purgeExpiredAndRevoked() {
-        noteShareTokenRepository.deleteByExpiresAtBefore(Instant.now());
-        noteShareTokenRepository.deleteByRevokedTrue();
-        cacheProvider.clearCaches(
-                NoteShareToken.class.getName(),
-                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE);
+        Instant now = Instant.now();
+
+        var idsToEvict = noteShareTokenRepository.findIdsExpiredOrRevoked(now);
+        var hashesToEvict = noteShareTokenRepository.findTokenHashesExpiredOrRevoked(now);
+        noteShareTokenRepository.deleteExpiredOrRevoked(now);
+
+        cacheProvider.clearCache(NoteShareToken.class.getName(), idsToEvict);
+        cacheProvider.clearCache(
+                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, hashesToEvict);
     }
 }
