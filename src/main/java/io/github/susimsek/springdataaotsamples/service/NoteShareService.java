@@ -6,7 +6,6 @@ import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
-import io.github.susimsek.springdataaotsamples.security.HashingUtils;
 import io.github.susimsek.springdataaotsamples.security.RandomUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
@@ -16,6 +15,7 @@ import io.github.susimsek.springdataaotsamples.service.spec.NoteShareTokenSpecif
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -167,11 +167,6 @@ public class NoteShareService {
         var token =
                 noteShareTokenRepository
                         .findOneWithNoteByTokenHashAndRevokedFalse(rawToken)
-                        .or(
-                                () ->
-                                        noteShareTokenRepository
-                                                .findOneWithNoteByTokenHashAndRevokedFalse(
-                                                        HashingUtils.sha256Hex(rawToken)))
                         .orElseThrow(() -> new InvalidBearerTokenException("Invalid share token"));
 
         if (token.getExpiresAt() != null && token.getExpiresAt().isBefore(Instant.now())) {
@@ -187,17 +182,22 @@ public class NoteShareService {
             token.setRevoked(true);
         }
         noteShareTokenRepository.saveAndFlush(token);
-        evictShareTokenCache(rawToken, HashingUtils.sha256Hex(rawToken), token.getTokenHash());
+        evictShareTokenCache(rawToken);
         return token;
     }
 
     private void evictShareTokenCache(String... keys) {
+        var uniqueKeys = new LinkedHashSet<String>();
         for (String key : keys) {
             if (StringUtils.hasText(key)) {
-                cacheProvider.clearCache(
-                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, key);
+                uniqueKeys.add(key);
             }
         }
+        if (uniqueKeys.isEmpty()) {
+            return;
+        }
+        cacheProvider.clearCache(
+                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, uniqueKeys);
     }
 
     private Note loadNote(Long noteId) {

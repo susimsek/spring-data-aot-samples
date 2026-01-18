@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificationExecutor<Tag> {
@@ -23,4 +24,17 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
             )
             """)
     List<Long> findOrphanIds();
+
+    @Modifying
+    @Query(
+            """
+            delete from Tag t
+            where not exists (
+                select 1
+                from Note n
+                join n.tags tag
+                where tag = t
+            )
+            """)
+    int deleteOrphans();
 }

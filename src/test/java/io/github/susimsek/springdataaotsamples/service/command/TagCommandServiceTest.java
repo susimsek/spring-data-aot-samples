@@ -88,10 +88,11 @@ class TagCommandServiceTest {
     void cleanupOrphanTagsAsyncShouldDeleteAndClearCacheWhenIdsExist() {
         List<Long> orphanIds = List.of(1L, 2L, 3L);
         when(tagRepository.findOrphanIds()).thenReturn(orphanIds);
+        when(tagRepository.deleteOrphans()).thenReturn(orphanIds.size());
 
         tagCommandService.cleanupOrphanTagsAsync();
 
-        verify(tagRepository).deleteAllByIdInBatch(orphanIds);
+        verify(tagRepository).deleteOrphans();
         verify(cacheProvider).clearCache(Tag.class.getName(), orphanIds);
     }
 

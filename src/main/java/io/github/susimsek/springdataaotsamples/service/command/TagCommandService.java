@@ -69,8 +69,8 @@ public class TagCommandService {
         if (orphanIds.isEmpty()) {
             return;
         }
-        tagRepository.deleteAllByIdInBatch(orphanIds);
-        log.debug("Deleted {} orphan tags", orphanIds.size());
+        int deleted = tagRepository.deleteOrphans();
+        log.debug("Deleted {} orphan tags", deleted);
         cacheProvider.clearCache(Tag.class.getName(), orphanIds);
     }
 }

@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -14,7 +15,6 @@ import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
 import io.github.susimsek.springdataaotsamples.repository.NoteRepository;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
-import io.github.susimsek.springdataaotsamples.security.HashingUtils;
 import io.github.susimsek.springdataaotsamples.security.RandomUtils;
 import io.github.susimsek.springdataaotsamples.security.SecurityUtils;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -72,9 +73,13 @@ class NoteShareServiceTest {
             assertThat(dto.token()).isEqualTo("raw-token");
             assertThat(dto.oneTime()).isTrue();
             assertThat(dto.noteId()).isEqualTo(10L);
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
             verify(cacheProvider)
                     .clearCache(
-                            NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw-token");
+                            eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
+                            keysCaptor.capture());
+            assertThat(keysCaptor.getValue()).containsExactly("raw-token");
         }
     }
 
@@ -140,8 +145,13 @@ class NoteShareServiceTest {
 
         assertThat(token.isRevoked()).isTrue();
         verify(noteShareTokenRepository).save(token);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
-                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "hash");
+                .clearCache(
+                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
+                        keysCaptor.capture());
+        assertThat(keysCaptor.getValue()).containsExactly("hash");
     }
 
     @Test
@@ -177,14 +187,13 @@ class NoteShareServiceTest {
 
         assertThat(result.getUseCount()).isEqualTo(1);
         assertThat(result.isRevoked()).isTrue();
-        verify(cacheProvider)
-                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
                 .clearCache(
-                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE,
-                        HashingUtils.sha256Hex("raw"));
-        verify(cacheProvider)
-                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "hash");
+                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
+                        keysCaptor.capture());
+        assertThat(keysCaptor.getValue()).containsExactly("raw");
     }
 
     @Test
@@ -193,23 +202,20 @@ class NoteShareServiceTest {
         NoteShareToken token = new NoteShareToken();
         token.setId(4L);
         token.setNote(note);
-        token.setTokenHash(HashingUtils.sha256Hex("raw"));
         token.setUseCount(0);
         when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse("raw"))
-                .thenReturn(Optional.empty());
-        when(noteShareTokenRepository.findOneWithNoteByTokenHashAndRevokedFalse(
-                        HashingUtils.sha256Hex("raw")))
                 .thenReturn(Optional.of(token));
 
         noteShareService.validateAndConsume("raw");
 
         verify(noteShareTokenRepository).saveAndFlush(token);
-        verify(cacheProvider)
-                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
                 .clearCache(
-                        NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE,
-                        HashingUtils.sha256Hex("raw"));
+                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
+                        keysCaptor.capture());
+        assertThat(keysCaptor.getValue()).containsExactly("raw");
     }
 
     @Test
