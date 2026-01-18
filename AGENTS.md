@@ -8,6 +8,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 |--------------------------------------|---------------------------------------------------|
 | Run (dev, H2)                        | `./mvnw spring-boot:run`                          |
 | Run (prod, PostgreSQL)               | `./mvnw -Pprod spring-boot:run`                   |
+| Run (prod + docker-compose)          | `./mvnw -Pprod,docker-compose spring-boot:run`    |
 | Unit tests                           | `./mvnw test`                                     |
 | Full verify (tests + quality gates)  | `./mvnw verify`                                   |
 | Check formatting (Spotless)          | `./mvnw -DskipTests spotless:check`               |
@@ -75,6 +76,15 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - If you add Liquibase resources, validators, or reflection-requiring types, update the hints accordingly.
 - Place new custom validation constraints/validators under `service/validation` (the AOT scanner targets this package).
 
+## Authentication
+
+- Seed users for local dev: `admin/admin`, `user/user` (see `src/main/resources/static/login.html` and Liquibase seed data).
+- Auth can be provided via `Authorization: Bearer <jwt>` or via cookie `AUTH-TOKEN` (see `CookieAwareBearerTokenResolver`).
+- Cookies: `AUTH-TOKEN` + `REFRESH-TOKEN` are `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/` (see `CookieUtils`).
+- Refresh: `/api/auth/refresh` revokes the old refresh token and issues a new access+refresh token (rotation); `/api/auth/logout` clears cookies and accepts refresh token from body or cookie.
+- `rememberMe` affects refresh TTL (`refresh-token-ttl-for-remember-me` vs `refresh-token-ttl`).
+- `prod` requires `SECURITY_JWT_SECRET` (at least 256-bit, e.g. `openssl rand -base64 32`).
+
 ## Development Guidelines
 
 ### Architecture
@@ -139,6 +149,12 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ### Database Migrations
 
 - For DB changes: add a new Liquibase changelog and include it from `src/main/resources/config/liquibase/master.xml`.
+
+### Docker Compose (Optional)
+
+- Spring Boot Docker Compose integration is enabled only with the Maven profile `-Pdocker-compose` (dependency: `spring-boot-docker-compose`).
+- Compose config: `src/main/docker/services.yml` (starts PostgreSQL for `prod`).
+- `spring.docker.compose.lifecycle-management=start-only` means containers are not stopped automatically.
 
 ### Configuration Properties
 
