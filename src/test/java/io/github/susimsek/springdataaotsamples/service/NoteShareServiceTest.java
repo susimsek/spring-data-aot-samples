@@ -26,7 +26,6 @@ import java.util.Optional;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -73,13 +72,10 @@ class NoteShareServiceTest {
             assertThat(dto.token()).isEqualTo("raw-token");
             assertThat(dto.oneTime()).isTrue();
             assertThat(dto.noteId()).isEqualTo(10L);
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
             verify(cacheProvider)
                     .clearCache(
                             eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                            keysCaptor.capture());
-            assertThat(keysCaptor.getValue()).containsExactly("raw-token");
+                            eq("raw-token"));
         }
     }
 
@@ -145,13 +141,9 @@ class NoteShareServiceTest {
 
         assertThat(token.isRevoked()).isTrue();
         verify(noteShareTokenRepository).save(token);
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
                 .clearCache(
-                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                        keysCaptor.capture());
-        assertThat(keysCaptor.getValue()).containsExactly("hash");
+                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("hash"));
     }
 
     @Test
@@ -187,13 +179,8 @@ class NoteShareServiceTest {
 
         assertThat(result.getUseCount()).isEqualTo(1);
         assertThat(result.isRevoked()).isTrue();
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
-                .clearCache(
-                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                        keysCaptor.capture());
-        assertThat(keysCaptor.getValue()).containsExactly("raw");
+                .clearCache(eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("raw"));
     }
 
     @Test
@@ -209,13 +196,8 @@ class NoteShareServiceTest {
         noteShareService.validateAndConsume("raw");
 
         verify(noteShareTokenRepository).saveAndFlush(token);
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<String>> keysCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(cacheProvider)
-                .clearCache(
-                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                        keysCaptor.capture());
-        assertThat(keysCaptor.getValue()).containsExactly("raw");
+                .clearCache(eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("raw"));
     }
 
     @Test
