@@ -1,7 +1,9 @@
 package io.github.susimsek.springdataaotsamples.service.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public class InvalidPasswordException extends ApiException {
 
     private final String detailMessageCode;
@@ -11,13 +13,5 @@ public class InvalidPasswordException extends ApiException {
         super(HttpStatus.BAD_REQUEST, "Invalid password", defaultDetail);
         this.detailMessageCode = detailMessageCode;
         this.defaultDetail = defaultDetail;
-    }
-
-    public String getDetailMessageCode() {
-        return detailMessageCode;
-    }
-
-    public String getDefaultDetail() {
-        return defaultDetail;
     }
 }
