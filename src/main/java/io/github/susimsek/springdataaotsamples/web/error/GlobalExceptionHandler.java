@@ -1,7 +1,7 @@
 package io.github.susimsek.springdataaotsamples.web.error;
 
 import io.github.susimsek.springdataaotsamples.service.exception.ApiException;
-import io.github.susimsek.springdataaotsamples.service.exception.InvalidCredentialsException;
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidPasswordException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Stream;
@@ -45,14 +45,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ex, ex.getBody(), ex.getHeaders(), ex.getStatusCode(), request);
     }
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public @Nullable ResponseEntity<Object> handleInvalidCredentials(
-            InvalidCredentialsException ex, WebRequest request) {
+    @ExceptionHandler(InvalidPasswordException.class)
+    public @Nullable ResponseEntity<Object> handleInvalidPassword(
+            InvalidPasswordException ex, WebRequest request) {
         ProblemDetail body =
                 this.buildProblemDetail(
                         ex,
                         HttpStatus.BAD_REQUEST,
-                        "problemDetail.title.invalidCredentials",
+                        "problemDetail.title.invalidPassword",
                         ex.getDefaultDetail(),
                         ex.getDetailMessageCode(),
                         null);

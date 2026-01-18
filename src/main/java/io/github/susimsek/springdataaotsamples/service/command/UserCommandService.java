@@ -10,7 +10,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest
 import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.exception.EmailAlreadyExistsException;
-import io.github.susimsek.springdataaotsamples.service.exception.InvalidCredentialsException;
+import io.github.susimsek.springdataaotsamples.service.exception.InvalidPasswordException;
 import io.github.susimsek.springdataaotsamples.service.exception.UsernameAlreadyExistsException;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
 import java.util.Objects;
@@ -64,13 +64,13 @@ public class UserCommandService {
                         .findOneWithAuthoritiesById(userId)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException(
-                    "problemDetail.invalidCredentials.currentPassword",
+            throw new InvalidPasswordException(
+                    "problemDetail.invalidPassword.currentPassword",
                     "Current password is incorrect.");
         }
         if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException(
-                    "problemDetail.invalidCredentials.samePassword",
+            throw new InvalidPasswordException(
+                    "problemDetail.invalidPassword.samePassword",
                     "New password must be different from current password.");
         }
         user.setPassword(Objects.requireNonNull(passwordEncoder.encode(request.newPassword())));
