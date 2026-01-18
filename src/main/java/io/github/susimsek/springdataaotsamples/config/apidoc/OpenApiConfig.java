@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,6 +68,27 @@ public class OpenApiConfig {
             addDefaultErrorResponse(operation);
             return operation;
         };
+    }
+
+    @Bean
+    public GroupedOpenApi authenticationApi() {
+        return GroupedOpenApi.builder()
+                .group("authentication")
+                .pathsToMatch("/api/auth/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi coreApi() {
+        return GroupedOpenApi.builder()
+                .group("core")
+                .pathsToMatch("/api/notes/**", "/api/tags/**", "/api/share/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi adminApi() {
+        return GroupedOpenApi.builder().group("admin").pathsToMatch("/api/admin/**").build();
     }
 
     private void addValidationErrorResponse(Operation operation, HandlerMethod handlerMethod) {
