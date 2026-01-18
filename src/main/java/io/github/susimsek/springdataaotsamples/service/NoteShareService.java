@@ -15,7 +15,6 @@ import io.github.susimsek.springdataaotsamples.service.spec.NoteShareTokenSpecif
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.LinkedHashSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +27,6 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -186,18 +184,8 @@ public class NoteShareService {
         return token;
     }
 
-    private void evictShareTokenCache(String... keys) {
-        var uniqueKeys = new LinkedHashSet<String>();
-        for (String key : keys) {
-            if (StringUtils.hasText(key)) {
-                uniqueKeys.add(key);
-            }
-        }
-        if (uniqueKeys.isEmpty()) {
-            return;
-        }
-        cacheProvider.clearCache(
-                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, uniqueKeys);
+    private void evictShareTokenCache(String key) {
+        cacheProvider.clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, key);
     }
 
     private Note loadNote(Long noteId) {

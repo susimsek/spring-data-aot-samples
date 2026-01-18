@@ -2,9 +2,7 @@ package io.github.susimsek.springdataaotsamples.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
@@ -33,7 +31,11 @@ class RefreshTokenCleanupSchedulerTest {
         final Instant before = Instant.now();
         final Instant lowerBound = before.minusSeconds(1);
 
-        when(refreshTokenRepository.findIdsExpiredOrRevoked(any())).thenReturn(List.of(1L, 2L));
+        RefreshToken t1 = new RefreshToken();
+        t1.setId(1L);
+        RefreshToken t2 = new RefreshToken();
+        t2.setId(2L);
+        when(refreshTokenRepository.findExpiredOrRevoked(any())).thenReturn(List.of(t1, t2));
 
         scheduler.purgeExpiredAndRevoked();
 
@@ -41,20 +43,15 @@ class RefreshTokenCleanupSchedulerTest {
         final Instant upperBound = after.plusSeconds(1);
 
         ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<Long>> idsCaptor = ArgumentCaptor.forClass(Iterable.class);
         var inOrder = inOrder(refreshTokenRepository, cacheProvider);
 
-        inOrder.verify(refreshTokenRepository).findIdsExpiredOrRevoked(instantCaptor.capture());
-        inOrder.verify(refreshTokenRepository).deleteExpiredOrRevoked(instantCaptor.getValue());
-        inOrder.verify(cacheProvider)
-                .clearCache(eq(RefreshToken.class.getName()), idsCaptor.capture());
+        inOrder.verify(refreshTokenRepository).findExpiredOrRevoked(instantCaptor.capture());
+        inOrder.verify(refreshTokenRepository).deleteById(1L);
+        inOrder.verify(cacheProvider).clearCache(RefreshToken.class.getName(), 1L);
+        inOrder.verify(refreshTokenRepository).deleteById(2L);
+        inOrder.verify(cacheProvider).clearCache(RefreshToken.class.getName(), 2L);
 
         Instant captured = instantCaptor.getValue();
         assertThat(captured).isNotNull().isBetween(lowerBound, upperBound);
-
-        assertThat(idsCaptor.getValue()).containsExactlyInAnyOrder(1L, 2L);
-
-        verify(refreshTokenRepository).deleteExpiredOrRevoked(captured);
     }
 }

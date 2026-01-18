@@ -8,7 +8,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface NoteShareTokenRepository
@@ -26,13 +25,11 @@ public interface NoteShareTokenRepository
     @EntityGraph(attributePaths = {"note"})
     Optional<NoteShareToken> findOneWithNoteById(Long id);
 
-    @Query("select t.id from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
-    List<Long> findIdsExpiredOrRevoked(Instant now);
-
-    @Query("select t.tokenHash from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
-    List<String> findTokenHashesExpiredOrRevoked(Instant now);
-
-    @Modifying
-    @Query("delete from NoteShareToken t where t.expiresAt < :now or t.revoked = true")
-    int deleteExpiredOrRevoked(Instant now);
+    @Query(
+            """
+            select t
+            from NoteShareToken t
+            where t.expiresAt < :now or t.revoked = true
+            """)
+    List<NoteShareToken> findExpiredOrRevoked(Instant now);
 }

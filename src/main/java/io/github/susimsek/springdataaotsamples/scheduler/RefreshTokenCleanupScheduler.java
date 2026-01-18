@@ -7,6 +7,7 @@ import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -16,10 +17,14 @@ public class RefreshTokenCleanupScheduler {
     private final CacheProvider cacheProvider;
 
     @Scheduled(cron = "0 0 1 * * ?")
+    @Transactional
     public void purgeExpiredAndRevoked() {
         Instant now = Instant.now();
-        var idsToEvict = refreshTokenRepository.findIdsExpiredOrRevoked(now);
-        refreshTokenRepository.deleteExpiredOrRevoked(now);
-        cacheProvider.clearCache(RefreshToken.class.getName(), idsToEvict);
+        var tokens = refreshTokenRepository.findExpiredOrRevoked(now);
+        for (RefreshToken token : tokens) {
+            Long tokenId = token.getId();
+            refreshTokenRepository.deleteById(tokenId);
+            cacheProvider.clearCache(RefreshToken.class.getName(), tokenId);
+        }
     }
 }

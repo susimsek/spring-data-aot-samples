@@ -2,9 +2,7 @@ package io.github.susimsek.springdataaotsamples.scheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
@@ -33,9 +31,13 @@ class NoteShareTokenCleanupSchedulerTest {
         final Instant before = Instant.now();
         final Instant lowerBound = before.minusSeconds(1);
 
-        when(noteShareTokenRepository.findIdsExpiredOrRevoked(any())).thenReturn(List.of(1L, 2L));
-        when(noteShareTokenRepository.findTokenHashesExpiredOrRevoked(any()))
-                .thenReturn(List.of("a", "b"));
+        NoteShareToken t1 = new NoteShareToken();
+        t1.setId(1L);
+        t1.setTokenHash("a");
+        NoteShareToken t2 = new NoteShareToken();
+        t2.setId(2L);
+        t2.setTokenHash("b");
+        when(noteShareTokenRepository.findExpiredOrRevoked(any())).thenReturn(List.of(t1, t2));
 
         scheduler.purgeExpiredAndRevoked();
 
@@ -43,29 +45,19 @@ class NoteShareTokenCleanupSchedulerTest {
         final Instant upperBound = after.plusSeconds(1);
 
         ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<Long>> idsCaptor = ArgumentCaptor.forClass(Iterable.class);
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Iterable<String>> hashesCaptor = ArgumentCaptor.forClass(Iterable.class);
         var inOrder = inOrder(noteShareTokenRepository, cacheProvider);
 
-        inOrder.verify(noteShareTokenRepository).findIdsExpiredOrRevoked(instantCaptor.capture());
-        inOrder.verify(noteShareTokenRepository)
-                .findTokenHashesExpiredOrRevoked(instantCaptor.getValue());
-        inOrder.verify(noteShareTokenRepository).deleteExpiredOrRevoked(instantCaptor.getValue());
+        inOrder.verify(noteShareTokenRepository).findExpiredOrRevoked(instantCaptor.capture());
+        inOrder.verify(noteShareTokenRepository).deleteById(1L);
+        inOrder.verify(cacheProvider).clearCache(NoteShareToken.class.getName(), 1L);
         inOrder.verify(cacheProvider)
-                .clearCache(eq(NoteShareToken.class.getName()), idsCaptor.capture());
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "a");
+        inOrder.verify(noteShareTokenRepository).deleteById(2L);
+        inOrder.verify(cacheProvider).clearCache(NoteShareToken.class.getName(), 2L);
         inOrder.verify(cacheProvider)
-                .clearCache(
-                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                        hashesCaptor.capture());
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "b");
 
         Instant captured = instantCaptor.getValue();
         assertThat(captured).isNotNull().isBetween(lowerBound, upperBound);
-
-        assertThat(idsCaptor.getValue()).containsExactlyInAnyOrder(1L, 2L);
-        assertThat(hashesCaptor.getValue()).containsExactlyInAnyOrder("a", "b");
-
-        verify(noteShareTokenRepository).deleteExpiredOrRevoked(captured);
     }
 }

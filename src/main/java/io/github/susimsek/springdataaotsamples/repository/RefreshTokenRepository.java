@@ -23,10 +23,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
             """)
     int revokeAllByUserId(Long userId);
 
-    @Query("select t.id from RefreshToken t where t.expiresAt < :now or t.revoked = true")
-    List<Long> findIdsExpiredOrRevoked(Instant now);
-
-    @Modifying
-    @Query("delete from RefreshToken t where t.expiresAt < :now or t.revoked = true")
-    int deleteExpiredOrRevoked(Instant now);
+    @Query("select t from RefreshToken t where t.expiresAt < :now or t.revoked = true")
+    List<RefreshToken> findExpiredOrRevoked(Instant now);
 }
