@@ -108,7 +108,7 @@ class NoteShareServiceTest {
         token.setTokenHash("abc");
         final Pageable pageable = PageRequest.of(0, 5);
         Page<NoteShareToken> page = new PageImpl<>(List.of(token), pageable, 1);
-        when(noteShareTokenRepository.findAll(
+        when(noteShareTokenRepository.findAllWithNote(
                         ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
@@ -220,7 +220,7 @@ class NoteShareServiceTest {
         Note note = new Note();
         note.setId(1L);
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
-        when(noteShareTokenRepository.findAll(
+        when(noteShareTokenRepository.findAllWithNote(
                         ArgumentMatchers.<Specification<NoteShareToken>>any(), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 5), 0));
 

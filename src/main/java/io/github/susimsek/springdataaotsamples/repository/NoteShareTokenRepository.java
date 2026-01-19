@@ -1,6 +1,7 @@
 package io.github.susimsek.springdataaotsamples.repository;
 
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
+import io.github.susimsek.springdataaotsamples.repository.custom.NoteShareTokenRepositoryCustom;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 public interface NoteShareTokenRepository
-        extends JpaRepository<NoteShareToken, Long>, JpaSpecificationExecutor<NoteShareToken> {
+        extends JpaRepository<NoteShareToken, Long>,
+                JpaSpecificationExecutor<NoteShareToken>,
+                NoteShareTokenRepositoryCustom {
 
     String NOTE_SHARE_TOKEN_BY_HASH_CACHE = "noteShareTokenByHash";
 
