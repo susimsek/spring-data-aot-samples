@@ -85,16 +85,46 @@ Auth:
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
+- `POST /api/auth/change-password`
 
-Notes (selected):
+Notes:
 - `POST /api/notes`
 - `GET /api/notes` (search `q`, paging/sort)
+- `GET /api/notes/{id}`
+- `PUT /api/notes/{id}`
+- `PATCH /api/notes/{id}`
 - `GET /api/notes/deleted`
+- `DELETE /api/notes/deleted` (empty trash)
 - `DELETE /api/notes/{id}` (soft delete)
+- `POST /api/notes/bulk`
 - `POST /api/notes/{id}/restore`
 - `DELETE /api/notes/{id}/permanent`
 - `GET /api/notes/{id}/revisions`
-- `POST /api/notes/{id}/revisions/{rev}/restore`
+- `GET /api/notes/{id}/revisions/{revisionId}`
+- `POST /api/notes/{id}/revisions/{revisionId}/restore`
+
+Sharing:
+- `POST /api/notes/{id}/share`
+- `GET /api/notes/{id}/share`
+- `GET /api/notes/share`
+- `DELETE /api/notes/share/{tokenId}`
+- `GET /api/share/{token}`
+
+Tags:
+- `GET /api/tags/suggest` (query `q`, paging)
+
+Admin:
+- `GET /api/admin/users/search` (query `q`, paging)
+- `POST /api/admin/notes`
+- `GET /api/admin/notes` (search `q`, paging/sort)
+- `GET /api/admin/notes/deleted`
+- `DELETE /api/admin/notes/deleted` (empty trash)
+- `POST /api/admin/notes/bulk`
+- `POST /api/admin/notes/{id}/owner`
+- `POST /api/admin/notes/{id}/share`
+- `GET /api/admin/notes/{id}/share`
+- `GET /api/admin/notes/share`
+- `DELETE /api/admin/notes/share/{tokenId}`
 
 ## Build
 - Unit tests: `./mvnw test`
