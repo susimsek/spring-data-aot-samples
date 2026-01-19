@@ -8,18 +8,18 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Quick Reference
 
-| Action                               | Command                                           |
-|--------------------------------------|---------------------------------------------------|
-| Run (dev, H2)                        | `./mvnw spring-boot:run`                          |
-| Run (prod, PostgreSQL)               | `./mvnw -Pprod spring-boot:run`                   |
-| Run (prod + docker-compose)          | `./mvnw -Pprod,docker-compose spring-boot:run`    |
-| Unit tests                           | `./mvnw test`                                     |
-| Full verify (tests + quality gates)  | `./mvnw verify`                                   |
-| Check formatting (Spotless)          | `./mvnw -DskipTests spotless:check`               |
-| Apply formatting (Spotless)          | `./mvnw -DskipTests spotless:apply`               |
-| Checkstyle (no tests)                | `./mvnw -DskipTests checkstyle:check`             |
-| Package                              | `./mvnw -DskipTests package`                      |
-| Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile` |
+| Action                              | Command                                           |
+|-------------------------------------|---------------------------------------------------|
+| Run (dev, H2)                       | `./mvnw spring-boot:run`                          |
+| Run (prod, PostgreSQL)              | `./mvnw -Pprod spring-boot:run`                   |
+| Run (prod + docker-compose)         | `./mvnw -Pprod,docker-compose spring-boot:run`    |
+| Unit tests                          | `./mvnw test`                                     |
+| Full verify (tests + quality gates) | `./mvnw verify`                                   |
+| Check formatting (Spotless)         | `./mvnw -DskipTests spotless:check`               |
+| Apply formatting (Spotless)         | `./mvnw -DskipTests spotless:apply`               |
+| Checkstyle                          | `./mvnw -DskipTests checkstyle:check`             |
+| Package                             | `./mvnw -DskipTests package`                      |
+| Native executable                   | `./mvnw -Pprod,native -DskipTests native:compile` |
 
 ## Requirements
 
