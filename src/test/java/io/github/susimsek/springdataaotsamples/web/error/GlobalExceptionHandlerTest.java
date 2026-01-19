@@ -3,8 +3,6 @@ package io.github.susimsek.springdataaotsamples.web.error;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -172,12 +171,21 @@ class GlobalExceptionHandlerTest {
                                 "problemDetail.detail.test",
                                 args);
 
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Object[]> argsCaptor = ArgumentCaptor.forClass(Object[].class);
+        ArgumentCaptor<String> defaultMessageCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Locale> localeCaptor = ArgumentCaptor.forClass(Locale.class);
+
         verify(messageSource)
                 .getMessage(
-                        eq("problemDetail.detail.test"),
-                        eq(args),
-                        nullable(String.class),
-                        any(Locale.class));
+                        codeCaptor.capture(),
+                        argsCaptor.capture(),
+                        defaultMessageCaptor.capture(),
+                        localeCaptor.capture());
+        assertThat(codeCaptor.getValue()).isEqualTo("problemDetail.detail.test");
+        assertThat(argsCaptor.getValue()).isSameAs(args);
+        assertThat(defaultMessageCaptor.getValue()).isNull();
+        assertThat(localeCaptor.getValue()).isNotNull();
         assertThat(body).isNotNull();
     }
 }

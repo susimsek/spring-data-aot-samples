@@ -3,7 +3,6 @@ package io.github.susimsek.springdataaotsamples.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -74,8 +73,7 @@ class NoteShareServiceTest {
             assertThat(dto.noteId()).isEqualTo(10L);
             verify(cacheProvider)
                     .clearCache(
-                            eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE),
-                            eq("raw-token"));
+                            NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw-token");
         }
     }
 
@@ -142,8 +140,7 @@ class NoteShareServiceTest {
         assertThat(token.isRevoked()).isTrue();
         verify(noteShareTokenRepository).save(token);
         verify(cacheProvider)
-                .clearCache(
-                        eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("hash"));
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "hash");
     }
 
     @Test
@@ -180,7 +177,7 @@ class NoteShareServiceTest {
         assertThat(result.getUseCount()).isEqualTo(1);
         assertThat(result.isRevoked()).isTrue();
         verify(cacheProvider)
-                .clearCache(eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("raw"));
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
     }
 
     @Test
@@ -197,7 +194,7 @@ class NoteShareServiceTest {
 
         verify(noteShareTokenRepository).saveAndFlush(token);
         verify(cacheProvider)
-                .clearCache(eq(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE), eq("raw"));
+                .clearCache(NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, "raw");
     }
 
     @Test

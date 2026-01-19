@@ -3,7 +3,6 @@ package io.github.susimsek.springdataaotsamples.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,13 +55,15 @@ class NoteTrashServiceTest {
     void findDeletedShouldDelegateToQueryServiceWithDeletedCriteria() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<NoteDTO> page = new PageImpl<>(Set.<NoteDTO>of().stream().toList());
-        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable)))
+        when(noteQueryService.findByCriteria(any(NoteCriteria.class), any(Pageable.class)))
                 .thenReturn(page);
 
         noteTrashService.findDeleted(pageable, "q", Set.of("t"), "#123", false);
 
         ArgumentCaptor<NoteCriteria> critCaptor = ArgumentCaptor.forClass(NoteCriteria.class);
-        verify(noteQueryService).findByCriteria(critCaptor.capture(), eq(pageable));
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(noteQueryService).findByCriteria(critCaptor.capture(), pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue()).isEqualTo(pageable);
         assertThat(critCaptor.getValue().deleted()).isTrue();
         assertThat(critCaptor.getValue().owner()).isNull();
     }
@@ -71,7 +72,7 @@ class NoteTrashServiceTest {
     void findDeletedForCurrentUserShouldSetOwnerFromSecurityContext() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<NoteDTO> page = new PageImpl<>(Set.<NoteDTO>of().stream().toList());
-        when(noteQueryService.findByCriteria(any(NoteCriteria.class), eq(pageable)))
+        when(noteQueryService.findByCriteria(any(NoteCriteria.class), any(Pageable.class)))
                 .thenReturn(page);
         try (MockedStatic<SecurityUtils> utils = mockStatic(SecurityUtils.class)) {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.of("alice"));
@@ -79,7 +80,9 @@ class NoteTrashServiceTest {
             noteTrashService.findDeletedForCurrentUser(pageable, "q", Set.of("t"), "#123", false);
 
             ArgumentCaptor<NoteCriteria> critCaptor = ArgumentCaptor.forClass(NoteCriteria.class);
-            verify(noteQueryService).findByCriteria(critCaptor.capture(), eq(pageable));
+            ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+            verify(noteQueryService).findByCriteria(critCaptor.capture(), pageableCaptor.capture());
+            assertThat(pageableCaptor.getValue()).isEqualTo(pageable);
             assertThat(critCaptor.getValue().owner()).isEqualTo("alice");
         }
     }

@@ -2,7 +2,6 @@ package io.github.susimsek.springdataaotsamples.service.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -51,7 +50,7 @@ class EnumValueValidatorTest {
 
         when(context.unwrap(HibernateConstraintValidatorContext.class))
                 .thenReturn(hibernateContext);
-        when(hibernateContext.addMessageParameter(eq("allowedValues"), anyString()))
+        when(hibernateContext.addMessageParameter(anyString(), anyString()))
                 .thenReturn(hibernateContext);
         when(hibernateContext.getDefaultConstraintMessageTemplate()).thenReturn("{message}");
         when(hibernateContext.buildConstraintViolationWithTemplate("{message}"))
@@ -63,9 +62,11 @@ class EnumValueValidatorTest {
         assertThat(valid).isFalse();
         verify(context).disableDefaultConstraintViolation();
 
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> allowedValuesCaptor = ArgumentCaptor.forClass(String.class);
         verify(hibernateContext)
-                .addMessageParameter(eq("allowedValues"), allowedValuesCaptor.capture());
+                .addMessageParameter(keyCaptor.capture(), allowedValuesCaptor.capture());
+        assertThat(keyCaptor.getValue()).isEqualTo("allowedValues");
         assertThat(allowedValuesCaptor.getValue()).contains("FOO").contains("BAR");
     }
 

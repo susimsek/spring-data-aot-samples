@@ -50,7 +50,7 @@ class CacheConfigHibernateTest {
         invokeCreateCache(cfg, cm, "existing");
 
         verify(cache).clear();
-        verify(cm, never()).createCache(ArgumentMatchers.eq("existing"), ArgumentMatchers.any());
+        verify(cm, never()).createCache(ArgumentMatchers.anyString(), ArgumentMatchers.any());
     }
 
     @Test
@@ -62,11 +62,13 @@ class CacheConfigHibernateTest {
                 new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
         CacheManager cm = mock(CacheManager.class);
         when(cm.getCache("newCache")).thenReturn(null);
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Configuration> captor = ArgumentCaptor.forClass(Configuration.class);
 
         invokeCreateCache(cfg, cm, "newCache");
 
-        verify(cm).createCache(ArgumentMatchers.eq("newCache"), captor.capture());
+        verify(cm).createCache(nameCaptor.capture(), captor.capture());
+        assertThat(nameCaptor.getValue()).isEqualTo("newCache");
         CaffeineConfiguration<?, ?> caffeine = (CaffeineConfiguration<?, ?>) captor.getValue();
         assertThat(caffeine.getMaximumSize()).isEqualTo(OptionalLong.of(42));
         assertThat(caffeine.getExpireAfterWrite())

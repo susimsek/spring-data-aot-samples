@@ -2,8 +2,10 @@ package io.github.susimsek.springdataaotsamples.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -98,7 +100,11 @@ class NoteControllerTest {
         PageImpl<NoteDTO> page = new PageImpl<>(List.of(note), PageRequest.of(1, 5), 6);
 
         when(noteQueryService.findAllForCurrentUser(
-                        any(Pageable.class), eq("search"), anySet(), eq("#123456"), eq(true)))
+                        any(Pageable.class),
+                        anyString(),
+                        anySet(),
+                        anyString(),
+                        any(Boolean.class)))
                 .thenReturn(page);
 
         mockMvc.perform(
@@ -116,20 +122,26 @@ class NoteControllerTest {
                 .andExpect(jsonPath("$.size").value(5));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Set<String>> tagsCaptor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<String> colorCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Boolean> pinnedCaptor = ArgumentCaptor.forClass(Boolean.class);
 
         verify(noteQueryService)
                 .findAllForCurrentUser(
                         pageableCaptor.capture(),
-                        eq("search"),
+                        queryCaptor.capture(),
                         tagsCaptor.capture(),
-                        eq("#123456"),
-                        eq(true));
+                        colorCaptor.capture(),
+                        pinnedCaptor.capture());
 
         Pageable pageable = pageableCaptor.getValue();
         assertThat(pageable.getPageNumber()).isEqualTo(1);
         assertThat(pageable.getPageSize()).isEqualTo(5);
+        assertThat(queryCaptor.getValue()).isEqualTo("search");
         assertThat(tagsCaptor.getValue()).containsExactlyInAnyOrder("java", "spring");
+        assertThat(colorCaptor.getValue()).isEqualTo("#123456");
+        assertThat(pinnedCaptor.getValue()).isTrue();
     }
 
     @Test
@@ -140,7 +152,7 @@ class NoteControllerTest {
         NoteDTO updatedNote =
                 sampleNote("Updated title", "Updated content", false, "#654321", Set.of("updated"));
 
-        when(noteCommandService.updateForCurrentUser(eq(10L), any(NoteUpdateRequest.class)))
+        when(noteCommandService.updateForCurrentUser(anyLong(), any(NoteUpdateRequest.class)))
                 .thenReturn(updatedNote);
 
         mockMvc.perform(
@@ -151,7 +163,12 @@ class NoteControllerTest {
                 .andExpect(jsonPath("$.title").value("Updated title"))
                 .andExpect(jsonPath("$.pinned").value(false));
 
-        verify(noteCommandService).updateForCurrentUser(eq(10L), any(NoteUpdateRequest.class));
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<NoteUpdateRequest> requestCaptor =
+                ArgumentCaptor.forClass(NoteUpdateRequest.class);
+        verify(noteCommandService)
+                .updateForCurrentUser(idCaptor.capture(), requestCaptor.capture());
+        assertThat(idCaptor.getValue()).isEqualTo(10L);
     }
 
     @Test
@@ -161,7 +178,7 @@ class NoteControllerTest {
                 sampleNote(
                         "Patched title", "Hello auditing world", true, "#2563eb", Set.of("audit"));
 
-        when(noteCommandService.patchForCurrentUser(eq(10L), any(NotePatchRequest.class)))
+        when(noteCommandService.patchForCurrentUser(anyLong(), any(NotePatchRequest.class)))
                 .thenReturn(patchedNote);
 
         mockMvc.perform(
@@ -171,7 +188,11 @@ class NoteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Patched title"));
 
-        verify(noteCommandService).patchForCurrentUser(eq(10L), any(NotePatchRequest.class));
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<NotePatchRequest> requestCaptor =
+                ArgumentCaptor.forClass(NotePatchRequest.class);
+        verify(noteCommandService).patchForCurrentUser(idCaptor.capture(), requestCaptor.capture());
+        assertThat(idCaptor.getValue()).isEqualTo(10L);
     }
 
     @Test
@@ -201,7 +222,11 @@ class NoteControllerTest {
         PageImpl<NoteDTO> page = new PageImpl<>(List.of(note), PageRequest.of(0, 3), 1);
 
         when(noteTrashService.findDeletedForCurrentUser(
-                        any(Pageable.class), eq("q"), any(), eq("#123456"), eq(false)))
+                        any(Pageable.class),
+                        anyString(),
+                        nullable(Set.class),
+                        anyString(),
+                        any(Boolean.class)))
                 .thenReturn(page);
 
         mockMvc.perform(
@@ -215,9 +240,23 @@ class NoteControllerTest {
                 .andExpect(jsonPath("$.content[0].title").value("Deleted note"))
                 .andExpect(jsonPath("$.size").value(3));
 
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Set<String>> tagsCaptor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<String> colorCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Boolean> pinnedCaptor = ArgumentCaptor.forClass(Boolean.class);
+
         verify(noteTrashService)
                 .findDeletedForCurrentUser(
-                        any(Pageable.class), eq("q"), any(), eq("#123456"), eq(false));
+                        pageableCaptor.capture(),
+                        queryCaptor.capture(),
+                        tagsCaptor.capture(),
+                        colorCaptor.capture(),
+                        pinnedCaptor.capture());
+        assertThat(queryCaptor.getValue()).isEqualTo("q");
+        assertThat(tagsCaptor.getValue()).isNull();
+        assertThat(colorCaptor.getValue()).isEqualTo("#123456");
+        assertThat(pinnedCaptor.getValue()).isFalse();
     }
 
     @Test
@@ -265,7 +304,7 @@ class NoteControllerTest {
                 sampleRevision(3L, "MOD", sampleNote("t", "c", false, null, Set.of()));
         PageImpl<NoteRevisionDTO> page = new PageImpl<>(List.of(revision), PageRequest.of(0, 5), 1);
 
-        when(noteRevisionService.findRevisionsForCurrentUser(eq(5L), any(Pageable.class)))
+        when(noteRevisionService.findRevisionsForCurrentUser(anyLong(), any(Pageable.class)))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/notes/{id}/revisions", 5L).param("page", "0").param("size", "5"))
@@ -273,7 +312,11 @@ class NoteControllerTest {
                 .andExpect(jsonPath("$.content[0].revision").value(3))
                 .andExpect(jsonPath("$.content[0].note.id").value(1));
 
-        verify(noteRevisionService).findRevisionsForCurrentUser(eq(5L), any(Pageable.class));
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(noteRevisionService)
+                .findRevisionsForCurrentUser(idCaptor.capture(), pageableCaptor.capture());
+        assertThat(idCaptor.getValue()).isEqualTo(5L);
     }
 
     @Test

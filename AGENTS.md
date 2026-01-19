@@ -210,6 +210,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Adding public endpoints but not updating `SecurityConfig` (or forgetting admin protection for `/api/admin/**`).
 - Returning undocumented error shapes; keep API errors consistent with `ProblemDetail` + `violations`.
 - Adding new validators outside `service/validation` (native/AOT scanning will miss them).
+- In Mockito `verify/when/given`, avoid useless `eq(...)` matchers; pass values directly and use `ArgumentCaptor` when you need to assert arguments.
 - Using fully qualified names everywhere instead of imports (only use FQNs to resolve ambiguity).
 - Rendering untrusted values via `innerHTML` without escaping (XSS risk); prefer `textContent` or escape helpers.
 - Adding/altering a form input but forgetting to add HTML constraints and matching `invalid-feedback` elements (users end up with silent failures or inconsistent validation UX).

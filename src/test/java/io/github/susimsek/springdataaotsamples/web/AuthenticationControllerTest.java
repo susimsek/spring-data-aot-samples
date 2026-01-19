@@ -1,5 +1,6 @@
 package io.github.susimsek.springdataaotsamples.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import java.time.Instant;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,10 +126,7 @@ class AuthenticationControllerTest {
 
         try (MockedStatic<CookieUtils> cookies =
                 Mockito.mockStatic(CookieUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            cookies.when(
-                            () ->
-                                    CookieUtils.getCookieValue(
-                                            any(), Mockito.eq(SecurityUtils.REFRESH_COOKIE)))
+            cookies.when(() -> CookieUtils.getCookieValue(any(), Mockito.anyString()))
                     .thenReturn("cookieRefresh");
 
             mockMvc.perform(post("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON))
@@ -139,6 +138,10 @@ class AuthenticationControllerTest {
                                             hasItems(
                                                     containsString("AUTH-TOKEN"),
                                                     containsString("REFRESH-TOKEN"))));
+
+            ArgumentCaptor<String> cookieNameCaptor = ArgumentCaptor.forClass(String.class);
+            cookies.verify(() -> CookieUtils.getCookieValue(any(), cookieNameCaptor.capture()));
+            assertThat(cookieNameCaptor.getValue()).isEqualTo(SecurityUtils.REFRESH_COOKIE);
         }
     }
 
