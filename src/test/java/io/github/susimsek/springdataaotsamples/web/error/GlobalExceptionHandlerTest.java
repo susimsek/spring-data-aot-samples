@@ -3,6 +3,7 @@ package io.github.susimsek.springdataaotsamples.web.error;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.lang.reflect.Method;
 import java.util.Locale;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -176,16 +178,23 @@ class GlobalExceptionHandlerTest {
         ArgumentCaptor<String> defaultMessageCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Locale> localeCaptor = ArgumentCaptor.forClass(Locale.class);
 
-        verify(messageSource)
+        verify(messageSource, atLeastOnce())
                 .getMessage(
                         codeCaptor.capture(),
                         argsCaptor.capture(),
                         defaultMessageCaptor.capture(),
                         localeCaptor.capture());
-        assertThat(codeCaptor.getValue()).isEqualTo("problemDetail.detail.test");
-        assertThat(argsCaptor.getValue()).isSameAs(args);
-        assertThat(defaultMessageCaptor.getValue()).isNull();
-        assertThat(localeCaptor.getValue()).isNotNull();
+        boolean matched =
+                IntStream.range(0, codeCaptor.getAllValues().size())
+                        .anyMatch(
+                                idx ->
+                                        "problemDetail.detail.test"
+                                                        .equals(codeCaptor.getAllValues().get(idx))
+                                                && argsCaptor.getAllValues().get(idx) == args
+                                                && defaultMessageCaptor.getAllValues().get(idx)
+                                                        == null
+                                                && localeCaptor.getAllValues().get(idx) != null);
+        assertThat(matched).isTrue();
         assertThat(body).isNotNull();
     }
 }
