@@ -17,9 +17,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Package                              | `./mvnw -DskipTests package`                      |
 | Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile` |
 
-## Agent Integration
+## Agent MCP Usage
 
-- Use Context7 MCP server for framework/library documentation lookups (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM).
+- Use the Context7 MCP server whenever you need framework or library docs (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM).
 
 ## Requirements
 
