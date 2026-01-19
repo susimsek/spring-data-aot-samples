@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import jakarta.validation.Valid;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.web.method.HandlerMethod;
@@ -133,11 +134,20 @@ class OpenApiConfigTest {
     }
 
     private static final class DummyController {
-        void securedWithValid(@Valid Object body) {}
+        void securedWithValid(@Valid Object body) {
+            Objects.requireNonNull(body, "body");
+            throw new UnsupportedOperationException("Test stub");
+        }
 
         @SecurityRequirements
-        void publicWithValid(@Valid Object body) {}
+        void publicWithValid(@Valid Object body) {
+            Objects.requireNonNull(body, "body");
+            throw new UnsupportedOperationException("Test stub");
+        }
 
-        void securedNoValid(Object body) {}
+        void securedNoValid(Object body) {
+            Objects.requireNonNull(body, "body");
+            throw new UnsupportedOperationException("Test stub");
+        }
     }
 }
