@@ -1,8 +1,7 @@
 # Note App Sample (Spring Boot 4 + Native)
 
 [![Build Status](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main.svg?style=shield)](https://circleci.com/gh/susimsek/spring-data-aot-samples/tree/main)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=note-app)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=note-app)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=note-app&metric=alert_status&branch=main)](https://sonarcloud.io/summary/overall?id=note-app&branch=main)
 [![Vulnerabilities](https://snyk.io/test/github/susimsek/spring-data-aot-samples/badge.svg)](https://snyk.io/test/github/susimsek/spring-data-aot-samples)
 [![Docker Pulls](https://img.shields.io/docker/pulls/suayb/note-app?label=Docker%20Pulls)](https://hub.docker.com/r/suayb/note-app)
 [![Docker Image Size](https://img.shields.io/docker/image-size/suayb/note-app/latest-native?label=Image%20Size)](https://hub.docker.com/r/suayb/note-app)
