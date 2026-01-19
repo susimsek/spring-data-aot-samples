@@ -124,8 +124,7 @@ public class NoteCommandService {
                 ids.stream()
                         .filter(id -> !notesById.containsKey(id))
                         .collect(Collectors.toCollection(ArrayList::new));
-        var result = executeBulk(action, notesById, failed);
-        return result;
+        return executeBulk(action, notesById, failed);
     }
 
     @Transactional
@@ -143,8 +142,7 @@ public class NoteCommandService {
                 ids.stream()
                         .filter(id -> !notesById.containsKey(id))
                         .collect(Collectors.toCollection(ArrayList::new));
-        var result = executeBulk(action, notesById, failed);
-        return result;
+        return executeBulk(action, notesById, failed);
     }
 
     private Note findActiveNote(Long id) {
@@ -235,6 +233,7 @@ public class NoteCommandService {
                 processed = deletable.size();
                 affectedIds = deletable;
             }
+            default -> throw new IllegalStateException("Unsupported bulk action: " + action);
         }
 
         if (processed > 0 && !affectedIds.isEmpty()) {
