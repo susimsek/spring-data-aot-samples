@@ -136,18 +136,18 @@ class OpenApiConfigTest {
     private static final class DummyController {
         void securedWithValid(@Valid Object body) {
             Objects.requireNonNull(body, "body");
-            throw new UnsupportedOperationException("Test stub");
+            throw new UnsupportedOperationException("Test stub (secured)");
         }
 
         @SecurityRequirements
         void publicWithValid(@Valid Object body) {
             Objects.requireNonNull(body, "body");
-            throw new UnsupportedOperationException("Test stub");
+            throw new UnsupportedOperationException("Test stub (public)");
         }
 
         void securedNoValid(Object body) {
             Objects.requireNonNull(body, "body");
-            throw new UnsupportedOperationException("Test stub");
+            throw new UnsupportedOperationException("Test stub (no-valid)");
         }
     }
 }
