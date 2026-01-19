@@ -187,8 +187,8 @@ public class NoteCommandService {
 
     private BulkActionResult executeBulk(
             BulkAction action, Map<Long, Note> notesById, List<Long> failed) {
-        List<Long> affectedIds = List.of();
-        int processed = 0;
+        List<Long> affectedIds;
+        int processed;
 
         switch (action) {
             case DELETE_SOFT -> {
