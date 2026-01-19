@@ -2,6 +2,10 @@
 
 This repo is a “Note” sample application built with Spring Boot 4 + Spring Data JPA (Hibernate) + Envers + Liquibase. It runs on the JVM and also targets GraalVM Native Image.
 
+## Agent MCP Usage Guidelines
+
+- Use the Context7 MCP server whenever you need framework or library docs (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM).
+
 ## Quick Reference
 
 | Action                               | Command                                           |
@@ -16,10 +20,6 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Checkstyle (no tests)                | `./mvnw -DskipTests checkstyle:check`             |
 | Package                              | `./mvnw -DskipTests package`                      |
 | Native executable                    | `./mvnw -Pprod,native -DskipTests native:compile` |
-
-## Agent MCP Usage
-
-- Use the Context7 MCP server whenever you need framework or library docs (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM).
 
 ## Requirements
 
