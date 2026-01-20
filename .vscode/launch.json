@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SpringDataAotSamplesApplication<spring-data-aot-samples>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "io.github.susimsek.springdataaotsamples.SpringDataAotSamplesApplication",
+            "projectName": "spring-data-aot-samples",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "rebel.xml.generation.invariant.token": {
+        "": "PGFwcGxpY2F0aW9uIGdlbmVyYXRlZC1ieT0idnNjb2RlIj48Y2xhc3NwYXRoPjxkaXIgbmFtZT0iL1VzZXJzL3lhcGlrcmVkaXRla25vbG9qaWEucy4vRG9jdW1lbnRzL015UHJvamVjdC9zcHJpbmctZGF0YS1hb3Qtc2FtcGxlcy90YXJnZXQvY2xhc3NlcyI+PC9kaXI+PC9jbGFzc3BhdGg+PC9hcHBsaWNhdGlvbj4="
+    },
+    "java.debug.settings.hotCodeReplace": "auto",
+    "java.compile.nullAnalysis.mode": "automatic"
+}
