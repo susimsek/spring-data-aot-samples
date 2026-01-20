@@ -1,14 +1,12 @@
 package io.github.susimsek.springdataaotsamples.service.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
@@ -28,8 +26,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 class TagCommandServiceTest {
 
     @Mock private TagRepository tagRepository;
-
-    @Mock private CacheProvider cacheProvider;
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
     private TagMapper tagMapper;
@@ -81,31 +77,21 @@ class TagCommandServiceTest {
         Set<Tag> result = tagCommandService.resolveTags(Set.of());
 
         assertThat(result).isEmpty();
-        verifyNoInteractions(tagRepository, cacheProvider, tagMapper);
+        verifyNoInteractions(tagRepository, tagMapper);
     }
 
     @Test
-    void cleanupOrphanTagsAsyncShouldDeleteAndClearCacheWhenIdsExist() {
-        List<Long> orphanIds = List.of(1L, 2L, 3L);
-        when(tagRepository.findOrphanIds()).thenReturn(orphanIds);
-
+    void cleanupOrphanTagsAsyncShouldDeleteOrphansWhenAnyExist() {
+        when(tagRepository.deleteOrphans()).thenReturn(3);
         tagCommandService.cleanupOrphanTagsAsync();
-
-        verify(tagRepository).deleteById(1L);
-        verify(tagRepository).deleteById(2L);
-        verify(tagRepository).deleteById(3L);
-        verify(cacheProvider).clearCache(Tag.class.getName(), 1L);
-        verify(cacheProvider).clearCache(Tag.class.getName(), 2L);
-        verify(cacheProvider).clearCache(Tag.class.getName(), 3L);
+        verify(tagRepository).deleteOrphans();
+        verifyNoMoreInteractions(tagRepository);
     }
 
     @Test
-    void cleanupOrphanTagsAsyncShouldDoNothingWhenNoOrphans() {
-        when(tagRepository.findOrphanIds()).thenReturn(List.of());
-
+    void cleanupOrphanTagsAsyncShouldStillCallDeleteOrphansWhenNoneExist() {
         tagCommandService.cleanupOrphanTagsAsync();
-
-        verify(tagRepository, never()).deleteAllByIdInBatch(any());
-        verifyNoInteractions(cacheProvider);
+        verify(tagRepository).deleteOrphans();
+        verifyNoMoreInteractions(tagRepository);
     }
 }
