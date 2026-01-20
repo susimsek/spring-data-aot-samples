@@ -200,6 +200,17 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Prefer `textContent` for rendering; when you must build HTML, use `Helpers.escapeHtml` / `Render.escapeHtml` and avoid injecting untrusted values into `innerHTML` or inline styles.
 - Keep inline `style="..."` usage minimal; prefer Bootstrap utility classes.
 
+## Commit & Pull Request Guidelines
+
+- Keep changes focused; avoid drive-by refactors in the same PR.
+- Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
+- Commit messages: use imperative present tense and a consistent prefix (e.g., Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).
+- Before opening a PR: run formatting + at least unit tests (`./mvnw -DskipTests spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
+- PR description should include: what/why, how to verify, and any risks or follow-ups.
+- Call out cross-cutting impacts explicitly: Liquibase migrations, new/changed config properties, cache regions/names, security rules (`SecurityConfig`), and AOT/native hints (`config/aot/NativeConfig.java`).
+- For UI changes, include screenshots or short notes about the affected pages and any new validation rules/messages.
+- Never include secrets (e.g., JWT secret) in commits/PRs; prefer env vars and document required setup in `README.md` if needed.
+
 ## Common Mistakes to Avoid
 
 - Skipping the layer flow (`web` → `service` → `repository`) and pushing business logic into controllers.
