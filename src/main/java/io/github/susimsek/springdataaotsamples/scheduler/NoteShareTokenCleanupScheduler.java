@@ -4,7 +4,6 @@ import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
 import java.time.Instant;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +28,9 @@ public class NoteShareTokenCleanupScheduler {
             return;
         }
 
-        Set<Long> ids =
-                tokens.stream()
-                        .map(NoteShareToken::getId)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<Long> ids = tokens.stream().map(NoteShareToken::getId).collect(Collectors.toSet());
         Set<String> tokenHashes =
-                tokens.stream()
-                        .map(NoteShareToken::getTokenHash)
-                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                tokens.stream().map(NoteShareToken::getTokenHash).collect(Collectors.toSet());
 
         noteShareTokenRepository.deleteAllByIdInBatch(ids);
         cacheProvider.clearCache(
