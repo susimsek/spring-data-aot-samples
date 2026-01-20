@@ -64,6 +64,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
 - Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
+- When you change code: apply formatting and ensure tests pass (`./mvnw -DskipTests spotless:apply` and `./mvnw test`).
+- When you add or change behavior: add/adjust unit tests for the new logic under `src/test/java`.
 
 ## Testing Guidelines
 
