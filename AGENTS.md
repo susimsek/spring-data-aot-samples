@@ -65,7 +65,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
 
-## Testing Guide
+## Testing Guidelines
 
 - Tests live under `src/test/java`.
 - Unit tests: `*Test.java`
