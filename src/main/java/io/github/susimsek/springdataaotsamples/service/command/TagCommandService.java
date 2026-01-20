@@ -1,6 +1,5 @@
 package io.github.susimsek.springdataaotsamples.service.command;
 
-import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Tag;
 import io.github.susimsek.springdataaotsamples.repository.TagRepository;
 import io.github.susimsek.springdataaotsamples.service.mapper.TagMapper;
@@ -26,7 +25,6 @@ import org.springframework.util.CollectionUtils;
 public class TagCommandService {
 
     private final TagRepository tagRepository;
-    private final CacheProvider cacheProvider;
     private final TagMapper tagMapper;
 
     @Transactional
@@ -65,14 +63,9 @@ public class TagCommandService {
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cleanupOrphanTagsAsync() {
-        var orphanIds = tagRepository.findOrphanIds();
-        if (orphanIds.isEmpty()) {
-            return;
+        int deleted = tagRepository.deleteOrphans();
+        if (deleted > 0) {
+            log.debug("Deleted {} orphan tags", deleted);
         }
-        for (Long orphanId : orphanIds) {
-            tagRepository.deleteById(orphanId);
-            cacheProvider.clearCache(Tag.class.getName(), orphanId);
-        }
-        log.debug("Deleted {} orphan tags", orphanIds.size());
     }
 }

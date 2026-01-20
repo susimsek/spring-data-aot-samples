@@ -4,6 +4,9 @@ import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.repository.NoteShareTokenRepository;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,13 +25,21 @@ public class NoteShareTokenCleanupScheduler {
         Instant now = Instant.now();
 
         var tokens = noteShareTokenRepository.findExpiredOrRevoked(now);
-        for (NoteShareToken token : tokens) {
-            Long tokenId = token.getId();
-            String tokenHash = token.getTokenHash();
-            noteShareTokenRepository.deleteById(tokenId);
-            cacheProvider.clearCache(NoteShareToken.class.getName(), tokenId);
-            cacheProvider.clearCache(
-                    NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, tokenHash);
+        if (tokens.isEmpty()) {
+            return;
         }
+
+        Set<Long> ids =
+                tokens.stream()
+                        .map(NoteShareToken::getId)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<String> tokenHashes =
+                tokens.stream()
+                        .map(NoteShareToken::getTokenHash)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        noteShareTokenRepository.deleteAllByIdInBatch(ids);
+        cacheProvider.clearCache(
+                NoteShareTokenRepository.NOTE_SHARE_TOKEN_BY_HASH_CACHE, tokenHashes);
     }
 }
