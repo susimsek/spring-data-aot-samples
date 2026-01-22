@@ -4,7 +4,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Agent MCP Usage Guidelines
 
-- Use the Context7 MCP server whenever you need framework or library docs (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM).
+- Always use the Context7 MCP server when I need library/API documentation (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM), code generation, setup or configuration steps without me having to explicitly ask.
 
 ## Quick Reference
 
