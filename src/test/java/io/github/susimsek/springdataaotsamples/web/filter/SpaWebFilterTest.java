@@ -43,12 +43,12 @@ class SpaWebFilterTest {
     }
 
     @Test
-    void skipsNonGetRequests() throws Exception {
+    void forwardsNonApiRoutesForNonGetRequests() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isNull();
+        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
     }
 }
