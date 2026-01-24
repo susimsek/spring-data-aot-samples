@@ -34,7 +34,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         AccessDeniedHandlerImpl htmlAccessDenied = new AccessDeniedHandlerImpl();
-        htmlAccessDenied.setErrorPage("/403.html");
+        htmlAccessDenied.setErrorPage("/403");
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers(
@@ -68,8 +68,7 @@ public class SecurityConfig {
                 .exceptionHandling(
                         ex ->
                                 ex.defaultAuthenticationEntryPointFor(
-                                                new RedirectAwareAuthenticationEntryPoint(
-                                                        "/login.html"),
+                                                new RedirectAwareAuthenticationEntryPoint("/login"),
                                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
                                         .defaultAccessDeniedHandlerFor(
                                                 htmlAccessDenied,
@@ -103,17 +102,23 @@ public class SecurityConfig {
                                                 HttpMethod.GET,
                                                 "/",
                                                 "/index.html",
-                                                "/share.html",
+                                                "/share",
                                                 "/share/**",
+                                                "/share.html",
+                                                "/login",
                                                 "/login.html",
+                                                "/register",
                                                 "/register.html",
+                                                "/403",
                                                 "/403.html",
+                                                "/404",
                                                 "/404.html",
                                                 "/favicon.ico",
                                                 "/favicon-16x16.png",
                                                 "/favicon-32x32.png",
                                                 "/favicon.svg",
                                                 "/js/**",
+                                                "/_next/**",
                                                 "/webjars/**")
                                         .permitAll()
                                         .anyRequest()

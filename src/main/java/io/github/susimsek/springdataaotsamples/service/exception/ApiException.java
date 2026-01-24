@@ -4,6 +4,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.util.StringUtils;
 import org.springframework.web.ErrorResponse;
 
 public abstract class ApiException extends RuntimeException implements ErrorResponse {
@@ -40,5 +41,12 @@ public abstract class ApiException extends RuntimeException implements ErrorResp
     @Override
     public Object @Nullable [] getDetailMessageArguments() {
         return args;
+    }
+
+    protected void setField(@Nullable String field) {
+        if (!StringUtils.hasText(field)) {
+            return;
+        }
+        body.setProperty("field", field);
     }
 }

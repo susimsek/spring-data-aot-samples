@@ -1,0 +1,12 @@
+node_modules
+.git
+.mvn
+.next
+build
+out
+node
+target
+.idea
+.vscode
+helm
+package-lock.json

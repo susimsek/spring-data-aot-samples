@@ -25,5 +25,6 @@ public record ProblemDetail(
                         description = "A URI reference that identifies the specific occurrence",
                         example = "/api/v1/article/generate")
                 String instance,
+        @Schema(description = "Field associated with the error", example = "username") String field,
         @ArraySchema(arraySchema = @Schema(description = "Field-level validation failure details"))
                 List<Violation> violations) {}

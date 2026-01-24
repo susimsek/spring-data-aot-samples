@@ -3,13 +3,18 @@ package io.github.susimsek.springdataaotsamples.repository.custom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -62,7 +67,18 @@ public abstract class JpaSpecificationPagingSupport<T, I> {
         idQuery.select(root.get(path).as(idType));
 
         applySpecification(specification, cb, idQuery, root);
-        applySort(pageable, cb, idQuery, root);
+        List<Order> orders = buildOrders(pageable, cb, root);
+        if (!orders.isEmpty()) {
+            idQuery.orderBy(orders);
+        }
+        if (idQuery.isDistinct()) {
+            idQuery.distinct(false);
+            if (orders.isEmpty()) {
+                idQuery.groupBy(root.get(path));
+            } else {
+                idQuery.groupBy(buildGroupBy(root.get(path), orders));
+            }
+        }
 
         var typed = entityManager.createQuery(idQuery);
         if (pageable.isPaged()) {
@@ -105,10 +121,19 @@ public abstract class JpaSpecificationPagingSupport<T, I> {
         }
     }
 
-    private void applySort(
-            Pageable pageable, CriteriaBuilder cb, CriteriaQuery<?> query, Root<T> root) {
+    private List<Order> buildOrders(Pageable pageable, CriteriaBuilder cb, Root<T> root) {
         if (pageable.getSort().isSorted()) {
-            query.orderBy(QueryUtils.toOrders(pageable.getSort(), root, cb));
+            return QueryUtils.toOrders(pageable.getSort(), root, cb);
         }
+        return List.of();
+    }
+
+    private List<Expression<?>> buildGroupBy(Expression<?> id, List<Order> orders) {
+        Set<Expression<?>> groupBy = new LinkedHashSet<>();
+        groupBy.add(id);
+        for (Order order : orders) {
+            groupBy.add(order.getExpression());
+        }
+        return new ArrayList<>(groupBy);
     }
 }

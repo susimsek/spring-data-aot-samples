@@ -10,5 +10,6 @@ public class UsernameAlreadyExistsException extends ApiException {
                 "Username already exists",
                 "Username already exists: " + username,
                 username);
+        setField("username");
     }
 }

@@ -9,7 +9,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ## Quick Reference
 
 | Action                              | Command                                           |
-|-------------------------------------|---------------------------------------------------|
+| ----------------------------------- | ------------------------------------------------- |
 | Run (dev, H2)                       | `./mvnw spring-boot:run`                          |
 | Run (prod, PostgreSQL)              | `./mvnw -Pprod spring-boot:run`                   |
 | Run (prod + docker-compose)         | `./mvnw -Pprod,docker-compose spring-boot:run`    |
@@ -20,6 +20,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Checkstyle                          | `./mvnw -DskipTests checkstyle:check`             |
 | Package                             | `./mvnw -DskipTests package`                      |
 | Native executable                   | `./mvnw -Pprod,native -DskipTests native:compile` |
+| Frontend lint (ESLint)              | `npm run lint`                                    |
+| Frontend format check (Prettier)    | `npm run format:check`                            |
+| Frontend format apply (Prettier)    | `npm run format`                                  |
 
 ## Requirements
 
@@ -50,8 +53,10 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
-- Static web assets (UI): `src/main/resources/static`
-  - JavaScript modules: `src/main/resources/static/js`
+- Frontend (Next.js): `src/main/webapp`
+  - App Router pages/components: `src/main/webapp/app`
+  - Build output (static export): `src/main/webapp/build`
+  - Maven copies build output to: `target/classes/static` (see `pom.xml` `copy-frontend-build`)
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
 - Tests: `src/test/java` and `src/test/resources`
@@ -62,6 +67,10 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - Check: `./mvnw -DskipTests spotless:check`
   - Apply: `./mvnw -DskipTests spotless:apply`
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
+- Frontend lint/format (Next.js under `src/main/webapp`):
+  - Lint (ESLint): `npm run lint`
+  - Format check (Prettier): `npm run format:check`
+  - Format apply (Prettier): `npm run format`
 - Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
 - When you change code: apply formatting and ensure tests pass (`./mvnw -DskipTests spotless:apply` and `./mvnw test`).
@@ -84,7 +93,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Authentication
 
-- Seed users for local dev: `admin/admin`, `user/user` (see `src/main/resources/static/login.html` and Liquibase seed data).
+- Seed users for local dev: `admin/admin`, `user/user` (see Liquibase seed data).
 - Auth can be provided via `Authorization: Bearer <jwt>` or via cookie `AUTH-TOKEN` (see `CookieAwareBearerTokenResolver`).
 - Cookies: `AUTH-TOKEN` + `REFRESH-TOKEN` are `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/` (see `CookieUtils`).
 - Refresh: `/api/auth/refresh` revokes the old refresh token and issues a new access+refresh token (rotation); `/api/auth/logout` clears cookies and accepts refresh token from body or cookie.
@@ -187,20 +196,16 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - DTOs live in `service/dto`; add `@Schema(description=..., example=...)` on record components that are exposed via the API.
   - For enums exposed via the API, add `@Schema` on the enum (and/or constants) to make values and meaning clear.
 
-### Static UI (HTML/JS)
+### Frontend
 
-- Static pages live under `src/main/resources/static` and use Bootstrap + Font Awesome via WebJars; there is no custom `.css` file today.
-- JavaScript is plain ES modules under `src/main/resources/static/js` (no bundler); import via relative paths and load entrypoints with `type="module"`.
-- Theme handling is centralized in `Theme` (`localStorage` key `theme`); include `/js/theme.js` early to avoid a flash of wrong theme and call `Theme.init(...)` on pages with a toggle.
-- API calls from the UI should go through `Api` (`/js/api.js`); it handles JSON parsing, consistent `ApiError`, and a 401 → refresh → retry flow (cookie-based auth).
-- Forms and client-side validation:
-  - Prefer HTML5 constraints (`required`, `minlength`/`maxlength`, `type`, etc.) and keep forms `novalidate` when using custom display logic.
-  - Use shared helpers from `src/main/resources/static/js/validation.js` (`getSizeState`, `toggleInlineMessages`, `toggleSizeMessages`, `togglePatternMessage`) instead of re-implementing size/required logic per form.
-  - Keep feedback blocks consistent: `data-error-type="<inputId>-required"`, `data-error-type="<inputId>-size"`, and for regex/custom checks `data-error-type="<inputId>-pattern"`.
-  - For regex/custom checks, set `input.setCustomValidity(...)` and let `toggleInlineMessages(...)` drive `is-valid`/`is-invalid`; show the pattern message via `togglePatternMessage(...)` (typically only after size passes so users see one message at a time).
-  - For cross-field validation (e.g., date ranges), set `is-invalid` on the relevant inputs and show a dedicated error container (see the shared links custom date modal).
-- Prefer `textContent` for rendering; when you must build HTML, use `Helpers.escapeHtml` / `Render.escapeHtml` and avoid injecting untrusted values into `innerHTML` or inline styles.
-- Keep inline `style="..."` usage minimal; prefer Bootstrap utility classes.
+- Source lives under `src/main/webapp` (App Router under `src/main/webapp/app`).
+- Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.js`).
+  - Maven runs `npm ci` + `npm run build` via `frontend-maven-plugin` and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
+- Routing is owned by Next.js; backend uses `SpaWebFilter` to forward unknown non-API routes to `/index.html`.
+- API calls in the Next UI should go through `src/main/webapp/app/lib/api.js` (relative `/api/...` URLs).
+  - Keep auth failure handling generic: a 401 triggers refresh+retry; if refresh fails, redirect to `/login`. Avoid per-page `if (err.status === 401) ...` blocks.
+- CSP note: Next static export emits inline scripts; a strict `script-src 'self'` CSP will break the UI. If you tighten CSP, you must handle inline scripts via nonces/hashes (or avoid static export).
+- Shared UI: use `src/main/webapp/app/components/AppNavbar.js` instead of creating page-specific navbar components.
 
 ## Commit & Pull Request Guidelines
 
@@ -208,6 +213,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
 - Commit messages: use imperative present tense and a consistent prefix (e.g., Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).
 - Before opening a PR: run formatting + at least unit tests (`./mvnw -DskipTests spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
+- If you change frontend code under `src/main/webapp`, run lint + formatting checks before opening a PR:
+  - `npm run lint`
+  - `npm run format:check`
 - PR description should include: what/why, how to verify, and any risks or follow-ups.
 - Call out cross-cutting impacts explicitly: Liquibase migrations, new/changed config properties, cache regions/names, security rules (`SecurityConfig`), and AOT/native hints (`config/aot/NativeConfig.java`).
 - For UI changes, include screenshots or short notes about the affected pages and any new validation rules/messages.

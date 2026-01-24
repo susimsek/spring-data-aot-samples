@@ -52,7 +52,7 @@ Then you can hit `http://localhost:8080/` or `http://<host-ip>:8080/` in your br
 ### Environment variables
 
 | Name                         | Default | Description                                              |
-|------------------------------|---------|----------------------------------------------------------|
+| ---------------------------- | ------- | -------------------------------------------------------- |
 | `SPRING_PROFILES_ACTIVE`     | `prod`  | Active profile                                           |
 | `SPRING_DATASOURCE_URL`      | (none)  | JDBC URL (e.g. `jdbc:postgresql://host:5432/note`)       |
 | `SPRING_DATASOURCE_USERNAME` | (none)  | Database username                                        |

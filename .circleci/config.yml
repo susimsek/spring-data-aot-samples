@@ -13,8 +13,16 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            - v1-dependencies-
+            - v2-maven-{{ checksum "pom.xml" }}
+            - v2-maven-
+      - restore_cache:
+          keys:
+            - v2-node-{{ checksum "pom.xml" }}
+            - v2-node-
+      - restore_cache:
+          keys:
+            - v2-npm-{{ checksum "package-lock.json" }}
+            - v2-npm-
       - run:
           name: Print Java Version
           command: java -version
@@ -24,10 +32,6 @@ jobs:
       - run:
           name: Install Maven dependencies
           command: ./mvnw -ntp -Pprod dependency:go-offline
-      - save_cache:
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-          paths:
-            - ~/.m2/repository
       - run:
           name: Install Snyk CLI
           command: |
@@ -60,6 +64,18 @@ jobs:
       - run:
           name: Test
           command: ./mvnw -B -ntp -Pprod verify
+      - save_cache:
+          key: v2-maven-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2/repository
+      - save_cache:
+          key: v2-node-{{ checksum "pom.xml" }}
+          paths:
+            - node
+      - save_cache:
+          key: v2-npm-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
       - run:
           name: Analyze code with SonarQube
           command: |
