@@ -21,8 +21,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Package                             | `./mvnw -DskipTests package`                      |
 | Native executable                   | `./mvnw -Pprod,native -DskipTests native:compile` |
 | Backend start (dev)                 | `npm run backend:start`                           |
-| Frontend dev (Next.js)              | `npm run frontend:dev`                            |
-| Frontend build (static export)      | `npm run frontend:build`                          |
+| Frontend dev (Next.js)              | `npm run dev`                                     |
+| Frontend build (static export)      | `npm run build`                                   |
 | Frontend lint (ESLint)              | `npm run lint`                                    |
 | Frontend format check (Prettier)    | `npm run format:check`                            |
 | Frontend format apply (Prettier)    | `npm run format`                                  |

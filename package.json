@@ -5,14 +5,11 @@
     "src/main/webapp"
   ],
   "scripts": {
-    "build": "npm run frontend:build",
-    "frontend:dev": "npm -w src/main/webapp run dev",
-    "frontend:build": "npm -w src/main/webapp run build",
-    "frontend:start": "npm -w src/main/webapp run start",
-    "start": "npm run frontend:start",
-    "serve": "npm run start --",
     "backend:start": "./mvnw -B -ntp -Dskip.installnodenpm=true -Dskip.npm=true spring-boot:run",
     "backend:debug": "./mvnw -B -ntp -Dskip.installnodenpm=true -Dskip.npm=true spring-boot:run -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000\"",
+    "dev": "npm -w src/main/webapp run dev",
+    "build": "npm -w src/main/webapp run build",
+    "start": "npm -w src/main/webapp run start",
     "lint": "eslint \"src/main/webapp/**/*.{js,jsx,ts,tsx,mjs,cjs}\"",
     "lint:fix": "eslint \"src/main/webapp/**/*.{js,jsx,ts,tsx,mjs,cjs}\" --fix",
     "format": "prettier --write \"{,src/main/webapp/**/,docs/**/}*.{md,json,yml,yaml,js,cjs,mjs,ts,tsx,css,scss,html}\"",
