@@ -1,5 +1,5 @@
 {
-  "name": "spring-data-aot-samples",
+  "name": "note-app",
   "private": true,
   "workspaces": [
     "src/main/webapp"
