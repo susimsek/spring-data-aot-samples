@@ -200,6 +200,30 @@ Spotless runs `spotless:check` in the `compile` phase. To apply formatting:
 ./mvnw -DskipTests spotless:apply
 ```
 
+### ESLint
+
+Frontend lives under `src/main/webapp` (deps at repo root via npm workspaces).
+
+Lint:
+
+```bash
+npm run lint
+```
+
+### Prettier
+
+Check formatting (no changes):
+
+```bash
+npm run format:check
+```
+
+Apply formatting (writes changes):
+
+```bash
+npm run format
+```
+
 ### Sonar
 
 If you use SonarCloud (or SonarQube) in your pipeline, you can run analysis locally as well.
