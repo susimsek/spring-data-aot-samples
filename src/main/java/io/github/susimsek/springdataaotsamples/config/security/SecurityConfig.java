@@ -5,6 +5,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
+import io.github.susimsek.springdataaotsamples.web.filter.SpaWebFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
@@ -124,6 +126,10 @@ public class SecurityConfig {
                                         .anyRequest()
                                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+
+        // Forward unknown non-API routes to the Next.js SPA entrypoint (static export).
+        http.addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class);
+
         return http.build();
     }
 
