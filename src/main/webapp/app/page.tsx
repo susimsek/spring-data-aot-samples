@@ -521,7 +521,7 @@ function NoteCard({
 
 export default function NotesPage() {
   const { pushToast } = useToasts();
-  const { loading: authLoading, isAdmin } = useAuth({ redirectOnFail: true });
+  const { loading: authLoading, isAdmin, isAuthenticated } = useAuth({ redirectOnFail: true });
   const [notes, setNotes] = useState<NoteDTO[]>([]);
   const [view, setView] = useState<NoteView>('active');
   const [loading, setLoading] = useState(false);
@@ -616,7 +616,7 @@ export default function NotesPage() {
   }, [debouncedSearch, pageSize, sort, view, appliedFilters]);
 
   const loadNotes = useCallback(async () => {
-    if (authLoading) return;
+    if (authLoading || !isAuthenticated) return;
     setLoading(true);
     setAlert('');
     try {
@@ -648,7 +648,7 @@ export default function NotesPage() {
     } finally {
       setLoading(false);
     }
-  }, [authLoading, view, page, pageSize, sort, debouncedSearch, appliedFilters]);
+  }, [authLoading, isAuthenticated, view, page, pageSize, sort, debouncedSearch, appliedFilters]);
 
   useEffect(() => {
     loadNotes();

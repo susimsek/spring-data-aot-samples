@@ -33,6 +33,7 @@ export class ApiError extends Error {
 }
 
 let refreshInFlight: Promise<JsonObject> | null = null;
+let refreshDisabled = false;
 
 function redirectToLogin() {
   const location = (globalThis as any).location as Location | undefined;
@@ -69,13 +70,20 @@ function normalizeError(error: unknown): ApiError {
 }
 
 async function refresh(): Promise<JsonObject> {
+  if (refreshDisabled) {
+    throw new ApiError('Unauthorized', 401);
+  }
   if (!refreshInFlight) {
     refreshInFlight = publicApi
       .post('/api/auth/refresh')
       .then((res: AxiosResponse<JsonObject>) => res.data ?? {})
       .catch(err => {
+        const apiErr = normalizeError(err);
+        if (apiErr.status === 401 || apiErr.status === 400) {
+          refreshDisabled = true;
+        }
         redirectToLogin();
-        throw normalizeError(err);
+        throw apiErr;
       })
       .finally(() => {
         refreshInFlight = null;
@@ -103,6 +111,10 @@ api.interceptors.response.use(
     if (status === 401 && !config._retry && shouldAttemptRefresh(url) && !config.skipAuthRedirect) {
       config._retry = true;
       try {
+        if (refreshDisabled) {
+          redirectToLogin();
+          return Promise.reject(normalizeError(error));
+        }
         await refresh();
         return api(config as any);
       } catch (err) {
@@ -127,6 +139,7 @@ function noteBase() {
 
 const Api = {
   login: async (payload: { username: string; password: string; rememberMe?: boolean }): Promise<JsonObject> => {
+    refreshDisabled = false;
     const res = await api.post<JsonObject>('/api/auth/login', payload);
     return res.data ?? {};
   },
@@ -143,6 +156,7 @@ const Api = {
     return (res.data ?? {}) as StoredUser;
   },
   logout: async (): Promise<JsonObject> => {
+    refreshDisabled = true;
     const res = await api.post<JsonObject>('/api/auth/logout');
     return res.data ?? {};
   },

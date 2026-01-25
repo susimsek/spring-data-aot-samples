@@ -42,7 +42,7 @@ describe('useAuth', () => {
       </Provider>
     );
 
-    const { result } = renderHook(() => useAuth({ fetchUser: false }), { wrapper });
+    const { result } = renderHook(() => useAuth(), { wrapper });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.isAuthenticated).toBe(true);
@@ -62,7 +62,7 @@ describe('useAuth', () => {
       </Provider>
     );
 
-    const { result } = renderHook(() => useAuth({ fetchUser: false }), { wrapper });
+    const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.logout();
     });
@@ -72,8 +72,6 @@ describe('useAuth', () => {
   });
 
   test('redirectOnFail triggers navigation when fetching user fails', async () => {
-    (Api as any).currentUser.mockRejectedValueOnce(new Error('Unauthorized'));
-
     const store = createTestStore({
       auth: { user: null, status: 'idle', error: null },
       theme: { theme: 'light' },
@@ -86,12 +84,6 @@ describe('useAuth', () => {
     );
 
     renderHook(() => useAuth({ redirectOnFail: true }), { wrapper });
-
-    // The thunk is async; wait for the rejection handler to run.
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
 
     expect(Window.replaceLocation).toHaveBeenCalledWith('/login');
   });

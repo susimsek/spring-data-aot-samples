@@ -6,7 +6,7 @@ import { faUser, faKey, faRightFromBracket } from '@fortawesome/free-solid-svg-i
 import useAuth from '../lib/useAuth';
 
 export default function AuthDropdown({ showChangePassword = false }: Readonly<{ showChangePassword?: boolean }>) {
-  const { user, isAuthenticated, logout } = useAuth({ fetchUser: false });
+  const { user, isAuthenticated, logout } = useAuth();
 
   if (!isAuthenticated) {
     return null;

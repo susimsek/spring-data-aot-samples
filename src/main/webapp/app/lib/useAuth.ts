@@ -3,14 +3,13 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { isAdmin as isAdminUser } from './auth';
-import { fetchCurrentUser, logoutUser } from '../slices/authSlice';
+import { logoutUser } from '../slices/authSlice';
 import { reloadPage, replaceLocation } from './window';
 import type { StoredUser } from '../types';
 
 export default function useAuth(
   options: {
     redirectOnFail?: boolean;
-    fetchUser?: boolean;
   } = {},
 ): {
   user: StoredUser | null;
@@ -19,24 +18,21 @@ export default function useAuth(
   isAuthenticated: boolean;
   logout: () => Promise<void>;
 } {
-  const { redirectOnFail = false, fetchUser = true } = options;
+  const { redirectOnFail = false } = options;
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.auth.user);
-  const status = useAppSelector(state => state.auth.status);
-  const loading = status === 'loading';
+  const loading = false;
 
   useEffect(() => {
-    if (!fetchUser) return;
-    if (!user && status === 'idle') {
-      dispatch(fetchCurrentUser())
-        .unwrap()
-        .catch(() => {
-          if (redirectOnFail) {
-            replaceLocation('/login');
-          }
-        });
-    }
-  }, [dispatch, fetchUser, redirectOnFail, status, user]);
+    if (!redirectOnFail) return;
+    if (user) return;
+
+    const location = (globalThis as any).location as Location | undefined;
+    const path = location?.pathname || '';
+    if (path.includes('/login') || path.includes('/register')) return;
+
+    replaceLocation('/login');
+  }, [redirectOnFail, user]);
 
   const logout = useCallback(async () => {
     try {

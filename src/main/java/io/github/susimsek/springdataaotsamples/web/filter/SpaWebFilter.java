@@ -19,7 +19,6 @@ public class SpaWebFilter extends OncePerRequestFilter {
                 && !path.startsWith("/v3/api-docs")
                 && !path.startsWith("/h2-console")
                 && !path.startsWith("/swagger-ui")
-                && !path.startsWith("/webjars")
                 && !path.contains(".")
                 && path.matches("/(.*)")) {
             request.getRequestDispatcher("/index.html").forward(request, response);

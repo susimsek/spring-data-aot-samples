@@ -38,7 +38,7 @@ export default function AppNavbar({
   requireAuthForActions = false,
   collapseId = 'appNavbar',
 }: Readonly<AppNavbarProps>) {
-  const { isAuthenticated } = useAuth({ fetchUser: false });
+  const { isAuthenticated } = useAuth();
   const canShowActions = !requireAuthForActions || isAuthenticated;
   const showHome = showHomeButton && canShowActions;
   const showAuth = showAuthDropdown && canShowActions;

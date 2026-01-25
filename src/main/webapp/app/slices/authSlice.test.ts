@@ -20,7 +20,7 @@ jest.mock('../lib/auth', () => ({
 
 import Api from '../lib/api';
 import { clearStoredUser, persistUser } from '../lib/auth';
-import reducer, { clearUser, fetchCurrentUser, loginUser, logoutUser } from './authSlice';
+import reducer, { clearUser, loginUser, logoutUser } from './authSlice';
 
 describe('authSlice', () => {
   beforeEach(() => {
@@ -58,21 +58,6 @@ describe('authSlice', () => {
     expect(loginUser.rejected.match(res)).toBe(true);
     expect(store.getState().auth.status).toBe('failed');
     expect(store.getState().auth.error).toBe('Invalid username or password.');
-  });
-
-  test('fetchCurrentUser failure clears stored user and sets error', async () => {
-    (Api.currentUser as jest.Mock).mockRejectedValueOnce(new Error('Unauthorized'));
-
-    const store = configureStore({
-      reducer: { auth: reducer },
-    });
-
-    const res = await store.dispatch(fetchCurrentUser());
-    expect(fetchCurrentUser.rejected.match(res)).toBe(true);
-    expect(clearStoredUser).toHaveBeenCalledTimes(1);
-    expect(store.getState().auth.user).toBeNull();
-    expect(store.getState().auth.status).toBe('failed');
-    expect(store.getState().auth.error).toBe('Unauthorized');
   });
 
   test('logoutUser always clears stored user', async () => {

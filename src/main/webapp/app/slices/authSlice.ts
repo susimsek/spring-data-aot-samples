@@ -33,20 +33,6 @@ function normalizeError(err: unknown): ApiErrorPayload {
   return { message: String(err) };
 }
 
-export const fetchCurrentUser = createAsyncThunk<StoredUser, void, { rejectValue: ApiErrorPayload }>(
-  'auth/fetchCurrentUser',
-  async (_: void, { rejectWithValue }) => {
-    try {
-      const user = await Api.currentUser();
-      persistUser(user);
-      return user;
-    } catch (err) {
-      clearStoredUser();
-      return rejectWithValue(normalizeError(err));
-    }
-  },
-);
-
 export interface LoginPayload {
   username: string;
   password: string;
@@ -93,20 +79,6 @@ const authSlice = createSlice({
   },
   extraReducers: builder => {
     builder
-      .addCase(fetchCurrentUser.pending, state => {
-        state.status = 'loading';
-        state.error = null;
-      })
-      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.user = action.payload || null;
-        state.error = null;
-      })
-      .addCase(fetchCurrentUser.rejected, (state, action) => {
-        state.status = 'failed';
-        state.user = null;
-        state.error = action.payload?.message || action.error?.message || 'Request failed';
-      })
       .addCase(loginUser.pending, state => {
         state.status = 'loading';
         state.error = null;
