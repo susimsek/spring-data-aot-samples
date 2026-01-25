@@ -28,6 +28,7 @@
     </scm>
     <properties>
         <java.version>25</java.version>
+        <skipTests>false</skipTests>
         <maven.version>3.2.5</maven.version>
         <gatling.version>3.14.9</gatling.version>
         <gatling-maven-plugin.version>4.20.16</gatling-maven-plugin.version>
@@ -36,9 +37,6 @@
         <springdoc-openapi-starter.version>3.0.0</springdoc-openapi-starter.version>
         <opentelemetry-logback-appender.version>2.23.0-alpha</opentelemetry-logback-appender.version>
         <datasource-micrometer-spring-boot.version>2.0.1</datasource-micrometer-spring-boot.version>
-        <bootstrap.version>5.3.0</bootstrap.version>
-        <font-awesome.version>6.0.0</font-awesome.version>
-        <webjars-locator.version>1.0.1</webjars-locator.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <jib-maven-plugin.image>eclipse-temurin:25-jre-alpine</jib-maven-plugin.image>
@@ -147,21 +145,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator-lite</artifactId>
-            <version>${webjars-locator.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>${bootstrap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>font-awesome</artifactId>
-            <version>${font-awesome.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -369,6 +352,8 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
+                            <!-- Keep Maven's -DskipTests behavior consistent across backend + frontend tests. -->
+                            <skip>${skipTests}</skip>
                             <arguments>test -- --coverage --runInBand</arguments>
                             <!-- Avoid modifying git hooks during Maven builds. -->
                             <environmentVariables>
@@ -403,6 +388,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
+                            <skip>${skip.npm}</skip>
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
