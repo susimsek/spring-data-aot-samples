@@ -24,7 +24,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Frontend dev (Next.js)              | `npm run dev`                                     |
 | Frontend build (static export)      | `npm run build`                                   |
 | Frontend lint (ESLint)              | `npm run lint`                                    |
-| Frontend format check (Prettier)    | `npm run format:check`                            |
+| Frontend unit tests (Jest)          | `npm test`                                        |
 | Frontend format apply (Prettier)    | `npm run format`                                  |
 
 ## Requirements
@@ -73,7 +73,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
 - Frontend lint/format (Next.js under `src/main/webapp`):
   - Lint (ESLint): `npm run lint`
-  - Format check (Prettier): `npm run format:check`
+  - Unit tests (Jest): `npm test`
   - Format apply (Prettier): `npm run format`
   - ESLint config: `eslint.config.mjs`
   - Prettier config: `.prettierrc.json` (ignores in `.prettierignore`)
@@ -82,6 +82,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
 - When you change code: apply formatting and ensure tests pass (`./mvnw -DskipTests spotless:apply` and `./mvnw test`).
 - When you add or change behavior: add/adjust unit tests for the new logic under `src/test/java`.
+- When you change frontend code: apply formatting and ensure lint/tests pass (`npm run format`, `npm run lint`, `npm test`).
+- When you add or change frontend behavior: add/adjust unit tests for the new logic under `src/main/webapp`.
 
 ## Testing Guidelines
 
@@ -91,6 +93,10 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Run a single unit test: `./mvnw -Dtest=TokenServiceTest test`
 - Run a single integration test: `./mvnw -Dit.test=NoteControllerIT failsafe:integration-test failsafe:verify`
 - Performance (Gatling): `src/test/java/gatling/simulations` and `./mvnw gatling:test`
+- Frontend unit tests (Jest) live under `src/main/webapp` (e.g., `src/main/webapp/**/*.test.ts`, `src/main/webapp/**/*.test.tsx`).
+- Run frontend tests: `npm test`
+- Run a single frontend test file: `npm test -- src/main/webapp/app/components/AppNavbar.test.tsx`
+- Run a single frontend test by name: `npm test -- -t "ThemeToggleButton"`
 
 ## Native Image & AOT Guidance
 
@@ -222,9 +228,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
 - Commit messages: use imperative present tense and a consistent prefix (e.g., Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).
 - Before opening a PR: run formatting + at least unit tests (`./mvnw -DskipTests spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
-- If you change frontend code under `src/main/webapp`, run lint + formatting checks before opening a PR:
-  - `npm run lint`
-  - `npm run format:check`
+- If you change frontend code under `src/main/webapp`, also run formatting + lint + unit tests before opening a PR (`npm run format`, `npm run lint`, `npm test`).
 - PR description should include: what/why, how to verify, and any risks or follow-ups.
 - Call out cross-cutting impacts explicitly: Liquibase migrations, new/changed config properties, cache regions/names, security rules (`SecurityConfig`), and AOT/native hints (`config/aot/NativeConfig.java`).
 - For UI changes, include screenshots or short notes about the affected pages and any new validation rules/messages.

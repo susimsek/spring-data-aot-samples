@@ -63,7 +63,7 @@ jobs:
             fi
       - run:
           name: Test
-          command: ./mvnw -B -ntp -Pprod -Dskip.installnodenpm=true -Dskip.npm=true verify
+          command: ./mvnw -B -ntp -Pprod verify
       - save_cache:
           key: v2-maven-{{ checksum "pom.xml" }}
           paths:

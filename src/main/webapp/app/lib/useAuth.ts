@@ -4,6 +4,7 @@ import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { isAdmin as isAdminUser } from './auth';
 import { fetchCurrentUser, logoutUser } from '../slices/authSlice';
+import { reloadPage, replaceLocation } from './window';
 import type { StoredUser } from '../types';
 
 export default function useAuth(
@@ -31,7 +32,7 @@ export default function useAuth(
         .unwrap()
         .catch(() => {
           if (redirectOnFail && typeof window !== 'undefined') {
-            window.location.replace('/login');
+            replaceLocation('/login');
           }
         });
     }
@@ -41,9 +42,7 @@ export default function useAuth(
     try {
       await dispatch(logoutUser()).unwrap();
     } finally {
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
+      reloadPage();
     }
   }, [dispatch]);
 

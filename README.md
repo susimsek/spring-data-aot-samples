@@ -211,6 +211,14 @@ Lint:
 npm run lint
 ```
 
+### Jest
+
+Run frontend unit tests (with coverage):
+
+```bash
+npm test -- --coverage
+```
+
 ### Prettier
 
 Check formatting (no changes):

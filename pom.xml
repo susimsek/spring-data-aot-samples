@@ -363,8 +363,22 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npm-build</id>
+                        <id>npm-test</id>
                         <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>test -- --coverage --runInBand</arguments>
+                            <!-- Avoid modifying git hooks during Maven builds. -->
+                            <environmentVariables>
+                                <HUSKY>0</HUSKY>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-build</id>
+                        <phase>process-resources</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>

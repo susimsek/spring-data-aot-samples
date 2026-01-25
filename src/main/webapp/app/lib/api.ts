@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance, type AxiosResponse } from 'axios';
 import { buildRedirectQuery, clearStoredUser, isAdmin, loadStoredUser } from './auth';
+import { replaceLocation } from './window';
 import type { NoteDTO, NoteRevisionDTO, PageResponse, ShareLinkDTO, StoredUser } from '../types';
 
 type JsonObject = Record<string, unknown>;
@@ -41,12 +42,16 @@ function redirectToLogin() {
   const redirect = buildRedirectQuery();
   document.body.style.transition = 'opacity 120ms ease-in';
   document.body.style.opacity = '0';
-  setTimeout(() => window.location.replace(`/login?redirect=${redirect}`), 130);
+  setTimeout(() => replaceLocation(`/login?redirect=${redirect}`), 130);
 }
 
 function normalizeError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
   const axiosError = axios.isAxiosError(error) ? (error as AxiosError) : undefined;
+  if (!axiosError) {
+    const message = error instanceof Error && error.message ? error.message : 'Request failed';
+    return new ApiError(message);
+  }
   const status = axiosError?.response?.status;
   const body = axiosError?.response?.data;
   const title = (body as { title?: unknown } | undefined)?.title;
