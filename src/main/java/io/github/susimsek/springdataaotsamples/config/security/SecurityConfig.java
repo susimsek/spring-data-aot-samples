@@ -1,5 +1,7 @@
 package io.github.susimsek.springdataaotsamples.config.security;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
@@ -23,8 +25,6 @@ import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
