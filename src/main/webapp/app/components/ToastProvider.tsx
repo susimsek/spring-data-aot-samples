@@ -1,12 +1,29 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import ToastContainer from 'react-bootstrap/ToastContainer';
 import Toast from 'react-bootstrap/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck, faCircleInfo, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
-const ToastContext = createContext({
+export type ToastVariant = 'success' | 'info' | 'warning' | 'danger';
+
+export interface ToastAction {
+  label: string;
+  icon?: IconDefinition;
+  handler?: () => void | Promise<void>;
+}
+
+export interface ToastItem {
+  id: string;
+  message: string;
+  variant: ToastVariant;
+  title?: string;
+  action?: ToastAction;
+}
+
+const ToastContext = createContext<{ pushToast: (message: string, variant?: ToastVariant, title?: string, action?: ToastAction) => void }>({
   pushToast: () => {},
 });
 
@@ -15,21 +32,21 @@ const iconMap = {
   info: faCircleInfo,
   warning: faTriangleExclamation,
   danger: faTriangleExclamation,
-};
+} satisfies Record<ToastVariant, IconDefinition>;
 
 export function useToasts() {
   return useContext(ToastContext);
 }
 
-export default function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
+export default function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const pushToast = useCallback((message, variant = 'success', title, action) => {
+  const pushToast = useCallback((message: string, variant: ToastVariant = 'success', title?: string, action?: ToastAction) => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     setToasts(prev => [...prev, { id, message, variant, title, action }]);
   }, []);
 
-  const removeToast = useCallback(id => {
+  const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
 
@@ -41,6 +58,7 @@ export default function ToastProvider({ children }) {
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1080 }}>
         {toasts.map(toast => {
           const icon = iconMap[toast.variant] || iconMap.info;
+          const action = toast.action;
           return (
             <Toast key={toast.id} bg={toast.variant} onClose={() => removeToast(toast.id)} delay={4000} autohide className="text-white">
               {toast.title ? (
@@ -52,17 +70,17 @@ export default function ToastProvider({ children }) {
               <Toast.Body className="d-flex align-items-center gap-2">
                 {!toast.title ? <FontAwesomeIcon icon={icon} /> : null}
                 <span>{toast.message}</span>
-                {toast.action ? (
+                {action ? (
                   <button
                     type="button"
                     className="btn btn-outline-light btn-sm ms-2 d-inline-flex align-items-center gap-1"
                     onClick={async () => {
-                      await toast.action.handler?.();
+                      await action.handler?.();
                       removeToast(toast.id);
                     }}
                   >
-                    <FontAwesomeIcon icon={toast.action.icon || faCircleInfo} />
-                    {toast.action.label}
+                    <FontAwesomeIcon icon={action.icon || faCircleInfo} />
+                    {action.label}
                   </button>
                 ) : null}
               </Toast.Body>

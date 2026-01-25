@@ -1,11 +1,12 @@
 'use client';
 
 import Button from 'react-bootstrap/Button';
+import type { ButtonProps } from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
-import { useTheme } from './ThemeProvider.js';
+import { useTheme } from './ThemeProvider';
 
-export default function ThemeToggleButton({ size = 'sm', className = '' }) {
+export default function ThemeToggleButton({ size = 'sm', className = '' }: { size?: ButtonProps['size']; className?: string }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 

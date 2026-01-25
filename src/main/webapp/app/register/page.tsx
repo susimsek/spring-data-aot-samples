@@ -10,12 +10,21 @@ import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { useForm } from 'react-hook-form';
-import AppNavbar from '../components/AppNavbar.js';
-import Footer from '../components/Footer.js';
-import Api from '../lib/api.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
+import Api, { ApiError } from '../lib/api';
 
 const usernamePattern = /^[a-zA-Z0-9_-]+$/;
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+
+interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirm: string;
+}
+
+type ServerField = '' | 'username' | 'email';
 
 export default function RegisterPage() {
   const {
@@ -25,7 +34,7 @@ export default function RegisterPage() {
     setError: setFieldError,
     clearErrors,
     formState: { errors, isValid, isSubmitting },
-  } = useForm({
+  } = useForm<RegisterFormValues>({
     mode: 'onChange',
     defaultValues: {
       username: '',
@@ -41,8 +50,8 @@ export default function RegisterPage() {
   const confirm = watch('confirm');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [serverField, setServerField] = useState('');
-  const serverFieldValueRef = useRef(null);
+  const [serverField, setServerField] = useState<ServerField>('');
+  const serverFieldValueRef = useRef<string | null>(null);
 
   useEffect(() => {
     setError('');
@@ -53,7 +62,7 @@ export default function RegisterPage() {
       serverFieldValueRef.current = null;
       return;
     }
-    const fieldValues = { username, email, password, confirm };
+    const fieldValues: RegisterFormValues = { username, email, password, confirm };
     const current = fieldValues[serverField] ?? '';
     if (serverFieldValueRef.current == null) {
       serverFieldValueRef.current = current;
@@ -85,9 +94,11 @@ export default function RegisterPage() {
         password: data.password,
       });
       window.location.replace('/login?registered=1');
-    } catch (err) {
-      const message = err?.body?.detail || err?.message || 'Registration failed';
-      const field = err?.body?.field;
+    } catch (err: unknown) {
+      const apiErr = err instanceof ApiError ? err : null;
+      const body = (apiErr?.body ?? {}) as { detail?: unknown; field?: unknown };
+      const message = (typeof body.detail === 'string' && body.detail) || apiErr?.message || 'Registration failed';
+      const field = body.field;
       if (field === 'username' || field === 'email') {
         setFieldError(field, { type: 'server', message });
         setServerField(field);

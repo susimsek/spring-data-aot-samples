@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import Form from 'react-bootstrap/Form';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -8,6 +8,24 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 const defaultPattern = /^[A-Za-z0-9_-]{1,30}$/;
+
+export interface TagInputProps {
+  id: string;
+  label?: string;
+  tags?: string[];
+  onChange?: (tags: string[]) => void;
+  loadSuggestions?: (query: string) => Promise<string[]>;
+  maxTags?: number;
+  minTagLength?: number;
+  maxTagLength?: number;
+  placeholder?: string;
+  disabled?: boolean;
+  pattern?: RegExp;
+  helperText?: string;
+  errorMessage?: string;
+  isInvalid?: boolean;
+  externalError?: string;
+}
 
 export default function TagInput({
   id,
@@ -25,11 +43,11 @@ export default function TagInput({
   errorMessage,
   isInvalid = false,
   externalError,
-}) {
+}: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const debounceRef = useRef(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const datalistId = `${id}-suggestions`;
 
   useEffect(() => {
@@ -46,19 +64,23 @@ export default function TagInput({
         .then(items => setSuggestions(Array.isArray(items) ? items : []))
         .catch(() => setSuggestions([]));
     }, 250);
-    return () => clearTimeout(debounceRef.current);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, [inputValue, loadSuggestions]);
 
   const normalizedTags = useMemo(() => tags || [], [tags]);
   const combinedError = externalError || error;
   const hasError = Boolean(combinedError) || isInvalid;
 
-  const updateTags = nextTags => {
+  const updateTags = (nextTags: string[]) => {
     onChange?.(nextTags);
     setError('');
   };
 
-  const addTag = raw => {
+  const addTag = (raw: string) => {
     const chunk = raw.trim();
     if (!chunk) return;
     if (normalizedTags.length >= maxTags) {
@@ -83,7 +105,7 @@ export default function TagInput({
     setSuggestions([]);
   };
 
-  const handleKeyDown = event => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
       const parts = inputValue.split(',');
@@ -91,7 +113,7 @@ export default function TagInput({
     }
   };
 
-  const removeTag = value => {
+  const removeTag = (value: string) => {
     updateTags(normalizedTags.filter(tag => tag !== value));
   };
 

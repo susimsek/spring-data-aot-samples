@@ -42,7 +42,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faCalendar as faCalendarRegular, faClock, faNoteSticky } from '@fortawesome/free-regular-svg-icons';
 
-export const loadIcons = () => {
+export const loadIcons = (): void => {
   library.add(
     faBars,
     faBan,

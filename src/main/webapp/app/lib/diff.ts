@@ -2,7 +2,14 @@ const DIFF_ADD = 'add';
 const DIFF_DEL = 'del';
 const DIFF_EQ = 'eq';
 
-export function diffLinesDetailed(oldText, newText) {
+export type DiffType = typeof DIFF_ADD | typeof DIFF_DEL | typeof DIFF_EQ;
+
+export interface DiffOp {
+  type: DiffType;
+  value: string;
+}
+
+export function diffLinesDetailed(oldText: string, newText: string): DiffOp[] {
   const a = (oldText || '').split(/\r?\n/);
   const b = (newText || '').split(/\r?\n/);
   const m = a.length;
@@ -17,7 +24,7 @@ export function diffLinesDetailed(oldText, newText) {
       }
     }
   }
-  const ops = [];
+  const ops: DiffOp[] = [];
   let i = 0;
   let j = 0;
   while (i < m && j < n) {

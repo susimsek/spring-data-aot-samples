@@ -9,23 +9,29 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import AppNavbar from '../components/AppNavbar.js';
-import Footer from '../components/Footer.js';
-import Api from '../lib/api.js';
-import { clearUser } from '../slices/authSlice.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
+import Api, { ApiError } from '../lib/api';
+import { useAppDispatch } from '../hooks';
+import { clearUser } from '../slices/authSlice';
 
 const passwordPattern = /^(?=.*[A-ZÇĞİÖŞÜ])(?=.*[a-zçğıöşü])(?=.*\d).+$/;
 
+interface ChangePasswordFormValues {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export default function ChangePasswordPage() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors, isValid, isSubmitting },
-  } = useForm({
+  } = useForm<ChangePasswordFormValues>({
     mode: 'onChange',
     defaultValues: {
       currentPassword: '',
@@ -59,8 +65,10 @@ export default function ChangePasswordPage() {
       });
       dispatch(clearUser());
       window.location.replace('/login');
-    } catch (err) {
-      const message = err?.body?.detail || err?.message || 'Password update failed.';
+    } catch (err: unknown) {
+      const apiErr = err instanceof ApiError ? err : null;
+      const body = (apiErr?.body ?? {}) as { detail?: unknown };
+      const message = (typeof body.detail === 'string' && body.detail) || apiErr?.message || 'Password update failed.';
       setError(message);
     }
   });

@@ -10,11 +10,12 @@ import Spinner from 'react-bootstrap/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faThumbtack, faUser } from '@fortawesome/free-solid-svg-icons';
 import { faNoteSticky, faCalendar, faClock } from '@fortawesome/free-regular-svg-icons';
-import AppNavbar from '../components/AppNavbar.js';
-import Footer from '../components/Footer.js';
-import Api from '../lib/api.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
+import Api, { ApiError } from '../lib/api';
+import type { NoteDTO } from '../types';
 
-function splitDateTime(value) {
+function splitDateTime(value: string | null | undefined): { date: string; time: string } {
   if (!value) return { date: '—', time: '—' };
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return { date: String(value), time: '' };
@@ -27,7 +28,7 @@ function splitDateTime(value) {
 export default function SharePageClient() {
   const searchParams = useSearchParams();
   const tokenParam = searchParams?.get('share_token') || '';
-  const [note, setNote] = useState(null);
+  const [note, setNote] = useState<NoteDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -56,12 +57,13 @@ export default function SharePageClient() {
         if (!active) return;
         setNote(data);
         setError('');
-      } catch (err) {
+      } catch (err: unknown) {
         if (!active) return;
-        if (err?.status === 401 || err?.status === 403) {
+        const apiErr = err instanceof ApiError ? err : null;
+        if (apiErr?.status === 401 || apiErr?.status === 403) {
           setError('This share link is no longer available. Please request a new link.');
         } else {
-          setError(err?.message || 'Could not load note.');
+          setError(apiErr?.message || 'Could not load note.');
         }
       } finally {
         if (active) setLoading(false);

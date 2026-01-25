@@ -10,15 +10,21 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faRightToBracket, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import AppNavbar from '../components/AppNavbar.js';
-import Footer from '../components/Footer.js';
-import { loginUser } from '../slices/authSlice.js';
-import { useToasts } from '../components/ToastProvider.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
+import { useAppDispatch } from '../hooks';
+import { loginUser } from '../slices/authSlice';
+import { useToasts } from '../components/ToastProvider';
+
+interface LoginFormValues {
+  username: string;
+  password: string;
+  rememberMe: boolean;
+}
 
 export default function LoginPageClient() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered') === '1';
   const redirect = searchParams.get('redirect') || '/';
@@ -29,7 +35,7 @@ export default function LoginPageClient() {
     handleSubmit,
     watch,
     formState: { errors, isValid, isSubmitting },
-  } = useForm({
+  } = useForm<LoginFormValues>({
     mode: 'onChange',
     defaultValues: {
       username: '',
@@ -61,8 +67,8 @@ export default function LoginPageClient() {
       ).unwrap();
       pushToast('Signed in successfully.', 'success');
       window.location.replace(redirect || '/');
-    } catch (err) {
-      setError(err?.message || 'Login failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     }
   });
 

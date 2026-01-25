@@ -1,14 +1,27 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { isAdmin as isAdminUser } from './auth.js';
-import { fetchCurrentUser, logoutUser } from '../slices/authSlice.js';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { isAdmin as isAdminUser } from './auth';
+import { fetchCurrentUser, logoutUser } from '../slices/authSlice';
+import type { StoredUser } from '../types';
 
-export default function useAuth({ redirectOnFail = false, fetchUser = true } = {}) {
-  const dispatch = useDispatch();
-  const user = useSelector(state => state.auth.user);
-  const status = useSelector(state => state.auth.status);
+export default function useAuth(
+  options: {
+    redirectOnFail?: boolean;
+    fetchUser?: boolean;
+  } = {},
+): {
+  user: StoredUser | null;
+  loading: boolean;
+  isAdmin: boolean;
+  isAuthenticated: boolean;
+  logout: () => Promise<void>;
+} {
+  const { redirectOnFail = false, fetchUser = true } = options;
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(state => state.auth.user);
+  const status = useAppSelector(state => state.auth.status);
   const loading = status === 'loading';
 
   useEffect(() => {

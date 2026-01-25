@@ -11,6 +11,11 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   distDir: 'build',
+  // This app is nested under src/main/webapp while node_modules lives at repo root (npm workspaces).
+  outputFileTracingRoot: path.join(__dirname, '..', '..', '..'),
+  typescript: {
+    tsconfigPath: '../../../tsconfig.json',
+  },
   turbopack: {
     // This project lives under `src/main/webapp`, but deps are installed at repo root.
     // Pin Turbopack root to the repo root so `node_modules` is resolvable.

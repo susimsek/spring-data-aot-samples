@@ -3,9 +3,9 @@
 import Dropdown from 'react-bootstrap/Dropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faKey, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
-import useAuth from '../lib/useAuth.js';
+import useAuth from '../lib/useAuth';
 
-export default function AuthDropdown({ showChangePassword = false }) {
+export default function AuthDropdown({ showChangePassword = false }: { showChangePassword?: boolean }) {
   const { user, isAuthenticated, logout } = useAuth({ fetchUser: false });
 
   if (!isAuthenticated) {

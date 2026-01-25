@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import SharePageClient from './SharePageClient.js';
+import LoginPageClient from './LoginPageClient';
 
-function ShareFallback() {
+function LoginFallback() {
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary">
       <span className="spinner-border text-primary" role="status" aria-hidden="true" />
@@ -9,10 +9,10 @@ function ShareFallback() {
   );
 }
 
-export default function SharePage() {
+export default function LoginPage() {
   return (
-    <Suspense fallback={<ShareFallback />}>
-      <SharePageClient />
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageClient />
     </Suspense>
   );
 }

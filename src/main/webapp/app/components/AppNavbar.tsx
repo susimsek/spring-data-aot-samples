@@ -8,10 +8,23 @@ import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faHouse, faXmark } from '@fortawesome/free-solid-svg-icons';
-import ThemeToggleButton from './ThemeToggleButton.js';
-import AuthDropdown from './AuthDropdown.js';
-import Brand from './Brand.js';
-import useAuth from '../lib/useAuth.js';
+import ThemeToggleButton from './ThemeToggleButton';
+import AuthDropdown from './AuthDropdown';
+import Brand from './Brand';
+import useAuth from '../lib/useAuth';
+
+export interface AppNavbarProps {
+  search?: string;
+  onSearchChange?: (next: string) => void;
+  onSearchClear?: () => void;
+  showSearch?: boolean;
+  showHomeButton?: boolean;
+  showAuthDropdown?: boolean;
+  showChangePassword?: boolean;
+  badgeLabel?: string;
+  requireAuthForActions?: boolean;
+  collapseId?: string;
+}
 
 export default function AppNavbar({
   search = '',
@@ -24,7 +37,7 @@ export default function AppNavbar({
   badgeLabel = '',
   requireAuthForActions = false,
   collapseId = 'appNavbar',
-}) {
+}: AppNavbarProps) {
   const { isAuthenticated } = useAuth({ fetchUser: false });
   const canShowActions = !requireAuthForActions || isAuthenticated;
   const showHome = showHomeButton && canShowActions;

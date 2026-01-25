@@ -56,7 +56,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
-- Frontend (Next.js App Router): `src/main/webapp`
+- Frontend (Next.js App Router, TypeScript): `src/main/webapp`
   - App Router pages/components: `src/main/webapp/app`
   - Build output (static export): `src/main/webapp/build`
   - Package management lives at repo root (`package.json` + `package-lock.json`) via npm workspaces.
@@ -77,6 +77,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - Format apply (Prettier): `npm run format`
   - ESLint config: `eslint.config.mjs`
   - Prettier config: `.prettierrc.json` (ignores in `.prettierignore`)
+  - TypeScript config: `tsconfig.json`
 - Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
 - When you change code: apply formatting and ensure tests pass (`./mvnw -DskipTests spotless:apply` and `./mvnw test`).
@@ -205,15 +206,15 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ### Frontend
 
 - Source lives under `src/main/webapp` (App Router under `src/main/webapp/app`), but dependencies are managed at repo root via npm workspaces.
+- Frontend is written in TypeScript (`.ts`/`.tsx`); TypeScript config lives at repo root (`tsconfig.json`) and is referenced from `src/main/webapp/next.config.js`.
 - Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.js`).
   - Maven runs `npm ci` + `npm run build` via `frontend-maven-plugin` (Node installed under repo root `node/`) and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
-  - Next.js build is forced to Webpack (`next build --webpack`) to avoid Turbopack build issues (see `src/main/webapp/package.json`).
 - Routing is owned by Next.js; backend forwards unknown non-API routes to `/index.html` via `SpaWebFilter` registered in the Spring Security filter chain (see `SecurityConfig`).
-- API calls in the Next UI should go through `src/main/webapp/app/lib/api.js` (relative `/api/...` URLs).
+- API calls in the Next UI should go through `src/main/webapp/app/lib/api.ts` (relative `/api/...` URLs).
   - Keep auth failure handling generic: a 401 triggers refresh+retry; if refresh fails, redirect to `/login`. Avoid per-page `if (err.status === 401) ...` blocks.
 - Dev proxy: `src/main/webapp/next.config.js` defines `rewrites()` in dev to proxy `/api/**` to the Spring Boot backend.
 - CSP note: Next static export emits inline scripts; a strict `script-src 'self'` CSP will break the UI. If you tighten CSP, you must handle inline scripts via nonces/hashes (or avoid static export).
-- Shared UI: use `src/main/webapp/app/components/AppNavbar.js` instead of creating page-specific navbar components.
+- Shared UI: use `src/main/webapp/app/components/AppNavbar.tsx` instead of creating page-specific navbar components.
 
 ## Commit & Pull Request Guidelines
 

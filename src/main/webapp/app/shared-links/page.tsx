@@ -24,16 +24,17 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { faNoteSticky } from '@fortawesome/free-regular-svg-icons';
-import AppNavbar from '../components/AppNavbar.js';
-import Footer from '../components/Footer.js';
-import Api from '../lib/api.js';
-import { addDays, addHours, formatDate, toIsoString } from '../lib/format.js';
-import { useToasts } from '../components/ToastProvider.js';
-import useAuth from '../lib/useAuth.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
+import Api, { ApiError } from '../lib/api';
+import { addDays, addHours, formatDate, toIsoString } from '../lib/format';
+import { useToasts } from '../components/ToastProvider';
+import useAuth from '../lib/useAuth';
+import type { ShareLinkDTO } from '../types';
 
 const defaultPageSize = 10;
 
-function buildShareUrl(token) {
+function buildShareUrl(token: string | undefined) {
   if (typeof window === 'undefined') return '';
   return token ? `${window.location.origin}/share?share_token=${encodeURIComponent(token)}` : '';
 }
@@ -42,7 +43,7 @@ export default function SharedLinksPage() {
   const { pushToast } = useToasts();
   const { loading: authLoading, isAuthenticated } = useAuth({ redirectOnFail: true });
   const loadingRef = useRef(false);
-  const [links, setLinks] = useState([]);
+  const [links, setLinks] = useState<ShareLinkDTO[]>([]);
   const [alert, setAlert] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -109,8 +110,9 @@ export default function SharedLinksPage() {
         setPage(currentPage);
         setTotalPages(totalPagesValue);
         setTotalElements(total);
-      } catch (err) {
-        setAlert(err?.message || 'Could not load shared links.');
+      } catch (err: unknown) {
+        const apiErr = err instanceof ApiError ? err : null;
+        setAlert(apiErr?.message || 'Could not load shared links.');
       } finally {
         loadingRef.current = false;
         setLoading(false);
@@ -124,24 +126,25 @@ export default function SharedLinksPage() {
     loadLinks(page);
   }, [authLoading, isAuthenticated, loadLinks, page]);
 
-  const handleCopy = async token => {
+  const handleCopy = async (token: string | undefined) => {
     const url = buildShareUrl(token);
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
       pushToast('Share link copied', 'success');
-    } catch (err) {
+    } catch {
       pushToast('Could not copy link. Copy manually.', 'warning');
     }
   };
 
-  const handleRevoke = async id => {
+  const handleRevoke = async (id: string | number) => {
     try {
       await Api.revokeShareLink(id);
       pushToast('Share link revoked', 'success');
       loadLinks(0);
-    } catch (err) {
-      pushToast(err?.message || 'Could not revoke link.', 'danger');
+    } catch (err: unknown) {
+      const apiErr = err instanceof ApiError ? err : null;
+      pushToast(apiErr?.message || 'Could not revoke link.', 'danger');
     }
   };
 
@@ -149,7 +152,7 @@ export default function SharedLinksPage() {
 
   const paginationItems = useMemo(() => {
     if (totalPages <= 1) return [];
-    const items = [];
+    const items: JSX.Element[] = [];
     items.push(<Pagination.Prev key="prev" disabled={page === 0} onClick={() => setPage(Math.max(page - 1, 0))} />);
     for (let i = 0; i < totalPages; i += 1) {
       items.push(
@@ -164,7 +167,7 @@ export default function SharedLinksPage() {
     return items;
   }, [page, totalPages]);
 
-  const handleDateFilterChange = value => {
+  const handleDateFilterChange = (value: string) => {
     if (value === 'custom') {
       setCustomModalOpen(true);
       setCustomError('');

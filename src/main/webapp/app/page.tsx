@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -39,14 +39,16 @@ import {
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { faCalendar, faClock, faNoteSticky } from '@fortawesome/free-regular-svg-icons';
-import AppNavbar from './components/AppNavbar.js';
-import Footer from './components/Footer.js';
-import TagInput from './components/TagInput.js';
-import Api from './lib/api.js';
-import useAuth from './lib/useAuth.js';
-import { useToasts } from './components/ToastProvider.js';
-import { formatDate, toIsoString } from './lib/format.js';
-import { diffLinesDetailed, diffTypes } from './lib/diff.js';
+import AppNavbar from './components/AppNavbar';
+import Footer from './components/Footer';
+import TagInput from './components/TagInput';
+import Api, { ApiError } from './lib/api';
+import useAuth from './lib/useAuth';
+import { useToasts } from './components/ToastProvider';
+import { formatDate, toIsoString } from './lib/format';
+import { diffLinesDetailed, diffTypes } from './lib/diff';
+import type { DiffOp } from './lib/diff';
+import type { NoteDTO, NoteRevisionDTO, ShareLinkDTO, StoredUser, TagDTO } from './types';
 
 const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
 const TAG_FORMAT_MESSAGE = 'Tags may include letters, digits, hyphen, or underscore.';
@@ -55,23 +57,24 @@ const SHARE_LINKS_PAGE_SIZE = 3;
 const REVISION_PAGE_SIZE = 5;
 const OWNER_SEARCH_PAGE_SIZE = 5;
 
-function tagLabel(tag) {
+function tagLabel(tag: unknown): string {
   if (tag == null) return '';
   if (typeof tag === 'string') return tag;
   if (typeof tag === 'object') {
-    return tag.name ?? tag.label ?? '';
+    const obj = tag as TagDTO;
+    return (typeof obj.name === 'string' && obj.name) || (typeof obj.label === 'string' && obj.label) || '';
   }
   return String(tag);
 }
 
-function normalizeTags(tags) {
+function normalizeTags(tags: Array<string | TagDTO> | null | undefined): string[] {
   return (tags || []).map(tagLabel).filter(tag => tag && tag.trim().length > 0);
 }
 
-function validateNotePayload(payload) {
-  const errors = {};
-  const title = (payload.title || '').trim();
-  const content = (payload.content || '').trim();
+function validateNotePayload(payload: { title?: string; content?: string; tags?: Array<string | TagDTO> | null }): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const title = String(payload.title || '').trim();
+  const content = String(payload.content || '').trim();
   if (!title) {
     errors.title = 'This field is required.';
   } else if (title.length < 3 || title.length > 255) {
@@ -82,7 +85,7 @@ function validateNotePayload(payload) {
   } else if (content.length < 10 || content.length > 1024) {
     errors.content = 'Size must be between 10 and 1024 characters.';
   }
-  const tags = normalizeTags(payload.tags);
+  const tags = normalizeTags(payload.tags as Array<string | TagDTO> | undefined);
   if (tags.length > 5) {
     errors.tags = 'Up to 5 tags allowed.';
   } else if (tags.some(tag => tag.length < 1 || tag.length > 30)) {
@@ -93,12 +96,17 @@ function validateNotePayload(payload) {
   return errors;
 }
 
-function buildShareUrl(token) {
+function buildShareUrl(token: string): string {
   if (typeof window === 'undefined') return '';
   return token ? `${window.location.origin}/share?share_token=${encodeURIComponent(token)}` : '';
 }
 
-function renderDiffSpans(ops, additionsOnly) {
+function messageFromError(err: unknown, fallback: string): string {
+  if (err instanceof Error) return err.message || fallback;
+  return fallback;
+}
+
+function renderDiffSpans(ops: DiffOp[], additionsOnly: boolean): Array<JSX.Element> {
   return ops
     .map((op, idx) => {
       const value = op.value || '';
@@ -126,19 +134,77 @@ function renderDiffSpans(ops, additionsOnly) {
         </span>
       );
     })
-    .filter(Boolean);
+    .filter((el): el is JSX.Element => el != null);
 }
 
-function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, loadTagSuggestions, onInlineSave }) {
+type NoteView = 'active' | 'trash';
+
+type NoteAction =
+  | 'edit-modal'
+  | 'delete'
+  | 'delete-forever'
+  | 'restore'
+  | 'copy'
+  | 'toggle-pin'
+  | 'share'
+  | 'share-links'
+  | 'revisions'
+  | 'change-owner';
+
+interface NoteDraft {
+  title: string;
+  content: string;
+  color: string;
+  pinned: boolean;
+  tags: string[];
+}
+
+interface NoteFormValues {
+  title: string;
+  content: string;
+  color: string;
+  tags: string[];
+  pinned: boolean;
+}
+
+interface ShareResult {
+  url: string;
+  permission: string;
+  expiresAt: string | null;
+  oneTime: boolean;
+}
+
+function NoteCard({
+  note,
+  view,
+  showOwner,
+  selected,
+  onSelectToggle,
+  onAction,
+  loadTagSuggestions,
+  onInlineSave,
+}: {
+  note: NoteDTO;
+  view: NoteView;
+  showOwner: boolean;
+  selected: boolean;
+  onSelectToggle: (noteId: number, checked: boolean) => void;
+  onAction: (action: NoteAction, note: NoteDTO) => void | Promise<void>;
+  loadTagSuggestions: (query: string) => Promise<string[]>;
+  onInlineSave: (
+    noteId: number,
+    payload: { title: string; content: string; color: string; pinned: boolean; tags: string[] },
+  ) => Promise<NoteDTO | null>;
+}) {
   const [inlineMode, setInlineMode] = useState(false);
-  const [draft, setDraft] = useState({
+  const [draft, setDraft] = useState<NoteDraft>({
     title: note.title || '',
     content: note.content || '',
     color: note.color || DEFAULT_COLOR,
     pinned: !!note.pinned,
     tags: normalizeTags(note.tags),
   });
-  const [inlineErrors, setInlineErrors] = useState({});
+  const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
   const [inlineSaving, setInlineSaving] = useState(false);
 
   useEffect(() => {
@@ -455,8 +521,8 @@ function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, l
 export default function NotesPage() {
   const { pushToast } = useToasts();
   const { loading: authLoading, isAdmin } = useAuth({ redirectOnFail: true });
-  const [notes, setNotes] = useState([]);
-  const [view, setView] = useState('active');
+  const [notes, setNotes] = useState<NoteDTO[]>([]);
+  const [view, setView] = useState<NoteView>('active');
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState('');
   const [page, setPage] = useState(0);
@@ -466,22 +532,26 @@ export default function NotesPage() {
   const [sort, setSort] = useState('createdDate,desc');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selected, setSelected] = useState(new Set());
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  const [filterTags, setFilterTags] = useState([]);
+  const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterColor, setFilterColor] = useState('');
   const [filterPinned, setFilterPinned] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({ tags: [], color: '', pinned: '' });
+  const [appliedFilters, setAppliedFilters] = useState<{ tags: string[]; color: string; pinned: string }>({
+    tags: [],
+    color: '',
+    pinned: '',
+  });
 
   const [noteModalOpen, setNoteModalOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState(null);
+  const [editingNote, setEditingNote] = useState<NoteDTO | null>(null);
   const {
     register: registerNote,
     handleSubmit: handleNoteSubmit,
     reset: resetNoteForm,
     control,
     formState: { errors: noteFormErrors, isSubmitting: noteSubmitting },
-  } = useForm({
+  } = useForm<NoteFormValues>({
     mode: 'onChange',
     defaultValues: {
       title: '',
@@ -493,40 +563,40 @@ export default function NotesPage() {
   });
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState<NoteDTO | null>(null);
   const [deleteForeverModalOpen, setDeleteForeverModalOpen] = useState(false);
-  const [deleteForeverTarget, setDeleteForeverTarget] = useState(null);
+  const [deleteForeverTarget, setDeleteForeverTarget] = useState<NoteDTO | null>(null);
   const [emptyTrashModalOpen, setEmptyTrashModalOpen] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState('');
 
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareNote, setShareNote] = useState(null);
+  const [shareNote, setShareNote] = useState<NoteDTO | null>(null);
   const [shareExpiry, setShareExpiry] = useState('24h');
   const [shareExpiresAt, setShareExpiresAt] = useState('');
   const [shareOneTime, setShareOneTime] = useState(false);
   const [shareSubmitting, setShareSubmitting] = useState(false);
   const [shareAlert, setShareAlert] = useState('');
-  const [shareResult, setShareResult] = useState(null);
-  const [shareLinks, setShareLinks] = useState([]);
+  const [shareResult, setShareResult] = useState<ShareResult | null>(null);
+  const [shareLinks, setShareLinks] = useState<ShareLinkDTO[]>([]);
   const [shareLinksPage, setShareLinksPage] = useState(0);
   const [shareLinksHasMore, setShareLinksHasMore] = useState(false);
   const [shareLinksLoading, setShareLinksLoading] = useState(false);
 
   const [revisionModalOpen, setRevisionModalOpen] = useState(false);
-  const [revisionNote, setRevisionNote] = useState(null);
-  const [revisions, setRevisions] = useState([]);
+  const [revisionNote, setRevisionNote] = useState<NoteDTO | null>(null);
+  const [revisions, setRevisions] = useState<NoteRevisionDTO[]>([]);
   const [revisionPage, setRevisionPage] = useState(0);
   const [revisionHasMore, setRevisionHasMore] = useState(false);
   const [revisionLoading, setRevisionLoading] = useState(false);
   const [revisionError, setRevisionError] = useState('');
   const [revisionTotal, setRevisionTotal] = useState(0);
-  const [diffOpen, setDiffOpen] = useState(new Set());
+  const [diffOpen, setDiffOpen] = useState<Set<number>>(new Set());
 
   const [ownerModalOpen, setOwnerModalOpen] = useState(false);
-  const [ownerTarget, setOwnerTarget] = useState(null);
+  const [ownerTarget, setOwnerTarget] = useState<NoteDTO | null>(null);
   const [ownerQuery, setOwnerQuery] = useState('');
-  const [ownerSuggestions, setOwnerSuggestions] = useState([]);
+  const [ownerSuggestions, setOwnerSuggestions] = useState<StoredUser[]>([]);
   const [ownerLoading, setOwnerLoading] = useState(false);
   const [ownerPage, setOwnerPage] = useState(0);
   const [ownerHasMore, setOwnerHasMore] = useState(false);
@@ -537,7 +607,7 @@ export default function NotesPage() {
   }, [search]);
 
   useEffect(() => {
-    setSelected(new Set());
+    setSelected(new Set<number>());
   }, [view]);
 
   useEffect(() => {
@@ -566,14 +636,14 @@ export default function NotesPage() {
       setTotalPages(Math.max(meta.totalPages ?? 1, 1));
       setPage(meta.number ?? page);
       setSelected(prev => {
-        const next = new Set();
+        const next = new Set<number>();
         content.forEach(note => {
           if (prev.has(note.id)) next.add(note.id);
         });
         return next;
       });
     } catch (err) {
-      setAlert(err?.message || 'Could not load notes.');
+      setAlert(messageFromError(err, 'Could not load notes.'));
     } finally {
       setLoading(false);
     }
@@ -583,7 +653,7 @@ export default function NotesPage() {
     loadNotes();
   }, [loadNotes]);
 
-  const loadTagSuggestions = useCallback(async query => Api.fetchTags(query), []);
+  const loadTagSuggestions = useCallback(async (query: string) => Api.fetchTags(query), []);
 
   const handleApplyFilters = () => {
     setAppliedFilters({
@@ -600,9 +670,9 @@ export default function NotesPage() {
     setAppliedFilters({ tags: [], color: '', pinned: '' });
   };
 
-  const toggleSelect = (id, checked) => {
+  const toggleSelect = (id: number, checked: boolean) => {
     setSelected(prev => {
-      const next = new Set(prev);
+      const next = new Set<number>(prev);
       if (checked) {
         next.add(id);
       } else {
@@ -612,11 +682,11 @@ export default function NotesPage() {
     });
   };
 
-  const toggleSelectAll = checked => {
+  const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelected(new Set(notes.map(note => note.id)));
+      setSelected(new Set<number>(notes.map(note => note.id)));
     } else {
-      setSelected(new Set());
+      setSelected(new Set<number>());
     }
   };
 
@@ -632,7 +702,7 @@ export default function NotesPage() {
     setNoteModalOpen(true);
   };
 
-  const openEditNote = note => {
+  const openEditNote = (note: NoteDTO) => {
     setEditingNote(note);
     resetNoteForm({
       title: note.title || '',
@@ -664,23 +734,26 @@ export default function NotesPage() {
       setNoteModalOpen(false);
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to save note.', 'danger');
+      pushToast(messageFromError(err, 'Failed to save note.'), 'danger');
     }
   });
 
-  const handleInlineSave = async (id, payload) => {
+  const handleInlineSave = async (
+    id: number,
+    payload: { title: string; content: string; color: string; pinned: boolean; tags: string[] },
+  ): Promise<NoteDTO | null> => {
     try {
       const updated = await Api.updateNote(id, payload);
       setNotes(prev => prev.map(note => (note.id === id ? updated : note)));
       pushToast('Note updated', 'success');
       return updated;
     } catch (err) {
-      pushToast(err?.message || 'Failed to save note.', 'danger');
+      pushToast(messageFromError(err, 'Failed to save note.'), 'danger');
       return null;
     }
   };
 
-  const handleNoteAction = async (action, note) => {
+  const handleNoteAction = async (action: NoteAction, note: NoteDTO) => {
     if (action === 'edit-modal') {
       openEditNote(note);
       return;
@@ -701,7 +774,7 @@ export default function NotesPage() {
         pushToast('Note restored', 'success');
         loadNotes();
       } catch (err) {
-        pushToast(err?.message || 'Failed to restore note.', 'danger');
+        pushToast(messageFromError(err, 'Failed to restore note.'), 'danger');
       }
       return;
     }
@@ -719,7 +792,7 @@ export default function NotesPage() {
         const updated = await Api.patchNote(note.id, { pinned: !note.pinned });
         setNotes(prev => prev.map(item => (item.id === note.id ? updated : item)));
       } catch (err) {
-        pushToast(err?.message || 'Failed to update pin.', 'danger');
+        pushToast(messageFromError(err, 'Failed to update pin.'), 'danger');
       }
       return;
     }
@@ -750,7 +823,7 @@ export default function NotesPage() {
       pushToast('Note deleted', 'success');
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to delete note.', 'danger');
+      pushToast(messageFromError(err, 'Failed to delete note.'), 'danger');
     } finally {
       setDeleteModalOpen(false);
       setDeleteTarget(null);
@@ -764,7 +837,7 @@ export default function NotesPage() {
       pushToast('Note deleted permanently', 'success');
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to delete note.', 'danger');
+      pushToast(messageFromError(err, 'Failed to delete note.'), 'danger');
     } finally {
       setDeleteForeverModalOpen(false);
       setDeleteForeverTarget(null);
@@ -777,13 +850,13 @@ export default function NotesPage() {
       pushToast('Trash emptied', 'success');
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to empty trash.', 'danger');
+      pushToast(messageFromError(err, 'Failed to empty trash.'), 'danger');
     } finally {
       setEmptyTrashModalOpen(false);
     }
   };
 
-  const openBulkModal = action => {
+  const openBulkModal = (action: string) => {
     setBulkAction(action);
     setBulkModalOpen(true);
   };
@@ -794,16 +867,16 @@ export default function NotesPage() {
     try {
       await Api.bulkAction({ action: bulkAction, ids });
       pushToast('Bulk action completed', 'success');
-      setSelected(new Set());
+      setSelected(new Set<number>());
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Bulk action failed.', 'danger');
+      pushToast(messageFromError(err, 'Bulk action failed.'), 'danger');
     } finally {
       setBulkModalOpen(false);
     }
   };
 
-  const openShareModal = note => {
+  const openShareModal = (note: NoteDTO) => {
     setShareNote(note);
     setShareExpiry('24');
     setShareExpiresAt('');
@@ -818,26 +891,27 @@ export default function NotesPage() {
     loadShareLinks(note, false);
   };
 
-  const loadShareLinks = async (note, append) => {
+  const loadShareLinks = async (note: NoteDTO, append: boolean) => {
     if (!note || shareLinksLoading) return;
     setShareLinksLoading(true);
     try {
       const pageToLoad = append ? shareLinksPage + 1 : 0;
       const res = await Api.fetchShareLinks(note.id, pageToLoad, SHARE_LINKS_PAGE_SIZE);
-      const content = res?.content || [];
-      const meta = res?.page ?? res ?? {};
-      const totalPagesLocal = meta.totalPages ?? 1;
+      const content = res?.content ?? [];
+      const meta = res.page ?? res;
+      const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
       setShareLinks(prev => (append ? [...prev, ...content] : content));
-      setShareLinksPage(meta.number ?? pageToLoad);
-      setShareLinksHasMore((meta.number ?? pageToLoad) < totalPagesLocal - 1);
+      const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
+      setShareLinksPage(nextPageNumber);
+      setShareLinksHasMore(nextPageNumber < totalPagesLocal - 1);
     } catch (err) {
-      setShareAlert(err?.message || 'Failed to load share links.');
+      setShareAlert(messageFromError(err, 'Failed to load share links.'));
     } finally {
       setShareLinksLoading(false);
     }
   };
 
-  const handleShareSubmit = async event => {
+  const handleShareSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!shareNote) return;
     setShareSubmitting(true);
@@ -863,23 +937,29 @@ export default function NotesPage() {
         expiresAt,
       };
       const result = await Api.createShareLink(shareNote.id, payload);
-      const url = buildShareUrl(result.token);
+      const token = result.token;
+      if (!token) {
+        setShareAlert('Share token is missing.');
+        return;
+      }
+      const url = buildShareUrl(token);
       setShareResult({
         url,
-        permission: result.permission || 'READ',
-        expiresAt: result.expiresAt,
-        oneTime: result.oneTime,
+        permission: typeof result.permission === 'string' && result.permission ? result.permission : 'READ',
+        expiresAt: (result.expiresAt ?? null) as string | null,
+        oneTime: !!result.oneTime,
       });
       pushToast('Share link created', 'success');
       loadShareLinks(shareNote, false);
     } catch (err) {
-      setShareAlert(err?.message || 'Failed to create share link.');
+      setShareAlert(messageFromError(err, 'Failed to create share link.'));
     } finally {
       setShareSubmitting(false);
     }
   };
 
-  const handleShareCopy = async (value, isUrl = false) => {
+  const handleShareCopy = async (value?: string, isUrl = false) => {
+    if (!value) return;
     const url = isUrl ? value : buildShareUrl(value);
     if (!url) return;
     try {
@@ -890,7 +970,7 @@ export default function NotesPage() {
     }
   };
 
-  const handleShareRevoke = async id => {
+  const handleShareRevoke = async (id: string | number) => {
     try {
       await Api.revokeShareLink(id);
       pushToast('Share link revoked', 'success');
@@ -898,11 +978,11 @@ export default function NotesPage() {
         loadShareLinks(shareNote, false);
       }
     } catch (err) {
-      pushToast(err?.message || 'Failed to revoke share link.', 'danger');
+      pushToast(messageFromError(err, 'Failed to revoke share link.'), 'danger');
     }
   };
 
-  const openRevisionModal = note => {
+  const openRevisionModal = (note: NoteDTO) => {
     setRevisionNote(note);
     setRevisionModalOpen(true);
     setRevisions([]);
@@ -910,56 +990,58 @@ export default function NotesPage() {
     setRevisionHasMore(false);
     setRevisionError('');
     setRevisionTotal(0);
-    setDiffOpen(new Set());
+    setDiffOpen(new Set<number>());
     loadRevisions(note, false);
   };
 
-  const loadRevisions = async (note, append) => {
+  const loadRevisions = async (note: NoteDTO, append: boolean) => {
     if (!note || revisionLoading) return;
     setRevisionLoading(true);
     setRevisionError('');
     try {
       const pageToLoad = append ? revisionPage + 1 : 0;
-      const res = await Api.fetchRevisions(note.id, null, pageToLoad, REVISION_PAGE_SIZE);
-      const content = res?.content || [];
-      const meta = res?.page ?? res ?? {};
-      const totalPagesLocal = meta.totalPages ?? 1;
-      setRevisionTotal(meta.totalElements ?? content.length);
+      const res = await Api.fetchRevisions(note.id, undefined, pageToLoad, REVISION_PAGE_SIZE);
+      const content = res?.content ?? [];
+      const meta = res.page ?? res;
+      const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
+      setRevisionTotal(typeof meta.totalElements === 'number' ? meta.totalElements : content.length);
       setRevisions(prev => (append ? [...prev, ...content] : content));
-      setRevisionPage(meta.number ?? pageToLoad);
-      setRevisionHasMore((meta.number ?? pageToLoad) < totalPagesLocal - 1);
+      const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
+      setRevisionPage(nextPageNumber);
+      setRevisionHasMore(nextPageNumber < totalPagesLocal - 1);
     } catch (err) {
-      setRevisionError(err?.message || 'Failed to load revisions.');
+      setRevisionError(messageFromError(err, 'Failed to load revisions.'));
     } finally {
       setRevisionLoading(false);
     }
   };
 
-  const restoreRevision = async (noteId, revisionId) => {
+  const restoreRevision = async (noteId: number, revisionId: number) => {
     try {
       await Api.restoreRevision(noteId, revisionId);
       pushToast('Revision restored', 'success');
       setRevisionModalOpen(false);
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to restore revision.', 'danger');
+      pushToast(messageFromError(err, 'Failed to restore revision.'), 'danger');
     }
   };
 
-  const loadOwnerSuggestions = async (query, append) => {
+  const loadOwnerSuggestions = async (query: string, append: boolean) => {
     if (!query || ownerLoading) return;
     setOwnerLoading(true);
     try {
       const pageToLoad = append ? ownerPage + 1 : 0;
       const res = await Api.searchUsers(query, pageToLoad, OWNER_SEARCH_PAGE_SIZE);
-      const content = res?.content || [];
-      const meta = res?.page ?? res ?? {};
-      const totalPagesLocal = meta.totalPages ?? 1;
+      const content = res?.content ?? [];
+      const meta = res.page ?? res;
+      const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
       setOwnerSuggestions(prev => (append ? [...prev, ...content] : content));
-      setOwnerPage(meta.number ?? pageToLoad);
-      setOwnerHasMore((meta.number ?? pageToLoad) < totalPagesLocal - 1);
+      const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
+      setOwnerPage(nextPageNumber);
+      setOwnerHasMore(nextPageNumber < totalPagesLocal - 1);
     } catch (err) {
-      pushToast(err?.message || 'Failed to search users.', 'danger');
+      pushToast(messageFromError(err, 'Failed to search users.'), 'danger');
     } finally {
       setOwnerLoading(false);
     }
@@ -979,7 +1061,7 @@ export default function NotesPage() {
       setOwnerTarget(null);
       loadNotes();
     } catch (err) {
-      pushToast(err?.message || 'Failed to change owner.', 'danger');
+      pushToast(messageFromError(err, 'Failed to change owner.'), 'danger');
     }
   };
 
@@ -1527,13 +1609,13 @@ export default function NotesPage() {
           <ListGroup>
             {revisions.length === 0 && !revisionLoading ? <ListGroup.Item className="text-muted">No revisions yet.</ListGroup.Item> : null}
             {revisions.map((rev, idx) => {
-              const noteData = rev.note || {};
+              const noteData = rev.note;
               const localNumber = revisionTotal ? revisionTotal - idx : idx + 1;
               const showDiff = diffOpen.has(rev.revision);
               const prev = revisions[idx + 1];
               const additionsOnly = !prev;
-              const titleDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.title || '', noteData.title || ''), additionsOnly);
-              const contentDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.content || '', noteData.content || ''), additionsOnly);
+              const titleDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.title ?? '', noteData?.title ?? ''), additionsOnly);
+              const contentDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.content ?? '', noteData?.content ?? ''), additionsOnly);
               return (
                 <ListGroup.Item key={rev.revision}>
                   <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -1553,20 +1635,20 @@ export default function NotesPage() {
                           <FontAwesomeIcon icon={faUser} className="me-1" />
                           {rev.auditor || 'unknown'}
                         </span>
-                        {noteData.color ? (
+                        {noteData?.color ? (
                           <Badge bg="body-secondary" text="body" className="border" style={{ borderColor: noteData.color }}>
                             <FontAwesomeIcon icon={faCircle} style={{ color: noteData.color }} />
                           </Badge>
                         ) : null}
                         <Badge bg="warning-subtle" text="warning">
-                          {noteData.pinned ? 'Pinned' : 'Unpinned'}
+                          {noteData?.pinned ? 'Pinned' : 'Unpinned'}
                         </Badge>
                       </div>
-                      <div className="fw-semibold">{noteData.title || '(no title)'}</div>
-                      <div className="text-muted small">{noteData.content || ''}</div>
-                      {normalizeTags(noteData.tags).length ? (
+                      <div className="fw-semibold">{noteData?.title || '(no title)'}</div>
+                      <div className="text-muted small">{noteData?.content || ''}</div>
+                      {normalizeTags(noteData?.tags).length ? (
                         <div className="d-flex flex-wrap gap-1 mt-1">
-                          {normalizeTags(noteData.tags).map(tag => (
+                          {normalizeTags(noteData?.tags).map(tag => (
                             <Badge key={tag} bg="secondary-subtle" text="secondary">
                               {tag}
                             </Badge>
@@ -1580,7 +1662,7 @@ export default function NotesPage() {
                         size="sm"
                         onClick={() =>
                           setDiffOpen(prev => {
-                            const next = new Set(prev);
+                            const next = new Set<number>(prev);
                             if (next.has(rev.revision)) {
                               next.delete(rev.revision);
                             } else {
@@ -1592,7 +1674,15 @@ export default function NotesPage() {
                       >
                         <FontAwesomeIcon icon={faBars} className="me-1" /> {showDiff ? 'Hide diff' : 'Diff'}
                       </Button>
-                      <Button variant="outline-primary" size="sm" onClick={() => restoreRevision(revisionNote?.id, rev.revision)}>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => {
+                          if (revisionNote) {
+                            restoreRevision(revisionNote.id, rev.revision);
+                          }
+                        }}
+                      >
                         <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> Restore
                       </Button>
                     </div>
@@ -1651,11 +1741,15 @@ export default function NotesPage() {
               />
             </InputGroup>
             <ListGroup className="mb-2">
-              {ownerSuggestions.map(user => (
-                <ListGroup.Item key={user.login || user.username} action onClick={() => setOwnerQuery(user.login || user.username)}>
-                  {user.login || user.username}
-                </ListGroup.Item>
-              ))}
+              {ownerSuggestions.map(user => {
+                const login = user.login ?? user.username;
+                if (!login) return null;
+                return (
+                  <ListGroup.Item key={login} action onClick={() => setOwnerQuery(login)}>
+                    {login}
+                  </ListGroup.Item>
+                );
+              })}
             </ListGroup>
             {ownerHasMore ? (
               <div className="d-grid">

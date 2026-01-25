@@ -1,10 +1,12 @@
 import './styles.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './lib/fontawesome.js';
+import './lib/fontawesome';
 import Script from 'next/script';
-import Providers from './components/Providers.js';
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+import Providers from './components/Providers';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Notes',
   description: 'Notes app',
   icons: {
@@ -30,7 +32,7 @@ const themeInitScript = `
 })();
 `;
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-body-tertiary d-flex flex-column min-vh-100">

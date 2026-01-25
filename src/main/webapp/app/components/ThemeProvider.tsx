@@ -1,31 +1,34 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setTheme, toggleTheme as toggleThemeAction } from '../slices/themeSlice.js';
+import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { setTheme, toggleTheme as toggleThemeAction } from '../slices/themeSlice';
+import type { Theme } from '../types';
 
-const ThemeContext = createContext({
+const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
   theme: 'light',
   toggleTheme: () => {},
 });
 
 const STORAGE_KEY = 'theme';
 
-function getSystemTheme() {
+function getSystemTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
   return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
 }
 
-function getStoredTheme() {
+function getStoredTheme(): Theme | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(STORAGE_KEY);
+    const value = localStorage.getItem(STORAGE_KEY);
+    if (value === 'dark' || value === 'light') return value;
+    return null;
   } catch {
     return null;
   }
 }
 
-function setStoredTheme(value) {
+function setStoredTheme(value: Theme): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, value);
@@ -38,9 +41,9 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export default function ThemeProvider({ children }) {
-  const dispatch = useDispatch();
-  const theme = useSelector(state => state.theme.theme);
+export default function ThemeProvider({ children }: { children: ReactNode }) {
+  const dispatch = useAppDispatch();
+  const theme = useAppSelector(state => state.theme.theme);
 
   useEffect(() => {
     const stored = getStoredTheme();

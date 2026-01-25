@@ -4,10 +4,10 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import AppNavbar from './components/AppNavbar.js';
-import Footer from './components/Footer.js';
+import AppNavbar from '../components/AppNavbar';
+import Footer from '../components/Footer';
 
-export default function NotFoundPage() {
+export default function NotFoundRoutePage() {
   return (
     <>
       <AppNavbar />
