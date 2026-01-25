@@ -8,11 +8,11 @@ import type { Theme } from './types';
 const THEME_KEY = 'theme';
 
 function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'light';
   try {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === 'dark' || stored === 'light') return stored;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const matchMedia = (globalThis as any).matchMedia as ((query: string) => MediaQueryList) | undefined;
+    return matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
   } catch {
     return 'light';
   }

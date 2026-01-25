@@ -16,6 +16,7 @@ import Footer from '../components/Footer';
 import { useAppDispatch } from '../hooks';
 import { loginUser } from '../slices/authSlice';
 import { useToasts } from '../components/ToastProvider';
+import { replaceLocation } from '../lib/window';
 
 interface LoginFormValues {
   username: string;
@@ -66,7 +67,7 @@ export default function LoginPageClient() {
         }),
       ).unwrap();
       pushToast('Signed in successfully.', 'success');
-      window.location.replace(redirect || '/');
+      replaceLocation(redirect || '/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }

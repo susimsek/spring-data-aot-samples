@@ -97,8 +97,9 @@ function validateNotePayload(payload: { title?: string; content?: string; tags?:
 }
 
 function buildShareUrl(token: string): string {
-  if (typeof window === 'undefined') return '';
-  return token ? `${window.location.origin}/share?share_token=${encodeURIComponent(token)}` : '';
+  const origin = ((globalThis as any).location as Location | undefined)?.origin;
+  if (!origin || !token) return '';
+  return `${origin}/share?share_token=${encodeURIComponent(token)}`;
 }
 
 function messageFromError(err: unknown, fallback: string): string {
@@ -183,7 +184,7 @@ function NoteCard({
   onAction,
   loadTagSuggestions,
   onInlineSave,
-}: {
+}: Readonly<{
   note: NoteDTO;
   view: NoteView;
   showOwner: boolean;
@@ -195,7 +196,7 @@ function NoteCard({
     noteId: number,
     payload: { title: string; content: string; color: string; pinned: boolean; tags: string[] },
   ) => Promise<NoteDTO | null>;
-}) {
+}>) {
   const [inlineMode, setInlineMode] = useState(false);
   const [draft, setDraft] = useState<NoteDraft>({
     title: note.title || '',

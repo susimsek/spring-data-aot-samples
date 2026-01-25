@@ -33,8 +33,7 @@ export default function SharePageClient() {
   const [error, setError] = useState('');
 
   const tokenFromPath = useMemo(() => {
-    if (typeof window === 'undefined') return '';
-    const path = window.location.pathname || '';
+    const path = ((globalThis as any).location as Location | undefined)?.pathname || '';
     const parts = path.split('/').filter(Boolean);
     if (parts.length >= 2 && parts[0] === 'share') {
       return parts[1];

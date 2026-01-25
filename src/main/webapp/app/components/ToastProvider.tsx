@@ -38,7 +38,7 @@ export function useToasts() {
   return useContext(ToastContext);
 }
 
-export default function ToastProvider({ children }: { children: ReactNode }) {
+export default function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const pushToast = useCallback((message: string, variant: ToastVariant = 'success', title?: string, action?: ToastAction) => {

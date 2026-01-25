@@ -1,9 +1,11 @@
 export function replaceLocation(url: string): void {
-  if (typeof window === 'undefined') return;
-  window.location.replace(url);
+  const location = (globalThis as any).location as Location | undefined;
+  if (!location) return;
+  location.replace(url);
 }
 
 export function reloadPage(): void {
-  if (typeof window === 'undefined') return;
-  window.location.reload();
+  const location = (globalThis as any).location as Location | undefined;
+  if (!location) return;
+  location.reload();
 }

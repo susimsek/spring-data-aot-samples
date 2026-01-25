@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import AppNavbar from '../components/AppNavbar';
 import Footer from '../components/Footer';
 import Api, { ApiError } from '../lib/api';
+import { replaceLocation } from '../lib/window';
 import { useAppDispatch } from '../hooks';
 import { clearUser } from '../slices/authSlice';
 
@@ -64,7 +65,7 @@ export default function ChangePasswordPage() {
         newPassword: data.newPassword,
       });
       dispatch(clearUser());
-      window.location.replace('/login');
+      replaceLocation('/login');
     } catch (err: unknown) {
       const apiErr = err instanceof ApiError ? err : null;
       const body = (apiErr?.body ?? {}) as { detail?: unknown };

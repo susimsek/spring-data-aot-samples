@@ -43,7 +43,7 @@ export default function TagInput({
   errorMessage,
   isInvalid = false,
   externalError,
-}: TagInputProps) {
+}: Readonly<TagInputProps>) {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);

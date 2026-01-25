@@ -13,12 +13,11 @@ const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
 const STORAGE_KEY = 'theme';
 
 function getSystemTheme(): Theme {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+  const matchMedia = (globalThis as any).matchMedia as ((query: string) => MediaQueryList) | undefined;
+  return matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
 }
 
 function getStoredTheme(): Theme | null {
-  if (typeof window === 'undefined') return null;
   try {
     const value = localStorage.getItem(STORAGE_KEY);
     if (value === 'dark' || value === 'light') return value;
@@ -29,7 +28,6 @@ function getStoredTheme(): Theme | null {
 }
 
 function setStoredTheme(value: Theme): void {
-  if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, value);
   } catch {
@@ -41,7 +39,7 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export default function ThemeProvider({ children }: { children: ReactNode }) {
+export default function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   const dispatch = useAppDispatch();
   const theme = useAppSelector(state => state.theme.theme);
 
@@ -52,7 +50,10 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   }, [dispatch]);
 
   useEffect(() => {
-    document.documentElement.dataset.bsTheme = theme;
+    const document = (globalThis as any).document as Document | undefined;
+    if (document?.documentElement) {
+      document.documentElement.dataset.bsTheme = theme;
+    }
     setStoredTheme(theme);
   }, [theme]);
 

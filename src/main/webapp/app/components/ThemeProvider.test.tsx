@@ -9,7 +9,7 @@ import { createTestStore } from '../__tests__/test-utils';
 describe('ThemeProvider', () => {
   beforeEach(() => {
     localStorage.clear();
-    delete (window as any).matchMedia;
+    delete (globalThis as any).matchMedia;
     document.documentElement.dataset.bsTheme = '';
   });
 
@@ -34,7 +34,7 @@ describe('ThemeProvider', () => {
   });
 
   test('falls back to system theme when no stored theme', async () => {
-    (window as any).matchMedia = jest.fn(() => ({ matches: true }));
+    (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
     const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
 
     render(
@@ -53,7 +53,7 @@ describe('ThemeProvider', () => {
 
   test('ignores invalid stored theme values', async () => {
     localStorage.setItem('theme', 'blue');
-    (window as any).matchMedia = jest.fn(() => ({ matches: true }));
+    (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
     const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
 
     render(
@@ -74,7 +74,7 @@ describe('ThemeProvider', () => {
       throw new Error('boom');
     });
 
-    (window as any).matchMedia = jest.fn(() => ({ matches: false }));
+    (globalThis as any).matchMedia = jest.fn(() => ({ matches: false }));
     const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'dark' } });
 
     render(
@@ -97,7 +97,7 @@ describe('ThemeProvider', () => {
       throw new Error('boom');
     });
 
-    (window as any).matchMedia = jest.fn(() => ({ matches: true }));
+    (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
     const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
 
     render(

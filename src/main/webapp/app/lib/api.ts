@@ -35,13 +35,17 @@ export class ApiError extends Error {
 let refreshInFlight: Promise<JsonObject> | null = null;
 
 function redirectToLogin() {
-  if (typeof window === 'undefined') return;
-  const path = window.location.pathname || '';
+  const location = (globalThis as any).location as Location | undefined;
+  const document = (globalThis as any).document as Document | undefined;
+  if (!location || !document) return;
+  const path = location.pathname || '';
   if (path.includes('/login') || path.includes('/register')) return;
   clearStoredUser();
   const redirect = buildRedirectQuery();
-  document.body.style.transition = 'opacity 120ms ease-in';
-  document.body.style.opacity = '0';
+  if (document.body) {
+    document.body.style.transition = 'opacity 120ms ease-in';
+    document.body.style.opacity = '0';
+  }
   setTimeout(() => replaceLocation(`/login?redirect=${redirect}`), 130);
 }
 

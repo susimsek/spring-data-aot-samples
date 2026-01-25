@@ -22,17 +22,20 @@ export const metadata: Metadata = {
 const themeInitScript = `
 (() => {
   try {
-    const stored = localStorage.getItem('theme');
-    const system = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const stored = globalThis.localStorage && globalThis.localStorage.getItem('theme');
+    const system =
+      globalThis.matchMedia && globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const theme = stored || system;
-    document.documentElement.dataset.bsTheme = theme;
+    if (globalThis.document && globalThis.document.documentElement) {
+      globalThis.document.documentElement.dataset.bsTheme = theme;
+    }
   } catch {
     // ignore
   }
 })();
 `;
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-body-tertiary d-flex flex-column min-vh-100">

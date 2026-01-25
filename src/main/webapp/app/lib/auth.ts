@@ -3,7 +3,7 @@ import type { StoredUser } from '../types';
 const USER_STORAGE_KEY = 'currentUser';
 
 export function loadStoredUser(): StoredUser | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof localStorage === 'undefined') return null;
   try {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
     return raw ? (JSON.parse(raw) as StoredUser) : null;
@@ -13,7 +13,7 @@ export function loadStoredUser(): StoredUser | null {
 }
 
 export function persistUser(user: StoredUser | null): void {
-  if (typeof window === 'undefined') return;
+  if (typeof localStorage === 'undefined') return;
   try {
     if (user) {
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
@@ -35,9 +35,10 @@ export function isAdmin(user: StoredUser | null): boolean {
 }
 
 export function buildRedirectQuery(): string {
-  if (typeof window === 'undefined') return '';
-  const path = window.location.pathname || '/';
-  const search = window.location.search || '';
-  const hash = window.location.hash || '';
+  const location = (globalThis as any).location as Location | undefined;
+  if (!location) return '';
+  const path = location.pathname || '/';
+  const search = location.search || '';
+  const hash = location.hash || '';
   return encodeURIComponent(`${path}${search}${hash}`);
 }

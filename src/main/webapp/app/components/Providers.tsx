@@ -6,7 +6,7 @@ import ThemeProvider from './ThemeProvider';
 import ToastProvider from './ToastProvider';
 import store from '../store';
 
-export default function Providers({ children }: { children: ReactNode }) {
+export default function Providers({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <Provider store={store}>
       <ThemeProvider>

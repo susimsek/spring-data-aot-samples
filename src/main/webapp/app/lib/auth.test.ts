@@ -3,7 +3,7 @@ import { buildRedirectQuery, clearStoredUser, isAdmin, loadStoredUser, persistUs
 describe('auth storage helpers', () => {
   beforeEach(() => {
     localStorage.clear();
-    window.history.replaceState({}, '', '/');
+    globalThis.history.replaceState({}, '', '/');
   });
 
   test('persistUser stores and loadStoredUser reads', () => {
@@ -32,7 +32,7 @@ describe('auth storage helpers', () => {
   });
 
   test('buildRedirectQuery encodes the current location', () => {
-    window.history.replaceState({}, '', '/notes?q=x#top');
+    globalThis.history.replaceState({}, '', '/notes?q=x#top');
     expect(buildRedirectQuery()).toBe(encodeURIComponent('/notes?q=x#top'));
   });
 

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faKey, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import useAuth from '../lib/useAuth';
 
-export default function AuthDropdown({ showChangePassword = false }: { showChangePassword?: boolean }) {
+export default function AuthDropdown({ showChangePassword = false }: Readonly<{ showChangePassword?: boolean }>) {
   const { user, isAuthenticated, logout } = useAuth({ fetchUser: false });
 
   if (!isAuthenticated) {

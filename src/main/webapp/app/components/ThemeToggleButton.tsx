@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { useTheme } from './ThemeProvider';
 
-export default function ThemeToggleButton({ size = 'sm', className = '' }: { size?: ButtonProps['size']; className?: string }) {
+export default function ThemeToggleButton({ size = 'sm', className = '' }: Readonly<{ size?: ButtonProps['size']; className?: string }>) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 

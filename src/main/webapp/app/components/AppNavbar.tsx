@@ -37,7 +37,7 @@ export default function AppNavbar({
   badgeLabel = '',
   requireAuthForActions = false,
   collapseId = 'appNavbar',
-}: AppNavbarProps) {
+}: Readonly<AppNavbarProps>) {
   const { isAuthenticated } = useAuth({ fetchUser: false });
   const canShowActions = !requireAuthForActions || isAuthenticated;
   const showHome = showHomeButton && canShowActions;

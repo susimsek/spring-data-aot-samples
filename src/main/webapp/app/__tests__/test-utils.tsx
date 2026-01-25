@@ -25,7 +25,7 @@ export function renderWithProviders(
 ) {
   const store = options.store ?? createTestStore(options.preloadedState);
 
-  function Wrapper({ children }: { children: React.ReactNode }) {
+  function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
       <Provider store={store}>
         <ThemeProvider>{children}</ThemeProvider>

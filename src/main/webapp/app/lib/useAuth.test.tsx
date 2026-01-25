@@ -36,7 +36,7 @@ describe('useAuth', () => {
       theme: { theme: 'light' },
     });
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <Provider store={store}>
         <ThemeProvider>{children}</ThemeProvider>
       </Provider>
@@ -56,7 +56,7 @@ describe('useAuth', () => {
       theme: { theme: 'light' },
     });
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <Provider store={store}>
         <ThemeProvider>{children}</ThemeProvider>
       </Provider>
@@ -79,7 +79,7 @@ describe('useAuth', () => {
       theme: { theme: 'light' },
     });
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <Provider store={store}>
         <ThemeProvider>{children}</ThemeProvider>
       </Provider>

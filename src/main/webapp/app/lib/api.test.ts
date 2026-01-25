@@ -338,7 +338,7 @@ describe('Api client', () => {
       response: { status: 401, data: { title: 'Unauthorized' } },
     });
 
-    window.history.replaceState({}, '', '/notes');
+    globalThis.history.replaceState({}, '', '/notes');
 
     // Some tests render without a body; ensure it exists.
     document.body.innerHTML = '<div></div>';

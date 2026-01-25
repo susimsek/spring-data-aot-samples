@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ToastProvider, { useToasts } from './ToastProvider';
 
-function ToastHarness({ onAction }: { onAction: () => void }) {
+function ToastHarness({ onAction }: Readonly<{ onAction: () => void }>) {
   const { pushToast } = useToasts();
   return (
     <div>

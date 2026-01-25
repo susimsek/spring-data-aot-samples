@@ -31,7 +31,7 @@ export default function useAuth(
       dispatch(fetchCurrentUser())
         .unwrap()
         .catch(() => {
-          if (redirectOnFail && typeof window !== 'undefined') {
+          if (redirectOnFail) {
             replaceLocation('/login');
           }
         });

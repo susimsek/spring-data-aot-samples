@@ -35,8 +35,9 @@ import type { ShareLinkDTO } from '../types';
 const defaultPageSize = 10;
 
 function buildShareUrl(token: string | undefined) {
-  if (typeof window === 'undefined') return '';
-  return token ? `${window.location.origin}/share?share_token=${encodeURIComponent(token)}` : '';
+  const origin = ((globalThis as any).location as Location | undefined)?.origin;
+  if (!origin || !token) return '';
+  return `${origin}/share?share_token=${encodeURIComponent(token)}`;
 }
 
 export default function SharedLinksPage() {

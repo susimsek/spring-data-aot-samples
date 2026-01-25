@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import AppNavbar from '../components/AppNavbar';
 import Footer from '../components/Footer';
 import Api, { ApiError } from '../lib/api';
+import { replaceLocation } from '../lib/window';
 
 const usernamePattern = /^[a-zA-Z0-9_-]+$/;
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
@@ -93,7 +94,7 @@ export default function RegisterPage() {
         email: data.email.trim(),
         password: data.password,
       });
-      window.location.replace('/login?registered=1');
+      replaceLocation('/login?registered=1');
     } catch (err: unknown) {
       const apiErr = err instanceof ApiError ? err : null;
       const body = (apiErr?.body ?? {}) as { detail?: unknown; field?: unknown };
