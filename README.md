@@ -33,7 +33,7 @@ This repository is a “Note” sample application built with Spring Boot 4 + Sp
 - Application code: `src/main/java`
 - Test code: `src/test/java`
 - Configuration: `src/main/resources/config`
-- Frontend (Next.js): `src/main/webapp`
+- Frontend (Next.js, TypeScript): `src/main/webapp`
 - Liquibase: `src/main/resources/config/liquibase`
 - Docker compose files: `src/main/docker`
 - Helm chart: `helm/note-app`
@@ -70,10 +70,11 @@ Note: `spring.profiles.active` in `application.yml` is filled via Maven resource
 
 ### Frontend (Next.js)
 
-Frontend sources live in `src/main/webapp`. For local frontend dev (Next dev server) against the Spring Boot backend:
+Frontend sources live in `src/main/webapp` and are written in TypeScript (`.ts`/`.tsx`).
+
+For local frontend dev (Next dev server) against the Spring Boot backend:
 
 ```bash
-cd src/main/webapp
 npm ci
 npm run dev
 ```
@@ -223,6 +224,10 @@ Apply formatting (writes changes):
 ```bash
 npm run format
 ```
+
+### TypeScript
+
+The frontend is TypeScript-first. The TypeScript configuration lives at repo root (`tsconfig.json`) and is referenced from `src/main/webapp/next.config.js`.
 
 ### Sonar
 
