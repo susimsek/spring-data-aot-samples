@@ -5,7 +5,18 @@ import prettier from 'eslint-config-prettier';
 export default defineConfig([
   ...nextVitals,
   // Override default ignores of eslint-config-next and keep lint fast.
-  globalIgnores(['**/node_modules/**', '**/.next/**', '**/out/**', '**/build/**', '**/node/**', '**/target/**', '**/next-env.d.ts']),
+  globalIgnores([
+    '**/node_modules/**',
+    '**/.next/**',
+    '**/out/**',
+    '**/build/**',
+    '**/node/**',
+    '**/target/**',
+    '**/next-env.d.ts',
+    'jest.config.js',
+    'jest.setup.ts',
+    'postcss.config.js',
+  ]),
   // Next.js app lives under src/main/webapp (monorepo-style root).
   { settings: { next: { rootDir: ['src/main/webapp/'] } } },
   // Jest globals for unit tests.
