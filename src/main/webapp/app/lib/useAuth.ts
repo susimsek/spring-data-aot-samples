@@ -7,6 +7,25 @@ import { logoutUser } from '../slices/authSlice';
 import { reloadPage, replaceLocation } from './window';
 import type { StoredUser } from '../types';
 
+// Public routes that do not require authentication
+const PUBLIC_ROUTES = ['/login', '/register', '/share', '/403', '/404'];
+
+/**
+ * Checks if a given path is a public route.
+ */
+function isPublicRoute(path: string): boolean {
+  return PUBLIC_ROUTES.some(route => path === route || path.startsWith(`${route}/`));
+}
+
+/**
+ * Builds the login URL with an optional redirect parameter.
+ */
+function buildLoginUrl(currentPath: string, queryString: string): string {
+  const redirectTarget = queryString ? `${currentPath}?${queryString}` : currentPath;
+  const encodedRedirect = encodeURIComponent(redirectTarget);
+  return `/login?redirect=${encodedRedirect}`;
+}
+
 export default function useAuth(
   options: {
     redirectOnFail?: boolean;
@@ -29,16 +48,21 @@ export default function useAuth(
 
     const location = (globalThis as any).location as Location | undefined;
     const path = location?.pathname || '';
-    if (path.includes('/login') || path.includes('/register')) return;
+    const queryString = location?.search?.replace(/^\?/, '') || '';
 
-    replaceLocation('/login');
+    // Skip redirect for public routes
+    if (isPublicRoute(path)) return;
+
+    // Redirect to login with the current path as redirect parameter
+    const loginUrl = buildLoginUrl(path, queryString);
+    replaceLocation(loginUrl);
   }, [redirectOnFail, user]);
 
   const logout = useCallback(async () => {
     try {
       await dispatch(logoutUser()).unwrap();
     } finally {
-      reloadPage();
+      replaceLocation('/');
     }
   }, [dispatch]);
 

@@ -4,12 +4,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
-import io.github.susimsek.springdataaotsamples.security.RedirectAwareAuthenticationEntryPoint;
 import io.github.susimsek.springdataaotsamples.web.filter.SpaWebFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,6 +20,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -70,7 +69,7 @@ public class SecurityConfig {
                 .exceptionHandling(
                         ex ->
                                 ex.defaultAuthenticationEntryPointFor(
-                                                new RedirectAwareAuthenticationEntryPoint("/login"),
+                                                new LoginUrlAuthenticationEntryPoint("/login"),
                                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
                                         .defaultAccessDeniedHandlerFor(
                                                 htmlAccessDenied,
@@ -81,8 +80,6 @@ public class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers("/api/auth/register")
                                         .permitAll()
-                                        .requestMatchers("/api/auth/logout", "/api/auth/me")
-                                        .authenticated()
                                         .requestMatchers("/api/share/**")
                                         .permitAll()
                                         .requestMatchers("/api/admin/**")
@@ -101,27 +98,15 @@ public class SecurityConfig {
                                         .requestMatchers("/actuator/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers(
-                                                HttpMethod.GET,
-                                                "/",
-                                                "/index.html",
-                                                "/index.txt",
-                                                "/share",
-                                                "/share/**",
-                                                "/share.html",
-                                                "/login",
-                                                "/login.html",
-                                                "/register",
-                                                "/register.html",
-                                                "/403",
-                                                "/403.html",
-                                                "/404",
-                                                "/404.html",
-                                                "/favicon.ico",
-                                                "/favicon-16x16.png",
-                                                "/favicon-32x32.png",
-                                                "/favicon.svg",
-                                                "/js/**",
+                                                "/*.html",
+                                                "/*.js",
+                                                "/*.txt",
+                                                "/*.json",
+                                                "/*.map",
+                                                "/*.css",
                                                 "/_next/**")
+                                        .permitAll()
+                                        .requestMatchers("/*.ico", "/*.png", "/*.svg", "/*.webapp")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

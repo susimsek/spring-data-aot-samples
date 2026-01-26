@@ -18,7 +18,7 @@ class SpaWebFilterTest {
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
+        assertThat(response.getForwardedUrl()).isEqualTo("/login.html");
     }
 
     @Test
@@ -43,12 +43,22 @@ class SpaWebFilterTest {
     }
 
     @Test
+    void forwardsUnknownRoutesToHtmlPage() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dffgg");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertThat(response.getForwardedUrl()).isEqualTo("/dffgg.html");
+    }
+
+    @Test
     void forwardsNonApiRoutesForNonGetRequests() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
+        assertThat(response.getForwardedUrl()).isEqualTo("/login.html");
     }
 }

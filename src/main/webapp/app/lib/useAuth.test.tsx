@@ -50,7 +50,7 @@ describe('useAuth', () => {
     expect(result.current.user?.username).toBe('admin');
   });
 
-  test('logout dispatches and reloads the page', async () => {
+  test('logout dispatches and navigates to home page', async () => {
     const store = createTestStore({
       auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
       theme: { theme: 'light' },
@@ -68,7 +68,7 @@ describe('useAuth', () => {
     });
 
     expect((Api as any).logout).toHaveBeenCalledTimes(1);
-    expect(Window.reloadPage).toHaveBeenCalledTimes(1);
+    expect(Window.replaceLocation).toHaveBeenCalledWith('/');
   });
 
   test('redirectOnFail triggers navigation when fetching user fails', async () => {
@@ -85,6 +85,7 @@ describe('useAuth', () => {
 
     renderHook(() => useAuth({ redirectOnFail: true }), { wrapper });
 
-    expect(Window.replaceLocation).toHaveBeenCalledWith('/login');
+    // Should redirect with encoded path as redirect param
+    expect(Window.replaceLocation).toHaveBeenCalledWith(expect.stringContaining('/login?redirect='));
   });
 });
