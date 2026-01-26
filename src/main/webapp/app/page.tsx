@@ -521,7 +521,7 @@ function NoteCard({
 
 export default function NotesPage() {
   const { pushToast } = useToasts();
-  const { loading: authLoading, isAdmin, isAuthenticated } = useAuth({ redirectOnFail: true });
+  const { loading: authLoading, isAdmin, isAuthenticated } = useAuth();
   const [notes, setNotes] = useState<NoteDTO[]>([]);
   const [view, setView] = useState<NoteView>('active');
   const [loading, setLoading] = useState(false);

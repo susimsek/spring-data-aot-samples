@@ -42,7 +42,7 @@ function buildShareUrl(token: string | undefined) {
 
 export default function SharedLinksPage() {
   const { pushToast } = useToasts();
-  const { loading: authLoading, isAuthenticated } = useAuth({ redirectOnFail: true });
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const loadingRef = useRef(false);
   const [links, setLinks] = useState<ShareLinkDTO[]>([]);
   const [alert, setAlert] = useState('');

@@ -215,7 +215,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Frontend is written in TypeScript (`.ts`/`.tsx`); TypeScript config lives at repo root (`tsconfig.json`) and is referenced from `src/main/webapp/next.config.js`.
 - Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.js`).
   - Maven runs `npm ci` + `npm run build` via `frontend-maven-plugin` (Node installed under repo root `node/`) and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
-- Routing is owned by Next.js; backend forwards unknown non-API routes to `/index.html` via `SpaWebFilter` registered in the Spring Security filter chain (see `SecurityConfig`).
+- Routing is owned by Next.js; backend forwards unknown non-API routes to the corresponding `.html` file via `SpaWebFilter` registered in the Spring Security filter chain (see `SecurityConfig`).
+- Authentication redirects are handled client-side by Next.js via `AuthGuard` component and `routes.ts` configuration (see `src/main/webapp/app/components/AuthGuard.tsx` and `src/main/webapp/app/lib/routes.ts`).
 - API calls in the Next UI should go through `src/main/webapp/app/lib/api.ts` (relative `/api/...` URLs).
   - Keep auth failure handling generic: a 401 triggers refresh+retry; if refresh fails, redirect to `/login`. Avoid per-page `if (err.status === 401) ...` blocks.
 - Dev proxy: `src/main/webapp/next.config.js` defines `rewrites()` in dev to proxy `/api/**` to the Spring Boot backend.

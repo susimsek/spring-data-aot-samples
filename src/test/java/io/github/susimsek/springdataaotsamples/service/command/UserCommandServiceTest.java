@@ -1,5 +1,11 @@
 package io.github.susimsek.springdataaotsamples.service.command;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.github.susimsek.springdataaotsamples.config.cache.CacheProvider;
 import io.github.susimsek.springdataaotsamples.domain.Authority;
 import io.github.susimsek.springdataaotsamples.domain.User;
@@ -13,6 +19,7 @@ import io.github.susimsek.springdataaotsamples.service.exception.EmailAlreadyExi
 import io.github.susimsek.springdataaotsamples.service.exception.InvalidPasswordException;
 import io.github.susimsek.springdataaotsamples.service.exception.UsernameAlreadyExistsException;
 import io.github.susimsek.springdataaotsamples.service.mapper.UserMapper;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,14 +28,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserCommandServiceTest {

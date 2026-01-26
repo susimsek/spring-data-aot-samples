@@ -1,7 +1,5 @@
 package io.github.susimsek.springdataaotsamples.config.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import io.github.susimsek.springdataaotsamples.config.ApplicationProperties;
 import io.github.susimsek.springdataaotsamples.security.AuthoritiesConstants;
 import io.github.susimsek.springdataaotsamples.web.filter.SpaWebFilter;
@@ -24,6 +22,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
@@ -98,13 +98,8 @@ public class SecurityConfig {
                                         .requestMatchers("/actuator/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers(
-                                                "/*.html",
-                                                "/*.js",
-                                                "/*.txt",
-                                                "/*.json",
-                                                "/*.map",
-                                                "/*.css",
-                                                "/_next/**")
+                                                "/*.html", "/*.js", "/*.txt", "/*.json", "/*.map",
+                                                "/*.css")
                                         .permitAll()
                                         .requestMatchers("/*.ico", "/*.png", "/*.svg", "/*.webapp")
                                         .permitAll()
@@ -112,7 +107,6 @@ public class SecurityConfig {
                                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
 
-        // Forward unknown non-API routes to the Next.js SPA entrypoint (static export).
         http.addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class);
 
         return http.build();

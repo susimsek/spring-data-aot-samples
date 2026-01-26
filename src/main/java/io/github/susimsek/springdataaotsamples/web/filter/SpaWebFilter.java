@@ -4,8 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 
 public class SpaWebFilter extends OncePerRequestFilter {
 
@@ -14,7 +15,6 @@ public class SpaWebFilter extends OncePerRequestFilter {
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Request URI includes the contextPath if any, remove it.
         String path = request.getRequestURI().substring(request.getContextPath().length());
 
         boolean isBackendRoute =
@@ -26,11 +26,10 @@ public class SpaWebFilter extends OncePerRequestFilter {
 
         boolean isNextAsset = path.startsWith("/_next");
 
-        // Equivalent to: "/{page:^(?!.*[.].*$).*$}" => no dot anywhere
         boolean isPageRoute = path.matches("^/(?!.*\\.).*$");
 
         if (!isBackendRoute && !isNextAsset && isPageRoute) {
-            String page = path.substring(1); // "login" or "auth/login" or ""
+            String page = path.substring(1);
             String htmlPage = page.isEmpty() ? "/index.html" : "/" + page + ".html";
             request.getRequestDispatcher(htmlPage).forward(request, response);
             return;
