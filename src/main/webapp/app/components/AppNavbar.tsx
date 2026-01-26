@@ -7,7 +7,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faHouse, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
 import ThemeToggleButton from './ThemeToggleButton';
 import AuthDropdown from './AuthDropdown';
 import Brand from './Brand';
@@ -18,6 +18,7 @@ export interface AppNavbarProps {
   onSearchChange?: (next: string) => void;
   onSearchClear?: () => void;
   showSearch?: boolean;
+  showSharedButton?: boolean;
   showHomeButton?: boolean;
   showAuthDropdown?: boolean;
   showChangePassword?: boolean;
@@ -31,20 +32,22 @@ export default function AppNavbar({
   onSearchChange,
   onSearchClear,
   showSearch = false,
-  showHomeButton = false,
-  showAuthDropdown = false,
-  showChangePassword = false,
+  showSharedButton = true,
+  showHomeButton = true,
+  showAuthDropdown = true,
+  showChangePassword = true,
   badgeLabel = '',
   requireAuthForActions = false,
   collapseId = 'appNavbar',
 }: Readonly<AppNavbarProps>) {
   const { isAuthenticated } = useAuth();
   const canShowActions = !requireAuthForActions || isAuthenticated;
+  const showShared = showSharedButton && canShowActions;
   const showHome = showHomeButton && canShowActions;
   const showAuth = showAuthDropdown && canShowActions;
   const showBadge = Boolean(badgeLabel);
   const hasSearch = showSearch;
-  const hasActions = hasSearch || showHome || showAuth;
+  const hasActions = hasSearch || showShared || showHome || showAuth;
 
   const brandBlock = (
     <div className="d-flex align-items-center gap-2">
@@ -95,6 +98,17 @@ export default function AppNavbar({
                     <span>Home</span>
                   </Button>
                 ) : null}
+                {showShared ? (
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-2 flex-shrink-0"
+                    href="/shared-links"
+                  >
+                    <FontAwesomeIcon icon={faShareNodes} />
+                    <span>Shared</span>
+                  </Button>
+                ) : null}
                 <ThemeToggleButton size="sm" />
                 {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
               </div>
@@ -105,6 +119,12 @@ export default function AppNavbar({
                 <Button variant="outline-secondary" size="sm" href="/" className="d-inline-flex align-items-center gap-2">
                   <FontAwesomeIcon icon={faHouse} />
                   <span>Home</span>
+                </Button>
+              ) : null}
+              {showShared ? (
+                <Button variant="outline-secondary" size="sm" href="/shared-links" className="d-inline-flex align-items-center gap-2">
+                  <FontAwesomeIcon icon={faShareNodes} />
+                  <span>Shared</span>
                 </Button>
               ) : null}
               <ThemeToggleButton size="sm" />

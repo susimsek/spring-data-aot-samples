@@ -1091,15 +1091,7 @@ export default function NotesPage() {
 
   return (
     <>
-      <AppNavbar
-        showSearch={true}
-        search={search}
-        onSearchChange={setSearch}
-        onSearchClear={() => setSearch('')}
-        showHomeButton={true}
-        showAuthDropdown={true}
-        showChangePassword={true}
-      />
+      <AppNavbar showSearch={true} search={search} onSearchChange={setSearch} onSearchClear={() => setSearch('')} />
       <header className="py-4 mb-4 shadow-sm bg-body-tertiary">
         <Container className="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
           <div>
@@ -1160,19 +1152,20 @@ export default function NotesPage() {
               <Card className="shadow-sm border-0 mb-3">
                 <Card.Body>
                   <div className="d-flex flex-wrap align-items-start gap-3">
-                    <div className="flex-grow-1" style={{ minWidth: 320 }}>
+                    <div className="d-flex flex-column gap-2 flex-grow-1" style={{ minWidth: 320 }}>
+                      <Form.Label className="small text-muted mb-0">Filter by tags</Form.Label>
                       <TagInput
                         id="filter-tags"
-                        label="Filter by tags"
                         tags={filterTags}
                         onChange={setFilterTags}
                         loadSuggestions={loadTagSuggestions}
                         maxTags={5}
                         errorMessage={TAG_FORMAT_MESSAGE}
+                        className="mb-0"
                       />
                     </div>
                     <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 180 }}>
-                      <Form.Label className="small text-muted mb-1">Color</Form.Label>
+                      <Form.Label className="small text-muted mb-0">Color</Form.Label>
                       <div className="d-flex align-items-center gap-2">
                         <Form.Control
                           type="color"
@@ -1186,7 +1179,7 @@ export default function NotesPage() {
                       </div>
                     </div>
                     <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 160 }}>
-                      <Form.Label className="small text-muted mb-1">Pinned</Form.Label>
+                      <Form.Label className="small text-muted mb-0">Pinned</Form.Label>
                       <Form.Select size="sm" value={filterPinned} onChange={event => setFilterPinned(event.target.value)}>
                         <option value="">All</option>
                         <option value="true">Pinned</option>
@@ -1208,16 +1201,21 @@ export default function NotesPage() {
               <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div className="d-flex flex-wrap align-items-center gap-3">
                   <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0">Page size</Form.Label>
-                    <Form.Select size="sm" value={pageSize} onChange={event => setPageSize(Number(event.target.value))}>
+                    <Form.Label className="text-muted small mb-0 text-nowrap">Page size</Form.Label>
+                    <Form.Select
+                      size="sm"
+                      value={pageSize}
+                      onChange={event => setPageSize(Number(event.target.value))}
+                      style={{ width: 'auto' }}
+                    >
                       <option value={5}>5</option>
                       <option value={10}>10</option>
                       <option value={25}>25</option>
                     </Form.Select>
                   </div>
                   <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0">Sort</Form.Label>
-                    <Form.Select size="sm" value={sort} onChange={event => setSort(event.target.value)}>
+                    <Form.Label className="text-muted small mb-0 text-nowrap">Sort</Form.Label>
+                    <Form.Select size="sm" value={sort} onChange={event => setSort(event.target.value)} style={{ width: 'auto' }}>
                       <option value="createdDate,desc">Created (newest)</option>
                       <option value="createdDate,asc">Created (oldest)</option>
                       <option value="lastModifiedDate,desc">Updated (newest)</option>

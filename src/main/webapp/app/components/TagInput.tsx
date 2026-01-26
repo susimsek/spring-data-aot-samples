@@ -25,6 +25,7 @@ export interface TagInputProps {
   errorMessage?: string;
   isInvalid?: boolean;
   externalError?: string;
+  className?: string;
 }
 
 export default function TagInput({
@@ -43,6 +44,7 @@ export default function TagInput({
   errorMessage,
   isInvalid = false,
   externalError,
+  className = '',
 }: Readonly<TagInputProps>) {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState('');
@@ -118,7 +120,7 @@ export default function TagInput({
   };
 
   return (
-    <div className="mb-3">
+    <div className={`mb-3 ${className}`.trim()}>
       {label ? (
         <Form.Label htmlFor={id} className="form-label">
           {label}

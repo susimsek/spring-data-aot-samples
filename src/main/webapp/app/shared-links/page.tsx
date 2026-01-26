@@ -7,6 +7,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import Badge from 'react-bootstrap/Badge';
+import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Modal from 'react-bootstrap/Modal';
 import Pagination from 'react-bootstrap/Pagination';
@@ -198,7 +199,7 @@ export default function SharedLinksPage() {
 
   return (
     <>
-      <AppNavbar showHomeButton={true} showAuthDropdown={true} />
+      <AppNavbar />
       <header className="py-4 mb-4 shadow-sm bg-body-tertiary">
         <Container className="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
           <div>
@@ -222,86 +223,95 @@ export default function SharedLinksPage() {
               </div>
             </div>
           </div>
-          <div className="d-flex flex-column gap-2 mb-3">
-            <div className="d-flex flex-wrap align-items-center gap-3">
-              <div className="flex-grow-1" style={{ minWidth: 220, maxWidth: 360 }}>
-                <InputGroup size="sm" className="w-100">
-                  <InputGroup.Text>
-                    <FontAwesomeIcon icon={faMagnifyingGlass} />
-                  </InputGroup.Text>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search links or titles"
-                    value={search}
-                    onChange={event => setSearch(event.target.value)}
-                  />
-                  <Button variant="outline-secondary" onClick={() => setSearch('')} aria-label="Clear search">
-                    &times;
-                  </Button>
-                </InputGroup>
-              </div>
-              <div className="d-flex flex-wrap align-items-center gap-3 ms-md-auto">
-                <div className="d-flex align-items-center gap-2">
-                  <Form.Label htmlFor="sharedLinksPageSize" className="small mb-0 text-muted">
-                    Page size
+          <Card className="shadow-sm border-0 mb-3">
+            <Card.Body>
+              <div className="d-flex flex-wrap align-items-start gap-3">
+                <div className="d-flex flex-column gap-2 flex-grow-1" style={{ minWidth: 320 }}>
+                  <Form.Label className="small text-muted mb-0">Search</Form.Label>
+                  <InputGroup size="sm" className="w-100">
+                    <InputGroup.Text>
+                      <FontAwesomeIcon icon={faMagnifyingGlass} />
+                    </InputGroup.Text>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search links or titles"
+                      value={search}
+                      onChange={event => setSearch(event.target.value)}
+                    />
+                    <Button variant="outline-secondary" onClick={() => setSearch('')} aria-label="Clear search">
+                      &times;
+                    </Button>
+                  </InputGroup>
+                </div>
+                <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 180 }}>
+                  <Form.Label htmlFor="sharedLinksStatus" className="small text-muted mb-0">
+                    Status
+                  </Form.Label>
+                  <Form.Select id="sharedLinksStatus" size="sm" value={status} onChange={event => setStatus(event.target.value)}>
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                    <option value="revoked">Revoked</option>
+                  </Form.Select>
+                </div>
+                <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 180 }}>
+                  <Form.Label htmlFor="sharedLinksDateFilter" className="small text-muted mb-0">
+                    Created date
                   </Form.Label>
                   <Form.Select
-                    id="sharedLinksPageSize"
+                    id="sharedLinksDateFilter"
                     size="sm"
-                    value={pageSize}
-                    onChange={event => setPageSize(Number(event.target.value))}
+                    value={dateFilter === 'custom' ? 'custom' : dateFilter}
+                    onChange={event => handleDateFilterChange(event.target.value)}
                   >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={25}>25</option>
+                    <option value="none">Any time</option>
+                    <option value="created_last_24h">Last 24h</option>
+                    <option value="created_last_7d">Last 7 days</option>
+                    <option value="created_last_month">Last month</option>
+                    <option value="custom">Custom range</option>
                   </Form.Select>
-                </div>
-                <div className="d-flex align-items-center gap-2">
-                  <Form.Label htmlFor="sharedLinksSort" className="small mb-0 text-muted">
-                    Sort
-                  </Form.Label>
-                  <Form.Select id="sharedLinksSort" size="sm" value={sort} onChange={event => setSort(event.target.value)}>
-                    <option value="createdDate,desc">Created (newest)</option>
-                    <option value="createdDate,asc">Created (oldest)</option>
-                    <option value="useCount,desc">Used (most)</option>
-                  </Form.Select>
+                  {dateFilter === 'custom' && createdFrom && createdTo ? (
+                    <span className="text-muted small text-nowrap">
+                      {formatDate(createdFrom)} - {formatDate(createdTo)}
+                    </span>
+                  ) : null}
                 </div>
               </div>
+            </Card.Body>
+          </Card>
+
+          <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
+            <div className="d-flex align-items-center gap-2">
+              <Form.Label htmlFor="sharedLinksPageSize" className="small mb-0 text-muted text-nowrap">
+                Page size
+              </Form.Label>
+              <Form.Select
+                id="sharedLinksPageSize"
+                size="sm"
+                value={pageSize}
+                onChange={event => setPageSize(Number(event.target.value))}
+                style={{ width: 'auto' }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+              </Form.Select>
             </div>
-            <div className="d-flex flex-wrap align-items-center gap-3 w-100">
-              <div className="d-flex align-items-center gap-2">
-                <Form.Label htmlFor="sharedLinksStatus" className="small mb-0 text-muted">
-                  Status
-                </Form.Label>
-                <Form.Select id="sharedLinksStatus" size="sm" value={status} onChange={event => setStatus(event.target.value)}>
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="expired">Expired</option>
-                  <option value="revoked">Revoked</option>
-                </Form.Select>
-              </div>
-              <div className="d-flex flex-wrap align-items-center gap-2">
-                <Form.Label htmlFor="sharedLinksDateFilter" className="small mb-0 text-muted">
-                  Created date
-                </Form.Label>
-                <Form.Select
-                  id="sharedLinksDateFilter"
-                  size="sm"
-                  value={dateFilter === 'custom' ? 'custom' : dateFilter}
-                  onChange={event => handleDateFilterChange(event.target.value)}
-                >
-                  <option value="none">Any time</option>
-                  <option value="created_last_24h">Last 24h</option>
-                  <option value="created_last_7d">Last 7 days</option>
-                  <option value="created_last_month">Last month</option>
-                  <option value="custom">Custom range</option>
-                </Form.Select>
-                {dateFilter === 'custom' && createdFrom && createdTo ? (
-                  <span className="text-muted small">
-                    {formatDate(createdFrom)} - {formatDate(createdTo)}
-                  </span>
-                ) : null}
-              </div>
+            <div className="d-flex align-items-center gap-2">
+              <Form.Label htmlFor="sharedLinksSort" className="small mb-0 text-muted text-nowrap">
+                Sort
+              </Form.Label>
+              <Form.Select
+                id="sharedLinksSort"
+                size="sm"
+                value={sort}
+                onChange={event => setSort(event.target.value)}
+                style={{ width: 'auto' }}
+              >
+                <option value="createdDate,desc">Created (newest)</option>
+                <option value="createdDate,asc">Created (oldest)</option>
+                <option value="useCount,desc">Used (most)</option>
+              </Form.Select>
             </div>
           </div>
           {alert ? <Alert variant="danger">{alert}</Alert> : null}
