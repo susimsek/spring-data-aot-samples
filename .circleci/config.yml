@@ -11,6 +11,27 @@ jobs:
     executor: graalvm
     steps:
       - checkout
+      - run:
+          name: Install Node.js
+          command: |
+            set -e
+            NODE_VERSION=22.22.0
+            NPM_VERSION=10.9.4
+            NODE_ARCHIVE=node-v${NODE_VERSION}-linux-x64.tar.xz
+
+            microdnf -y install curl tar xz && \
+            curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/${NODE_ARCHIVE} -o ${NODE_ARCHIVE} && \
+            tar -xJf ${NODE_ARCHIVE} && \
+            mv node-v${NODE_VERSION}-linux-x64 /usr/local/node && \
+            chmod +x /usr/local/node/bin/* && \
+            ln -sf /usr/local/node/bin/node /usr/local/bin/node && \
+            ln -sf /usr/local/node/bin/npm /usr/local/bin/npm && \
+            ln -sf /usr/local/node/bin/npx /usr/local/bin/npx && \
+            rm -rf ${NODE_ARCHIVE} && \
+            npm install -g npm@${NPM_VERSION}
+
+            node -v
+            npm -v
       - restore_cache:
           keys:
             - v2-maven-{{ checksum "pom.xml" }}
