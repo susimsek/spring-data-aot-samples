@@ -92,6 +92,9 @@ jobs:
       - run:
           name: Frontend Test
           command: npm run test:ci
+      - run:
+          name: Frontend Build
+          command: npm run build
       - save_cache:
           key: v2-maven-{{ checksum "pom.xml" }}
           paths:
@@ -125,9 +128,6 @@ jobs:
             rm -rf ${UPX_ARCHIVE} upx-${UPX_VERSION}-amd64_linux
 
             upx --version
-      - run:
-          name: Frontend Build
-          command: npm run build
       - run:
           name: Build GraalVM native executable
           command: |

@@ -531,23 +531,31 @@
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <executions>
+
+                            <!-- 1️⃣ Node & npm -->
                             <execution>
                                 <id>install-node-and-npm</id>
                                 <goals>
                                     <goal>install-node-and-npm</goal>
                                 </goals>
+                                <phase>initialize</phase>
                             </execution>
+
+                            <!-- 2️⃣ npm ci -->
                             <execution>
-                                <id>npm ci</id>
+                                <id>npm-ci</id>
                                 <goals>
                                     <goal>npm</goal>
                                 </goals>
+                                <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>ci</arguments>
                                 </configuration>
                             </execution>
+
+                            <!-- 3️⃣ frontend tests -->
                             <execution>
-                                <id>npm test</id>
+                                <id>npm-test</id>
                                 <goals>
                                     <goal>npm</goal>
                                 </goals>
@@ -556,8 +564,10 @@
                                     <arguments>run test:ci</arguments>
                                 </configuration>
                             </execution>
+
+                            <!-- 4️⃣ frontend build -->
                             <execution>
-                                <id>npm build</id>
+                                <id>npm-build</id>
                                 <goals>
                                     <goal>npm</goal>
                                 </goals>
