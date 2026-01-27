@@ -29,17 +29,10 @@ jobs:
             ln -sf /usr/local/node/bin/npx /usr/local/bin/npx && \
             rm -rf ${NODE_ARCHIVE} && \
             npm install -g npm@${NPM_VERSION}
-
-            node -v
-            npm -v
       - restore_cache:
           keys:
             - v2-maven-{{ checksum "pom.xml" }}
             - v2-maven-
-      - restore_cache:
-          keys:
-            - v2-node-{{ checksum "pom.xml" }}
-            - v2-node-
       - restore_cache:
           keys:
             - v2-npm-{{ checksum "package-lock.json" }}
@@ -48,15 +41,23 @@ jobs:
           name: Print Java Version
           command: java -version
       - run:
+          name: Print Node Version
+          command: node -v
+      - run:
+          name: Print NPM Version
+          command: npm -v
+      - run:
           name: Give Executable Power
           command: chmod +x mvnw
       - run:
           name: Install Maven dependencies
           command: ./mvnw -ntp -Pprod dependency:go-offline
       - run:
+          name: Install Node Modules
+          command: npm ci
+      - run:
           name: Install Snyk CLI
           command: |
-            microdnf -y install curl && \
             curl -fsSL https://static.snyk.io/cli/latest/snyk-linux -o /usr/local/bin/snyk && \
             chmod +x /usr/local/bin/snyk
 
@@ -83,16 +84,18 @@ jobs:
               echo "SNYK_TOKEN not set; skipping Snyk monitor."
             fi
       - run:
-          name: Test
-          command: ./mvnw -B -ntp -Pprod verify
+          name: Backend Test
+          command: |
+            ./mvnw -B -ntp verify \
+              -Dskip.installnodenpm=true \
+              -Dskip.npm=true
+      - run:
+          name: Frontend Test
+          command: npm run test:ci
       - save_cache:
           key: v2-maven-{{ checksum "pom.xml" }}
           paths:
             - ~/.m2/repository
-      - save_cache:
-          key: v2-node-{{ checksum "pom.xml" }}
-          paths:
-            - node
       - save_cache:
           key: v2-npm-{{ checksum "package-lock.json" }}
           paths:
@@ -115,7 +118,6 @@ jobs:
             UPX_VERSION=5.1.0
             UPX_ARCHIVE=upx-${UPX_VERSION}-amd64_linux.tar.xz
 
-            microdnf -y install xz tar && \
             curl -fsSLO https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_ARCHIVE} && \
             tar -xJf ${UPX_ARCHIVE} && \
             mv upx-${UPX_VERSION}-amd64_linux/upx /usr/local/bin/upx && \
@@ -123,6 +125,9 @@ jobs:
             rm -rf ${UPX_ARCHIVE} upx-${UPX_VERSION}-amd64_linux
 
             upx --version
+      - run:
+          name: Frontend Build
+          command: npm run build
       - run:
           name: Build GraalVM native executable
           command: |
