@@ -149,7 +149,6 @@ jobs:
             fi
 
             ./mvnw -ntp -Pprod,native -DskipTests \
-              -Dskip.installnodenpm=true -Dskip.npm=true \
               jib:build \
               -Djib.to.image=docker.io/${DOCKERHUB_USERNAME}/note-app:latest-native \
               -Djib.to.auth.username="${DOCKERHUB_USERNAME}" \
