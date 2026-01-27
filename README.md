@@ -390,13 +390,13 @@ helm uninstall note-app -n note-app
 
 Pipeline: `.circleci/config.yml`
 
-- `./mvnw -Pprod verify` for tests + quality gates
+- `./mvnw -Pprod verify` for backend tests + quality gates
 - `./mvnw -Pprod,native -DskipTests native:compile` for a musl static native build
 - Compress `target/native-executable` with UPX
-- Push native image to GHCR on the `main` branch (via Jib)
+- Push the native Docker image to Docker Hub on the `main` branch (via Jib)
 
 Environment variables:
 
 - SonarCloud: `SONAR_TOKEN` (optional)
 - Snyk: `SNYK_TOKEN` (optional)
-- GHCR push: `GHCR_USERNAME`, `GHCR_TOKEN` (only on `main`)
+- Docker Hub push: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (only on `main`)
