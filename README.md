@@ -191,7 +191,7 @@ Run all simulations:
 Checkstyle runs automatically in the `validate` phase.
 
 ```bash
-./mvnw -DskipTests checkstyle:check
+./mvnw checkstyle:check
 ```
 
 Config: `checkstyle.xml` and `checkstyle-suppressions.xml`
@@ -201,7 +201,7 @@ Config: `checkstyle.xml` and `checkstyle-suppressions.xml`
 Spotless runs `spotless:check` in the `compile` phase. To apply formatting:
 
 ```bash
-./mvnw -DskipTests spotless:apply
+./mvnw spotless:apply
 ```
 
 ### ESLint

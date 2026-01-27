@@ -15,9 +15,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Run (prod + docker-compose)         | `./mvnw -Pprod,docker-compose spring-boot:run`    |
 | Unit tests                          | `./mvnw test`                                     |
 | Full verify (tests + quality gates) | `./mvnw verify`                                   |
-| Check formatting (Spotless)         | `./mvnw -DskipTests spotless:check`               |
-| Apply formatting (Spotless)         | `./mvnw -DskipTests spotless:apply`               |
-| Checkstyle                          | `./mvnw -DskipTests checkstyle:check`             |
+| Check formatting (Spotless)         | `./mvnw spotless:check`                           |
+| Apply formatting (Spotless)         | `./mvnw spotless:apply`                           |
+| Checkstyle                          | `./mvnw checkstyle:check`                         |
 | Package                             | `./mvnw -DskipTests package`                      |
 | Native executable                   | `./mvnw -Pprod,native -DskipTests native:compile` |
 | Backend start (dev)                 | `npm run backend:start`                           |
@@ -68,8 +68,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ## Code Style and Quality Gates
 
 - Formatting: Spotless + `google-java-format` (AOSP).
-  - Check: `./mvnw -DskipTests spotless:check`
-  - Apply: `./mvnw -DskipTests spotless:apply`
+  - Check: `./mvnw spotless:check`
+  - Apply: `./mvnw spotless:apply`
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
 - Frontend lint/format (Next.js under `src/main/webapp`):
   - Lint (ESLint): `npm run lint`
@@ -80,7 +80,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - TypeScript config: `tsconfig.json`
 - Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
 - TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
-- When you change code: apply formatting and ensure tests pass (`./mvnw -DskipTests spotless:apply` and `./mvnw test`).
+- When you change code: apply formatting and ensure tests pass (`./mvnw spotless:apply` and `./mvnw test`).
 - When you add or change behavior: add/adjust unit tests for the new logic under `src/test/java`.
 - When you change frontend code: apply formatting and ensure lint/tests pass (`npm run format`, `npm run lint`, `npm test`).
 - When you add or change frontend behavior: add/adjust unit tests for the new logic under `src/main/webapp`.
@@ -228,7 +228,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Keep changes focused; avoid drive-by refactors in the same PR.
 - Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
 - Commit messages: use imperative present tense and a consistent prefix (e.g., Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).
-- Before opening a PR: run formatting + at least unit tests (`./mvnw -DskipTests spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
+- Before opening a PR: run formatting + at least unit tests (`./mvnw spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
 - If you change frontend code under `src/main/webapp`, also run formatting + lint + unit tests before opening a PR (`npm run format`, `npm run lint`, `npm test`).
 - PR description should include: what/why, how to verify, and any risks or follow-ups.
 - Call out cross-cutting impacts explicitly: Liquibase migrations, new/changed config properties, cache regions/names, security rules (`SecurityConfig`), and AOT/native hints (`config/aot/NativeConfig.java`).
