@@ -131,7 +131,9 @@ jobs:
       - run:
           name: Build GraalVM native executable
           command: |
-            ./mvnw -ntp -Pprod,native -DskipTests -Dskip.installnodenpm=true -Dskip.npm=true \
+            ./mvnw -ntp -Pprod,native -DskipTests \
+              -Dskip.installnodenpm=true -Dskip.npm=true \
+              -Dspotless.skip=true -Dcheckstyle.skip=true \
               -DbuildArgs="--no-fallback,-Os,--static,--libc=musl,--verbose,-J-Xmx6g" \
               native:compile
           no_output_timeout: 40m
