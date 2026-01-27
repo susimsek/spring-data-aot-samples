@@ -385,10 +385,10 @@
                         <exclude>**/*IT*</exclude>
                         <exclude>**/*IntTest*</exclude>
                     </excludes>
-                    <forkCount>1</forkCount>
-                    <reuseForks>true</reuseForks>
                     <parallel>methods</parallel>
                     <threadCount>4</threadCount>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
