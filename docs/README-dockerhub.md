@@ -12,6 +12,7 @@ This image runs a REST API for managing notes (CRUD) with soft delete (trash) an
 - Revision history (Hibernate Envers) + restore to a revision
 - Tags, pinned, color; search (`q`) and pagination/sorting
 - JWT-based authentication (`/api/auth/*`)
+- Next.js UI (static export) served by Spring Boot (SPA routing)
 - Actuator + Prometheus metrics + OpenTelemetry (OTLP) configuration
 
 ### How to use this image
@@ -47,7 +48,9 @@ docker run --rm -p 8080:8080 \
   suayb/note-app:latest-native
 ```
 
-Then you can hit `http://localhost:8080/` or `http://<host-ip>:8080/` in your browser.
+Then you can open the web UI at `http://localhost:8080/` (or `http://<host-ip>:8080/`).
+
+The REST API is available under `/api/**` (for example: `/api/notes`, `/api/auth/*`).
 
 ### Environment variables
 
@@ -68,3 +71,4 @@ Then you can hit `http://localhost:8080/` or `http://<host-ip>:8080/` in your br
 ### Notes
 
 - Liquibase migrations are enabled by default. Disable with `SPRING_LIQUIBASE_ENABLED=false` if you manage migrations separately.
+- The Next.js frontend is bundled into the image as a static export and served from the same port (8080). Unknown non-API routes are handled as SPA routes.
