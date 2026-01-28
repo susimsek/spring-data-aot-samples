@@ -24,6 +24,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  poweredByHeader: false,
   reactStrictMode: true,
   ...(isDev && {
     async rewrites() {
