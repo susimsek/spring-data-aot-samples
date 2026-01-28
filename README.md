@@ -21,6 +21,7 @@ This repository is a “Note” sample application built with Spring Boot 4 + Sp
 - Tags, pin, color; search (`q`), pagination/sorting
 - JWT-based auth (`/api/auth/*`) + cookie-based session handling
 - Schema + seed data via Liquibase
+- Next.js UI (static export) served by Spring Boot (SPA routing)
 - Actuator, Prometheus metrics and OpenTelemetry (OTLP) configuration
 
 ## Requirements
