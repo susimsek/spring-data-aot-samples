@@ -2,6 +2,20 @@
 
 This repo is a “Note” sample application built with Spring Boot 4 + Spring Data JPA (Hibernate) + Envers + Liquibase. It runs on the JVM and also targets GraalVM Native Image.
 
+## Table of Contents
+
+1.  [Agent MCP Usage Guidelines](#agent-mcp-usage-guidelines)
+2.  [Quick Reference](#quick-reference)
+3.  [Prerequisites](#prerequisites)
+4.  [Project Structure](#project-structure)
+5.  [Code Style and Quality Gates](#code-style-and-quality-gates)
+6.  [Testing Guidelines](#testing-guidelines)
+7.  [Native Image & AOT Guidance](#native-image--aot-guidance)
+8.  [Authentication](#authentication)
+9.  [Development Guidelines](#development-guidelines)
+10. [Pull Request & Commit Guidelines](#pull-request--commit-guidelines)
+11. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+
 ## Agent MCP Usage Guidelines
 
 - Always use the Context7 MCP server when I need library/API documentation (e.g., Java, Spring Boot, Spring Data, Hibernate, Liquibase, GraalVM), code generation, setup or configuration steps without me having to explicitly ask.
@@ -27,7 +41,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Frontend unit tests (Jest)          | `npm test`                                        |
 | Frontend format apply (Prettier)    | `npm run format`                                  |
 
-## Requirements
+### Prerequisites
 
 - Java: `25+` (enforced via Maven Enforcer)
 - Maven: use the wrapper (`./mvnw`)
@@ -67,10 +81,19 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Code Style and Quality Gates
 
+### Backend
+
 - Formatting: Spotless + `google-java-format` (AOSP).
   - Check: `./mvnw spotless:check`
   - Apply: `./mvnw spotless:apply`
 - Lint: Checkstyle runs in the `validate` phase (config: `checkstyle.xml`, suppressions: `checkstyle-suppressions.xml`).
+- Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
+- TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
+- When you change code: apply formatting and ensure tests pass (`./mvnw spotless:apply` and `./mvnw test`).
+- When you add or change behavior: add/adjust unit tests for the new logic under `src/test/java`.
+
+### Frontend
+
 - Frontend lint/format (Next.js under `src/main/webapp`):
   - Lint (ESLint): `npm run lint`
   - Unit tests (Jest): `npm test`
@@ -78,25 +101,40 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - ESLint config: `eslint.config.mjs`
   - Prettier config: `.prettierrc.json` (ignores in `.prettierignore`)
   - TypeScript config: `tsconfig.json`
-- Follow `.editorconfig` (LF, no trailing whitespace; Java indent = 4).
-- TODO rule: write `TODO:` in all caps with a colon; do not include usernames in TODOs.
-- When you change code: apply formatting and ensure tests pass (`./mvnw spotless:apply` and `./mvnw test`).
-- When you add or change behavior: add/adjust unit tests for the new logic under `src/test/java`.
 - When you change frontend code: apply formatting and ensure lint/tests pass (`npm run format`, `npm run lint`, `npm test`).
 - When you add or change frontend behavior: add/adjust unit tests for the new logic under `src/main/webapp`.
 
 ## Testing Guidelines
 
-- Tests live under `src/test/java`.
-- Unit tests: `*Test.java`
-- Integration tests: `*IT*.java` and the `@IntegrationTest` meta-annotation.
-- Run a single unit test: `./mvnw -Dtest=TokenServiceTest test`
-- Run a single integration test: `./mvnw -Dit.test=NoteControllerIT failsafe:integration-test failsafe:verify`
-- Performance (Gatling): `src/test/java/gatling/simulations` and `./mvnw gatling:test`
+### Unit Tests
+
+#### Backend
+
+- Backend unit tests live under `src/test/java` and follow `*Test.java`.
+- Run a single backend unit test:
+  - `./mvnw -Dtest=TokenServiceTest test`
+
+#### Frontend
+
 - Frontend unit tests (Jest) live under `src/main/webapp` (e.g., `src/main/webapp/**/*.test.ts`, `src/main/webapp/**/*.test.tsx`).
-- Run frontend tests: `npm test`
-- Run a single frontend test file: `npm test -- src/main/webapp/app/components/AppNavbar.test.tsx`
-- Run a single frontend test by name: `npm test -- -t "ThemeToggleButton"`
+- Run frontend unit tests:
+  - `npm test`
+- Run a single frontend test file:
+  - `npm test -- src/main/webapp/app/components/AppNavbar.test.tsx`
+- Run a single frontend test by name:
+  - `npm test -- -t "ThemeToggleButton"`
+
+### Integration Tests
+
+- Integration tests live under `src/test/java` and follow `*IT*.java` and the `@IntegrationTest` meta-annotation.
+- Run a single integration test:
+  - `./mvnw -Dit.test=NoteControllerIT failsafe:integration-test failsafe:verify`
+
+### Performance Tests
+
+- Performance tests (Gatling) live under `src/test/java/gatling/simulations`.
+- Run Gatling:
+  - `./mvnw gatling:test`
 
 ## Native Image & AOT Guidance
 
@@ -223,19 +261,61 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - CSP note: Next static export emits inline scripts; a strict `script-src 'self'` CSP will break the UI. If you tighten CSP, you must handle inline scripts via nonces/hashes (or avoid static export).
 - Shared UI: use `src/main/webapp/app/components/AppNavbar.tsx` instead of creating page-specific navbar components.
 
-## Commit & Pull Request Guidelines
+### Pull Request & Commit Guidelines
 
 - Keep changes focused; avoid drive-by refactors in the same PR.
 - Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
-- Commit messages: use imperative present tense and a consistent prefix (e.g., Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).
-- Before opening a PR: run formatting + at least unit tests (`./mvnw spotless:apply` and `./mvnw test`); use `./mvnw verify` when the change is non-trivial or touches build/AOT/security/data access; do not open a PR unless formatting and tests pass.
-- If you change frontend code under `src/main/webapp`, also run formatting + lint + unit tests before opening a PR (`npm run format`, `npm run lint`, `npm test`).
-- PR description should include: what/why, how to verify, and any risks or follow-ups.
-- Call out cross-cutting impacts explicitly: Liquibase migrations, new/changed config properties, cache regions/names, security rules (`SecurityConfig`), and AOT/native hints (`config/aot/NativeConfig.java`).
-- For UI changes, include screenshots or short notes about the affected pages and any new validation rules/messages.
-- Never include secrets (e.g., JWT secret) in commits/PRs; prefer env vars and document required setup in `README.md` if needed.
+- Never include secrets (e.g., JWT secret) in commits/PRs; prefer env vars and document required setup in `README.md`.
+
+- Use **Conventional Commits**:
+  - `feat`: new feature
+  - `fix`: bug fix
+  - `docs`: documentation only
+  - `test`: adding or fixing tests
+  - `chore`: build, CI, or tooling changes
+  - `perf`: performance improvement
+  - `refactor`: code changes without feature or fix
+  - `build`: changes that affect the build system
+  - `ci`: CI configuration
+  - `style`: code style (formatting, missing semicolons, etc.)
+  - `types`: type-related changes
+  - `revert`: reverts a previous commit
+
+- Commit message format:
+
+  ```
+  <type>(<scope>): <short summary>
+
+  Optional longer description.
+  ```
+
+- Keep summary under 80 characters. Use imperative present tense.
+
+- Before opening a PR:
+  - Always apply formatting and run at least unit tests:
+    - Backend: `./mvnw spotless:apply` and `./mvnw test`
+    - Frontend changes under `src/main/webapp`: `npm run format`, `npm run lint`, `npm test`
+  - Do not open a PR unless formatting and the relevant tests pass.
+
+- PR title: use a Conventional Commit-style title (same as commit summary).
+
+- PR description should include:
+  - What changed and why.
+  - How to verify (exact commands and/or steps).
+  - Any risks, rollback notes, or follow-ups.
+
+- Call out cross-cutting impacts explicitly when relevant:
+  - Liquibase migrations
+  - New/changed config properties
+  - Cache regions/names
+  - Security rules (`SecurityConfig`)
+  - AOT/native hints (`config/aot/NativeConfig.java`)
+
+- For UI changes, include screenshots or short notes about affected pages and any new validation rules/messages.
 
 ## Common Mistakes to Avoid
+
+### Backend
 
 - Skipping the layer flow (`web` → `service` → `repository`) and pushing business logic into controllers.
 - Forgetting `@Transactional(readOnly = true)` for query services and accidentally writing inside read paths.
@@ -250,6 +330,9 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Avoid unused initial assignments just to overwrite them later (e.g., `List<Long> ids = List.of();`).
 - Don’t forget a `default` branch in `switch` statements.
 - Using fully qualified names everywhere instead of imports (only use FQNs to resolve ambiguity).
+
+### Frontend
+
 - Rendering untrusted values via `innerHTML` without escaping (XSS risk); prefer `textContent` or escape helpers.
 - Adding/altering a form input but forgetting to add HTML constraints and matching `invalid-feedback` elements (users end up with silent failures or inconsistent validation UX).
 - In TypeScript React components, keep props types read-only (e.g., `Readonly<Props>`); use this pattern consistently.
