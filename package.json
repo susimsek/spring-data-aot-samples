@@ -11,6 +11,7 @@
     "build": "next build src/main/webapp",
     "start": "next start src/main/webapp",
     "test": "jest",
+    "test:watch": "jest --watch",
     "test:ci": "jest --coverage --maxWorkers=4",
     "lint": "eslint \"src/main/webapp/**/*.{js,jsx,ts,tsx,mjs,cjs}\"",
     "lint:fix": "eslint \"src/main/webapp/**/*.{js,jsx,ts,tsx,mjs,cjs}\" --fix",
