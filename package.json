@@ -17,6 +17,7 @@
     "lint:fix": "eslint \"src/main/webapp/**/*.{js,jsx,ts,tsx,mjs,cjs}\" --fix",
     "format": "prettier --write \"{,src/main/webapp/**/,docs/**/}*.{md,json,yml,yaml,js,cjs,mjs,ts,tsx,css,scss,html}\"",
     "format:check": "prettier --check \"{,src/main/webapp/**/,docs/**/}*.{md,json,yml,yaml,js,cjs,mjs,ts,tsx,css,scss,html}\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint-staged": "lint-staged",
     "prepare": "husky"
   },

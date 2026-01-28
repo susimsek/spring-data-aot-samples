@@ -19,16 +19,6 @@
       }
     ]
   },
-  "include": [
-    "src/main/webapp/next-env.d.ts",
-    "src/main/webapp/**/*.ts",
-    "src/main/webapp/**/*.tsx",
-    "src/main/webapp/.next/types/**/*.ts",
-    "src/main/webapp/.next/dev/types/**/*.ts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "build/types/**/*.ts",
-    "build/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", "node_modules.link", "src/main/webapp/node_modules", "src/main/webapp/build", "src/main/webapp/.next"]
+  "include": ["src/main/webapp/next-env.d.ts", "src/main/webapp/**/*.ts", "src/main/webapp/**/*.tsx"],
+  "exclude": ["node_modules", "node_modules.link", "src/main/webapp/build", "src/main/webapp/.next"]
 }
