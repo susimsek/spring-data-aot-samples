@@ -14,7 +14,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 8.  [Authentication](#authentication)
 9.  [Development Guidelines](#development-guidelines)
 10. [Pull Request & Commit Guidelines](#pull-request--commit-guidelines)
-11. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
+11. [Review Process & What Reviewers Look For](#review-process--what-reviewers-look-for)
+12. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
 
 ## Agent MCP Usage Guidelines
 
@@ -261,7 +262,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - CSP note: Next static export emits inline scripts; a strict `script-src 'self'` CSP will break the UI. If you tighten CSP, you must handle inline scripts via nonces/hashes (or avoid static export).
 - Shared UI: use `src/main/webapp/app/components/AppNavbar.tsx` instead of creating page-specific navbar components.
 
-### Pull Request & Commit Guidelines
+## Pull Request & Commit Guidelines
 
 - Keep changes focused; avoid drive-by refactors in the same PR.
 - Prefer small, logically grouped commits; avoid `WIP`/“fix typo” noise.
@@ -311,7 +312,42 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - Security rules (`SecurityConfig`)
   - AOT/native hints (`config/aot/NativeConfig.java`)
 
-- For UI changes, include screenshots or short notes about affected pages and any new validation rules/messages.
+## Review Process & What Reviewers Look For
+
+### General (Applies to All PRs)
+
+- ✅ All automated checks pass (backend build/tests/format + frontend lint/tests when applicable).
+- ✅ Changes are focused and minimal; no unrelated refactors or drive-by cleanups.
+- ✅ Commit history is clean, logical, and follows Conventional Commits.
+- ✅ No secrets, credentials, or environment-specific values are committed.
+- ✅ PR description clearly explains:
+  - What changed and why
+  - How to verify
+  - Risks or follow-ups (if any)
+
+### Backend Review Checklist
+
+- ✅ Maven build and tests pass (run `./mvnw verify` when the change is non-trivial).
+- ✅ Unit and/or integration tests are added or updated to cover new behavior and edge cases.
+- ✅ Code follows the established architecture: `web → service → repository`.
+- ✅ Transaction boundaries are correct (`@Transactional`, `readOnly = true` where appropriate).
+- ✅ Error handling remains consistent with `ProblemDetail` and validation standards.
+- ✅ Public-facing API changes (REST endpoints, DTOs, enums, config properties) are documented or clearly explained.
+- ✅ Cross-cutting impacts are explicitly called out when applicable:
+  - Liquibase migrations
+  - Cache regions / eviction behavior
+  - Security rules (`SecurityConfig`)
+  - Native Image / AOT hints (`NativeConfig`)
+
+### Frontend Review Checklist
+
+- ✅ Frontend build, lint, and tests pass when UI code is touched (`npm run build`, `npm run lint`, `npm test`).
+- ✅ Unit tests are added or updated for new UI logic or components.
+- ✅ UI/UX changes include brief notes or screenshots when behavior or visuals change.
+- ✅ API usage goes through the shared API layer (`src/main/webapp/app/lib/api.ts`).
+- ✅ Authentication and error handling follow the existing global patterns (avoid per-page special-casing).
+- ✅ TypeScript types are strict and consistent (`Readonly<Props>`, avoid `any`).
+- ✅ No unsafe rendering patterns are introduced (avoid `innerHTML` unless sanitized).
 
 ## Common Mistakes to Avoid
 
