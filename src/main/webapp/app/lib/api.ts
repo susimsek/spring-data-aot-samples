@@ -77,7 +77,7 @@ async function refresh(): Promise<JsonObject> {
     refreshInFlight = publicApi
       .post('/api/auth/refresh')
       .then((res: AxiosResponse<JsonObject>) => res.data ?? {})
-      .catch(err => {
+      .catch((err) => {
         const apiErr = normalizeError(err);
         if (apiErr.status === 401 || apiErr.status === 400) {
           refreshDisabled = true;
@@ -96,11 +96,11 @@ const refreshExcludedPaths = ['/api/auth/login', '/api/auth/refresh', '/api/auth
 
 function shouldAttemptRefresh(url: string | undefined): boolean {
   if (!url) return true;
-  return !refreshExcludedPaths.some(path => url.includes(path));
+  return !refreshExcludedPaths.some((path) => url.includes(path));
 }
 
 api.interceptors.response.use(
-  response => response,
+  (response) => response,
   async (error: unknown) => {
     if (!axios.isAxiosError(error)) {
       return Promise.reject(normalizeError(error));
@@ -127,7 +127,7 @@ api.interceptors.response.use(
 );
 
 publicApi.interceptors.response.use(
-  response => response,
+  (response) => response,
   (error: unknown) => Promise.reject(normalizeError(error)),
 );
 
@@ -180,7 +180,7 @@ const Api = {
     if (color) searchParams.set('color', color);
     if (typeof pinned === 'boolean') searchParams.set('pinned', String(pinned));
     if (tags && Array.isArray(tags)) {
-      tags.forEach(tag => searchParams.append('tags', tag));
+      tags.forEach((tag) => searchParams.append('tags', tag));
     }
     const res = await api.get<PageResponse<NoteDTO>>(`${base}?${searchParams.toString()}`);
     return (res.data ?? { content: [] }) as PageResponse<NoteDTO>;

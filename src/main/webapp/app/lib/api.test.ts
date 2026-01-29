@@ -101,7 +101,8 @@ describe('Api client', () => {
 
     apiInstance.post.mockResolvedValueOnce({ data: { id: 1 } });
 
-    const { default: Api } = await import('./api');
+    await import('./api');
+    void Api;
     await Api.createNote({ title: 'x' });
 
     expect(apiInstance.post).toHaveBeenCalledWith('/api/admin/notes', { title: 'x' });
@@ -111,6 +112,7 @@ describe('Api client', () => {
     apiInstance.get.mockResolvedValueOnce({ data: { content: [] } });
 
     const { default: Api } = await import('./api');
+    void Api;
     await Api.fetchNotes({
       view: 'active',
       page: 1,
@@ -146,6 +148,7 @@ describe('Api client', () => {
     publicApiInstance.post.mockResolvedValue({ data: {} });
 
     const { default: Api } = await import('./api');
+    void Api;
 
     await Api.login({ username: 'u', password: 'p' });
     await Api.register({ username: 'u' });
@@ -196,6 +199,7 @@ describe('Api client', () => {
     apiInstance.mockResolvedValueOnce({ data: { ok: true } });
 
     const { default: Api } = await import('./api');
+    void Api;
     // Ensure interceptors are registered.
     expect(apiInstance.interceptors.response.use).toHaveBeenCalledTimes(1);
 
@@ -218,7 +222,7 @@ describe('Api client', () => {
   test('does not attempt refresh for excluded auth endpoints', async () => {
     apiInstance.get.mockRejectedValueOnce(new Error('should not be used'));
 
-    const { default: Api } = await import('./api');
+    await import('./api');
     expect(apiInstance.interceptors.response.use).toHaveBeenCalledTimes(1);
     const errorHandler = apiInstance.interceptors.response.use.mock.calls[0][1] as (err: unknown) => Promise<unknown>;
 
@@ -344,6 +348,7 @@ describe('Api client', () => {
     document.body.innerHTML = '<div></div>';
 
     const { default: Api } = await import('./api');
+    void Api;
     // Call refresh indirectly by invoking the error handler with a retry-able request.
     const errorHandler = apiInstance.interceptors.response.use.mock.calls[0][1] as (err: unknown) => Promise<unknown>;
     const err: any = {

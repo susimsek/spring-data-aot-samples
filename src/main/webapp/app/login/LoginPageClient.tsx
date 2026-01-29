@@ -57,7 +57,7 @@ export default function LoginPageClient() {
 
   const canSubmit = useMemo(() => isValid && username.trim().length > 0 && password.length > 0, [isValid, username, password]);
 
-  const onSubmit = handleSubmit(async data => {
+  const onSubmit = handleSubmit(async (data) => {
     setError('');
     try {
       await dispatch(
@@ -113,7 +113,7 @@ export default function LoginPageClient() {
                     />
                     <Button
                       variant="outline-secondary"
-                      onClick={() => setShowPassword(prev => !prev)}
+                      onClick={() => setShowPassword((prev) => !prev)}
                       aria-label="Toggle password visibility"
                     >
                       <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />

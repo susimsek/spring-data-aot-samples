@@ -25,7 +25,7 @@ function getLocationInfo(): { path: string; queryString: string } {
 }
 
 export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
-  const user = useAppSelector(state => state.auth.user);
+  const user = useAppSelector((state) => state.auth.user);
   const isAuthenticated = !!user?.username;
 
   const shouldRender = useMemo(() => {

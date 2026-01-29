@@ -43,11 +43,11 @@ export default function ToastProvider({ children }: Readonly<{ children: ReactNo
 
   const pushToast = useCallback((message: string, variant: ToastVariant = 'success', title?: string, action?: ToastAction) => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    setToasts(prev => [...prev, { id, message, variant, title, action }]);
+    setToasts((prev) => [...prev, { id, message, variant, title, action }]);
   }, []);
 
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   const value = useMemo(() => ({ pushToast }), [pushToast]);
@@ -56,7 +56,7 @@ export default function ToastProvider({ children }: Readonly<{ children: ReactNo
     <ToastContext.Provider value={value}>
       {children}
       <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1080 }}>
-        {toasts.map(toast => {
+        {toasts.map((toast) => {
           const icon = iconMap[toast.variant] || iconMap.info;
           const action = toast.action;
           return (

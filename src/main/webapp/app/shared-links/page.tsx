@@ -236,7 +236,7 @@ export default function SharedLinksPage() {
                       type="text"
                       placeholder="Search links or titles"
                       value={search}
-                      onChange={event => setSearch(event.target.value)}
+                      onChange={(event) => setSearch(event.target.value)}
                     />
                     <Button variant="outline-secondary" onClick={() => setSearch('')} aria-label="Clear search">
                       &times;
@@ -247,7 +247,7 @@ export default function SharedLinksPage() {
                   <Form.Label htmlFor="sharedLinksStatus" className="small text-muted mb-0">
                     Status
                   </Form.Label>
-                  <Form.Select id="sharedLinksStatus" size="sm" value={status} onChange={event => setStatus(event.target.value)}>
+                  <Form.Select id="sharedLinksStatus" size="sm" value={status} onChange={(event) => setStatus(event.target.value)}>
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="expired">Expired</option>
@@ -262,7 +262,7 @@ export default function SharedLinksPage() {
                     id="sharedLinksDateFilter"
                     size="sm"
                     value={dateFilter === 'custom' ? 'custom' : dateFilter}
-                    onChange={event => handleDateFilterChange(event.target.value)}
+                    onChange={(event) => handleDateFilterChange(event.target.value)}
                   >
                     <option value="none">Any time</option>
                     <option value="created_last_24h">Last 24h</option>
@@ -289,7 +289,7 @@ export default function SharedLinksPage() {
                 id="sharedLinksPageSize"
                 size="sm"
                 value={pageSize}
-                onChange={event => setPageSize(Number(event.target.value))}
+                onChange={(event) => setPageSize(Number(event.target.value))}
                 style={{ width: 'auto' }}
               >
                 <option value={5}>5</option>
@@ -305,7 +305,7 @@ export default function SharedLinksPage() {
                 id="sharedLinksSort"
                 size="sm"
                 value={sort}
-                onChange={event => setSort(event.target.value)}
+                onChange={(event) => setSort(event.target.value)}
                 style={{ width: 'auto' }}
               >
                 <option value="createdDate,desc">Created (newest)</option>
@@ -327,7 +327,7 @@ export default function SharedLinksPage() {
                 <Spinner animation="border" variant="primary" />
               </ListGroup.Item>
             ) : null}
-            {links.map(link => {
+            {links.map((link) => {
               const statusBadge = link.revoked
                 ? { text: 'Revoked', className: 'bg-secondary-subtle text-secondary' }
                 : link.expired
@@ -411,11 +411,11 @@ export default function SharedLinksPage() {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label className="small mb-1">From</Form.Label>
-              <Form.Control type="datetime-local" value={customFrom} onChange={event => setCustomFrom(event.target.value)} />
+              <Form.Control type="datetime-local" value={customFrom} onChange={(event) => setCustomFrom(event.target.value)} />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label className="small mb-1">To</Form.Label>
-              <Form.Control type="datetime-local" value={customTo} onChange={event => setCustomTo(event.target.value)} />
+              <Form.Control type="datetime-local" value={customTo} onChange={(event) => setCustomTo(event.target.value)} />
             </Form.Group>
             <div className="text-muted small">Both dates are required. Start date must not be after end date.</div>
             {customError ? <div className="invalid-feedback d-block">{customError}</div> : null}

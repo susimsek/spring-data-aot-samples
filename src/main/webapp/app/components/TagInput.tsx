@@ -63,7 +63,7 @@ export default function TagInput({
     }
     debounceRef.current = setTimeout(() => {
       loadSuggestions(query)
-        .then(items => setSuggestions(Array.isArray(items) ? items : []))
+        .then((items) => setSuggestions(Array.isArray(items) ? items : []))
         .catch(() => setSuggestions([]));
     }, 250);
     return () => {
@@ -111,12 +111,12 @@ export default function TagInput({
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
       const parts = inputValue.split(',');
-      parts.forEach(part => addTag(part));
+      parts.forEach((part) => addTag(part));
     }
   };
 
   const removeTag = (value: string) => {
-    updateTags(normalizedTags.filter(tag => tag !== value));
+    updateTags(normalizedTags.filter((tag) => tag !== value));
   };
 
   return (
@@ -128,7 +128,7 @@ export default function TagInput({
       ) : null}
       <div className={`form-control p-2 ${hasError ? 'is-invalid' : ''}`}>
         <div className="d-flex flex-wrap gap-2 mb-2">
-          {normalizedTags.map(tag => (
+          {normalizedTags.map((tag) => (
             <Badge key={tag} bg="secondary-subtle" text="secondary" className="d-inline-flex align-items-center gap-1">
               <span>{tag}</span>
               <Button
@@ -150,7 +150,7 @@ export default function TagInput({
           className="border-0 shadow-none p-0"
           placeholder={placeholder}
           value={inputValue}
-          onChange={event => {
+          onChange={(event) => {
             const nextValue = event.target.value;
             setInputValue(nextValue);
             if (!nextValue.trim()) {
@@ -162,7 +162,7 @@ export default function TagInput({
           disabled={disabled}
         />
         <datalist id={datalistId}>
-          {suggestions.map(suggestion => (
+          {suggestions.map((suggestion) => (
             <option key={suggestion} value={suggestion} />
           ))}
         </datalist>

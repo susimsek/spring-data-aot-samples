@@ -41,7 +41,7 @@ export function useTheme() {
 
 export default function ThemeProvider({ children }: Readonly<{ children: ReactNode }>) {
   const dispatch = useAppDispatch();
-  const theme = useAppSelector(state => state.theme.theme);
+  const theme = useAppSelector((state) => state.theme.theme);
 
   useEffect(() => {
     const stored = getStoredTheme();

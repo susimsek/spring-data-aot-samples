@@ -86,7 +86,7 @@ export default function AppNavbar({
           {hasSearch ? (
             <div className="d-flex flex-column flex-lg-row align-items-center gap-2 w-100 justify-content-center justify-content-lg-end">
               <InputGroup size="sm" className="w-100" style={{ maxWidth: 360 }}>
-                <Form.Control type="text" placeholder="Search notes" value={search} onChange={e => onSearchChange?.(e.target.value)} />
+                <Form.Control type="text" placeholder="Search notes" value={search} onChange={(e) => onSearchChange?.(e.target.value)} />
                 <Button variant="outline-secondary" onClick={onSearchClear} aria-label="Clear search">
                   <FontAwesomeIcon icon={faXmark} />
                 </Button>

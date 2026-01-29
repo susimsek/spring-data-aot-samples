@@ -1,4 +1,4 @@
-const path = require('path');
+import path from 'path';
 
 const isDev = process.env.NODE_ENV === 'development';
 const options = {
@@ -28,7 +28,7 @@ const nextConfig = {
   reactStrictMode: true,
   ...(isDev && {
     async rewrites() {
-      return sources.map(source => ({
+      return sources.map((source) => ({
         source,
         destination: `http${options.tls ? 's' : ''}://localhost:8080${source}`,
       }));
@@ -36,4 +36,4 @@ const nextConfig = {
   }),
 };
 
-module.exports = nextConfig;
+export default nextConfig;

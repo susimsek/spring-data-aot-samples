@@ -2,7 +2,6 @@ import '@testing-library/jest-dom';
 import '@testing-library/react';
 import * as React from 'react';
 
-
 // Next.js Image component relies on optimization APIs that are not available in jsdom.
 jest.mock('next/image', () => ({
   __esModule: true,

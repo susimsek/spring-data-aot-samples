@@ -86,7 +86,7 @@ export default function RegisterPage() {
     [isValid, usernameValid, emailValid, passwordValid, confirmValid],
   );
 
-  const onSubmit = handleSubmit(async data => {
+  const onSubmit = handleSubmit(async (data) => {
     setError('');
     try {
       await Api.register({
@@ -173,10 +173,10 @@ export default function RegisterPage() {
                           value: 64,
                           message: 'Password must be at most 64 characters.',
                         },
-                        validate: value => passwordPattern.test(value) || 'Password must include upper, lower, and digit.',
+                        validate: (value) => passwordPattern.test(value) || 'Password must include upper, lower, and digit.',
                       })}
                     />
-                    <Button variant="outline-secondary" onClick={() => setShowPassword(prev => !prev)} aria-label="Show password">
+                    <Button variant="outline-secondary" onClick={() => setShowPassword((prev) => !prev)} aria-label="Show password">
                       <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                     </Button>
                   </InputGroup>
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                     placeholder="Confirm password"
                     {...register('confirm', {
                       required: 'This field is required.',
-                      validate: value => value === watch('password') || 'Passwords do not match.',
+                      validate: (value) => value === watch('password') || 'Passwords do not match.',
                     })}
                   />
                   {errors.confirm ? <Form.Control.Feedback type="invalid">{errors.confirm.message}</Form.Control.Feedback> : null}

@@ -42,7 +42,7 @@ import { faCalendar, faClock, faNoteSticky } from '@fortawesome/free-regular-svg
 import AppNavbar from './components/AppNavbar';
 import Footer from './components/Footer';
 import TagInput from './components/TagInput';
-import Api, { ApiError } from './lib/api';
+import Api from './lib/api';
 import useAuth from './lib/useAuth';
 import { useToasts } from './components/ToastProvider';
 import { formatDate, toIsoString } from './lib/format';
@@ -68,7 +68,7 @@ function tagLabel(tag: unknown): string {
 }
 
 function normalizeTags(tags: Array<string | TagDTO> | null | undefined): string[] {
-  return (tags || []).map(tagLabel).filter(tag => tag && tag.trim().length > 0);
+  return (tags || []).map(tagLabel).filter((tag) => tag && tag.trim().length > 0);
 }
 
 function validateNotePayload(payload: { title?: string; content?: string; tags?: Array<string | TagDTO> | null }): Record<string, string> {
@@ -88,9 +88,9 @@ function validateNotePayload(payload: { title?: string; content?: string; tags?:
   const tags = normalizeTags(payload.tags as Array<string | TagDTO> | undefined);
   if (tags.length > 5) {
     errors.tags = 'Up to 5 tags allowed.';
-  } else if (tags.some(tag => tag.length < 1 || tag.length > 30)) {
+  } else if (tags.some((tag) => tag.length < 1 || tag.length > 30)) {
     errors.tags = 'Tags must be 1-30 characters.';
-  } else if (tags.some(tag => !TAG_PATTERN.test(tag))) {
+  } else if (tags.some((tag) => !TAG_PATTERN.test(tag))) {
     errors.tags = TAG_FORMAT_MESSAGE;
   }
   return errors;
@@ -261,7 +261,7 @@ function NoteCard({
               type="checkbox"
               className="me-2 mt-1"
               checked={selected}
-              onChange={event => onSelectToggle(note.id, event.target.checked)}
+              onChange={(event) => onSelectToggle(note.id, event.target.checked)}
             />
             <div className="flex-grow-1">
               <div className="d-flex align-items-center gap-2">
@@ -276,7 +276,7 @@ function NoteCard({
               <div className="text-muted small">{note.content}</div>
               {normalizeTags(note.tags).length ? (
                 <div className="d-flex flex-wrap gap-1 mt-1">
-                  {normalizeTags(note.tags).map(tag => (
+                  {normalizeTags(note.tags).map((tag) => (
                     <Badge key={tag} bg="secondary-subtle" text="secondary">
                       {tag}
                     </Badge>
@@ -328,7 +328,7 @@ function NoteCard({
                   variant="outline-secondary"
                   size="sm"
                   style={{ width: 32, height: 32 }}
-                  onClick={() => setInlineMode(prev => !prev)}
+                  onClick={() => setInlineMode((prev) => !prev)}
                   title="Inline edit"
                 >
                   <FontAwesomeIcon icon={faPen} />
@@ -402,7 +402,7 @@ function NoteCard({
                   placeholder="Title"
                   value={draft.title}
                   isInvalid={!!inlineErrors.title}
-                  onChange={event => setDraft(prev => ({ ...prev, title: event.target.value }))}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))}
                 />
                 {inlineErrors.title ? <div className="invalid-feedback d-block">{inlineErrors.title}</div> : null}
               </Form.Group>
@@ -414,7 +414,7 @@ function NoteCard({
                   placeholder="Content"
                   value={draft.content}
                   isInvalid={!!inlineErrors.content}
-                  onChange={event => setDraft(prev => ({ ...prev, content: event.target.value }))}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, content: event.target.value }))}
                 />
                 {inlineErrors.content ? <div className="invalid-feedback d-block">{inlineErrors.content}</div> : null}
               </Form.Group>
@@ -423,14 +423,14 @@ function NoteCard({
                 <Form.Control
                   type="color"
                   value={draft.color || DEFAULT_COLOR}
-                  onChange={event => setDraft(prev => ({ ...prev, color: event.target.value }))}
+                  onChange={(event) => setDraft((prev) => ({ ...prev, color: event.target.value }))}
                 />
               </Form.Group>
               <TagInput
                 id={`inline-tags-${note.id}`}
                 label="Tags"
                 tags={draft.tags}
-                onChange={tags => setDraft(prev => ({ ...prev, tags }))}
+                onChange={(tags) => setDraft((prev) => ({ ...prev, tags }))}
                 loadSuggestions={loadTagSuggestions}
                 maxTags={5}
                 errorMessage={TAG_FORMAT_MESSAGE}
@@ -441,7 +441,7 @@ function NoteCard({
                 id={`inlinePinned-${note.id}`}
                 label="Pin this note"
                 checked={draft.pinned}
-                onChange={event => setDraft(prev => ({ ...prev, pinned: event.target.checked }))}
+                onChange={(event) => setDraft((prev) => ({ ...prev, pinned: event.target.checked }))}
                 className="mb-3"
               />
               <div className="d-flex justify-content-end gap-2">
@@ -636,9 +636,9 @@ export default function NotesPage() {
       setTotalElements(meta.totalElements ?? content.length);
       setTotalPages(Math.max(meta.totalPages ?? 1, 1));
       setPage(meta.number ?? page);
-      setSelected(prev => {
+      setSelected((prev) => {
         const next = new Set<number>();
-        content.forEach(note => {
+        content.forEach((note) => {
           if (prev.has(note.id)) next.add(note.id);
         });
         return next;
@@ -672,7 +672,7 @@ export default function NotesPage() {
   };
 
   const toggleSelect = (id: number, checked: boolean) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set<number>(prev);
       if (checked) {
         next.add(id);
@@ -685,7 +685,7 @@ export default function NotesPage() {
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelected(new Set<number>(notes.map(note => note.id)));
+      setSelected(new Set<number>(notes.map((note) => note.id)));
     } else {
       setSelected(new Set<number>());
     }
@@ -715,7 +715,7 @@ export default function NotesPage() {
     setNoteModalOpen(true);
   };
 
-  const saveNote = handleNoteSubmit(async data => {
+  const saveNote = handleNoteSubmit(async (data) => {
     try {
       const payload = {
         title: data.title.trim(),
@@ -726,7 +726,7 @@ export default function NotesPage() {
       };
       if (editingNote) {
         const updated = await Api.updateNote(editingNote.id, payload);
-        setNotes(prev => prev.map(note => (note.id === editingNote.id ? updated : note)));
+        setNotes((prev) => prev.map((note) => (note.id === editingNote.id ? updated : note)));
         pushToast('Note updated', 'success');
       } else {
         await Api.createNote(payload);
@@ -745,7 +745,7 @@ export default function NotesPage() {
   ): Promise<NoteDTO | null> => {
     try {
       const updated = await Api.updateNote(id, payload);
-      setNotes(prev => prev.map(note => (note.id === id ? updated : note)));
+      setNotes((prev) => prev.map((note) => (note.id === id ? updated : note)));
       pushToast('Note updated', 'success');
       return updated;
     } catch (err) {
@@ -791,7 +791,7 @@ export default function NotesPage() {
     if (action === 'toggle-pin') {
       try {
         const updated = await Api.patchNote(note.id, { pinned: !note.pinned });
-        setNotes(prev => prev.map(item => (item.id === note.id ? updated : item)));
+        setNotes((prev) => prev.map((item) => (item.id === note.id ? updated : item)));
       } catch (err) {
         pushToast(messageFromError(err, 'Failed to update pin.'), 'danger');
       }
@@ -901,7 +901,7 @@ export default function NotesPage() {
       const content = res?.content ?? [];
       const meta = res.page ?? res;
       const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
-      setShareLinks(prev => (append ? [...prev, ...content] : content));
+      setShareLinks((prev) => (append ? [...prev, ...content] : content));
       const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
       setShareLinksPage(nextPageNumber);
       setShareLinksHasMore(nextPageNumber < totalPagesLocal - 1);
@@ -1006,7 +1006,7 @@ export default function NotesPage() {
       const meta = res.page ?? res;
       const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
       setRevisionTotal(typeof meta.totalElements === 'number' ? meta.totalElements : content.length);
-      setRevisions(prev => (append ? [...prev, ...content] : content));
+      setRevisions((prev) => (append ? [...prev, ...content] : content));
       const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
       setRevisionPage(nextPageNumber);
       setRevisionHasMore(nextPageNumber < totalPagesLocal - 1);
@@ -1037,7 +1037,7 @@ export default function NotesPage() {
       const content = res?.content ?? [];
       const meta = res.page ?? res;
       const totalPagesLocal = typeof meta.totalPages === 'number' ? meta.totalPages : 1;
-      setOwnerSuggestions(prev => (append ? [...prev, ...content] : content));
+      setOwnerSuggestions((prev) => (append ? [...prev, ...content] : content));
       const nextPageNumber = typeof meta.number === 'number' ? meta.number : pageToLoad;
       setOwnerPage(nextPageNumber);
       setOwnerHasMore(nextPageNumber < totalPagesLocal - 1);
@@ -1068,7 +1068,7 @@ export default function NotesPage() {
 
   const totalLabel = view === 'trash' ? `Total (trash): ${totalElements}` : `Total: ${totalElements}`;
   const selectedCount = selected.size;
-  const allSelected = notes.length > 0 && notes.every(note => selected.has(note.id));
+  const allSelected = notes.length > 0 && notes.every((note) => selected.has(note.id));
   const showEmptyMessage = !loading && notes.length === 0 && !alert;
   const pageInfo = notes.length ? `Page ${totalPages ? page + 1 : 0} of ${totalPages}` : '';
 
@@ -1170,7 +1170,7 @@ export default function NotesPage() {
                         <Form.Control
                           type="color"
                           value={filterColor || DEFAULT_COLOR}
-                          onChange={event => setFilterColor(event.target.value)}
+                          onChange={(event) => setFilterColor(event.target.value)}
                           style={{ width: 48, height: 38 }}
                         />
                         <Button variant="outline-secondary" size="sm" onClick={() => setFilterColor('')}>
@@ -1180,7 +1180,7 @@ export default function NotesPage() {
                     </div>
                     <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 160 }}>
                       <Form.Label className="small text-muted mb-0">Pinned</Form.Label>
-                      <Form.Select size="sm" value={filterPinned} onChange={event => setFilterPinned(event.target.value)}>
+                      <Form.Select size="sm" value={filterPinned} onChange={(event) => setFilterPinned(event.target.value)}>
                         <option value="">All</option>
                         <option value="true">Pinned</option>
                         <option value="false">Unpinned</option>
@@ -1205,7 +1205,7 @@ export default function NotesPage() {
                     <Form.Select
                       size="sm"
                       value={pageSize}
-                      onChange={event => setPageSize(Number(event.target.value))}
+                      onChange={(event) => setPageSize(Number(event.target.value))}
                       style={{ width: 'auto' }}
                     >
                       <option value={5}>5</option>
@@ -1215,7 +1215,7 @@ export default function NotesPage() {
                   </div>
                   <div className="d-flex align-items-center gap-2">
                     <Form.Label className="text-muted small mb-0 text-nowrap">Sort</Form.Label>
-                    <Form.Select size="sm" value={sort} onChange={event => setSort(event.target.value)} style={{ width: 'auto' }}>
+                    <Form.Select size="sm" value={sort} onChange={(event) => setSort(event.target.value)} style={{ width: 'auto' }}>
                       <option value="createdDate,desc">Created (newest)</option>
                       <option value="createdDate,asc">Created (oldest)</option>
                       <option value="lastModifiedDate,desc">Updated (newest)</option>
@@ -1238,7 +1238,7 @@ export default function NotesPage() {
                     type="checkbox"
                     checked={allSelected}
                     label="Select all on page"
-                    onChange={event => toggleSelectAll(event.target.checked)}
+                    onChange={(event) => toggleSelectAll(event.target.checked)}
                   />
                   <div className="d-flex flex-wrap gap-2 align-items-center">
                     {selectedCount ? <span className="text-muted small">Selected: {selectedCount}</span> : null}
@@ -1287,7 +1287,7 @@ export default function NotesPage() {
               ) : null}
 
               <Row className="g-3">
-                {notes.map(note => (
+                {notes.map((note) => (
                   <NoteCard
                     key={note.id}
                     note={note}
@@ -1326,7 +1326,7 @@ export default function NotesPage() {
                 placeholder="Enter a concise title"
                 isInvalid={!!noteFormErrors.title}
                 {...registerNote('title', {
-                  validate: value => {
+                  validate: (value) => {
                     const trimmed = value.trim();
                     if (!trimmed) return 'This field is required.';
                     if (trimmed.length < 3 || trimmed.length > 255) {
@@ -1346,7 +1346,7 @@ export default function NotesPage() {
                 placeholder="Describe your note"
                 isInvalid={!!noteFormErrors.content}
                 {...registerNote('content', {
-                  validate: value => {
+                  validate: (value) => {
                     const trimmed = value.trim();
                     if (!trimmed) return 'This field is required.';
                     if (trimmed.length < 10 || trimmed.length > 1024) {
@@ -1368,11 +1368,11 @@ export default function NotesPage() {
               name="tags"
               control={control}
               rules={{
-                validate: value => {
+                validate: (value) => {
                   const normalized = normalizeTags(value);
                   if (normalized.length > 5) return 'Up to 5 tags allowed.';
-                  if (normalized.some(tag => tag.length < 1 || tag.length > 30)) return 'Tags must be 1-30 characters.';
-                  if (normalized.some(tag => !TAG_PATTERN.test(tag))) return TAG_FORMAT_MESSAGE;
+                  if (normalized.some((tag) => tag.length < 1 || tag.length > 30)) return 'Tags must be 1-30 characters.';
+                  if (normalized.some((tag) => !TAG_PATTERN.test(tag))) return TAG_FORMAT_MESSAGE;
                   return true;
                 },
               }}
@@ -1483,7 +1483,7 @@ export default function NotesPage() {
             <input type="hidden" value="READ" />
             <Form.Group className="mb-3">
               <Form.Label>Expires</Form.Label>
-              <Form.Select value={shareExpiry} onChange={event => setShareExpiry(event.target.value)}>
+              <Form.Select value={shareExpiry} onChange={(event) => setShareExpiry(event.target.value)}>
                 <option value="1">1 hour</option>
                 <option value="24">24 hours</option>
                 <option value="72">3 days</option>
@@ -1497,7 +1497,7 @@ export default function NotesPage() {
                   type="datetime-local"
                   className="mt-2"
                   value={shareExpiresAt}
-                  onChange={event => setShareExpiresAt(event.target.value)}
+                  onChange={(event) => setShareExpiresAt(event.target.value)}
                 />
               ) : null}
               <div className="form-text">Default is 24 hours unless custom or no-expiry selected.</div>
@@ -1506,7 +1506,7 @@ export default function NotesPage() {
               type="switch"
               label="One-time use"
               checked={shareOneTime}
-              onChange={event => setShareOneTime(event.target.checked)}
+              onChange={(event) => setShareOneTime(event.target.checked)}
               className="mb-3"
             />
             <div className="d-flex justify-content-end gap-2">
@@ -1551,7 +1551,7 @@ export default function NotesPage() {
             </div>
             {shareLinks.length === 0 && !shareLinksLoading ? <div className="text-muted small">No share links yet.</div> : null}
             <ListGroup style={{ maxHeight: '36rem', overflowY: 'auto' }}>
-              {shareLinks.map(link => (
+              {shareLinks.map((link) => (
                 <ListGroup.Item key={link.id} className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <div>
                     <div className="fw-semibold text-primary">
@@ -1647,7 +1647,7 @@ export default function NotesPage() {
                       <div className="text-muted small">{noteData?.content || ''}</div>
                       {normalizeTags(noteData?.tags).length ? (
                         <div className="d-flex flex-wrap gap-1 mt-1">
-                          {normalizeTags(noteData?.tags).map(tag => (
+                          {normalizeTags(noteData?.tags).map((tag) => (
                             <Badge key={tag} bg="secondary-subtle" text="secondary">
                               {tag}
                             </Badge>
@@ -1660,7 +1660,7 @@ export default function NotesPage() {
                         variant="outline-secondary"
                         size="sm"
                         onClick={() =>
-                          setDiffOpen(prev => {
+                          setDiffOpen((prev) => {
                             const next = new Set<number>(prev);
                             if (next.has(rev.revision)) {
                               next.delete(rev.revision);
@@ -1727,7 +1727,7 @@ export default function NotesPage() {
             <InputGroup className="mb-2">
               <Form.Control
                 value={ownerQuery}
-                onChange={event => {
+                onChange={(event) => {
                   const next = event.target.value;
                   setOwnerQuery(next);
                   if (next.trim().length >= 2) {
@@ -1740,7 +1740,7 @@ export default function NotesPage() {
               />
             </InputGroup>
             <ListGroup className="mb-2">
-              {ownerSuggestions.map(user => {
+              {ownerSuggestions.map((user) => {
                 const login = user.login ?? user.username;
                 if (!login) return null;
                 return (

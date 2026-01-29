@@ -77,9 +77,9 @@ const authSlice = createSlice({
       clearStoredUser();
     },
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, state => {
+      .addCase(loginUser.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
@@ -92,12 +92,12 @@ const authSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload?.message || action.error?.message || 'Login failed';
       })
-      .addCase(logoutUser.fulfilled, state => {
+      .addCase(logoutUser.fulfilled, (state) => {
         state.status = 'idle';
         state.user = null;
         state.error = null;
       })
-      .addCase(logoutUser.rejected, state => {
+      .addCase(logoutUser.rejected, (state) => {
         state.status = 'idle';
         state.user = null;
       });

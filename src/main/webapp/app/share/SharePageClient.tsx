@@ -107,7 +107,7 @@ export default function SharePageClient() {
                 </div>
                 <p className="text-muted">{note.content || ''}</p>
                 <div className="d-flex flex-wrap gap-2 mb-3">
-                  {(note.tags || []).map(tag => {
+                  {(note.tags || []).map((tag) => {
                     const label = typeof tag === 'string' ? tag : (tag.name ?? tag.label ?? String(tag));
                     return (
                       <Badge key={label} bg="secondary-subtle" text="secondary">

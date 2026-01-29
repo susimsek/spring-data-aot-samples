@@ -57,7 +57,7 @@ export default function ChangePasswordPage() {
     setError('');
   }, [currentPassword, newPassword, confirmPassword]);
 
-  const onSubmit = handleSubmit(async data => {
+  const onSubmit = handleSubmit(async (data) => {
     setError('');
     try {
       await Api.changePassword({
@@ -95,7 +95,7 @@ export default function ChangePasswordPage() {
                       isInvalid={!!errors.currentPassword}
                       {...register('currentPassword', { required: 'This field is required.' })}
                     />
-                    <Button variant="outline-secondary" onClick={() => setShowCurrent(prev => !prev)}>
+                    <Button variant="outline-secondary" onClick={() => setShowCurrent((prev) => !prev)}>
                       <FontAwesomeIcon icon={showCurrent ? faEyeSlash : faEye} />
                     </Button>
                   </InputGroup>
@@ -118,10 +118,10 @@ export default function ChangePasswordPage() {
                           value: 64,
                           message: 'Password must be at most 64 characters.',
                         },
-                        validate: value => passwordPattern.test(value) || 'Password must include upper, lower, and digit.',
+                        validate: (value) => passwordPattern.test(value) || 'Password must include upper, lower, and digit.',
                       })}
                     />
-                    <Button variant="outline-secondary" onClick={() => setShowNew(prev => !prev)}>
+                    <Button variant="outline-secondary" onClick={() => setShowNew((prev) => !prev)}>
                       <FontAwesomeIcon icon={showNew ? faEyeSlash : faEye} />
                     </Button>
                   </InputGroup>
@@ -138,7 +138,7 @@ export default function ChangePasswordPage() {
                     isInvalid={!!errors.confirmPassword}
                     {...register('confirmPassword', {
                       required: 'This field is required.',
-                      validate: value => value === watch('newPassword') || 'Passwords do not match.',
+                      validate: (value) => value === watch('newPassword') || 'Passwords do not match.',
                     })}
                   />
                   {errors.confirmPassword ? (
