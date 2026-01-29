@@ -24,6 +24,12 @@ export default defineConfig([
   {
     rules: {
       'react-hooks/incompatible-library': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  {
+    files: ['src/main/webapp/**/__tests__/**/*.{ts,tsx}', 'src/main/webapp/**/*.{test,spec}.{ts,tsx}'],
+    rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },

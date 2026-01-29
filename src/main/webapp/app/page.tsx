@@ -16,6 +16,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Controller, useForm } from 'react-hook-form';
+import { getLocation } from './lib/window';
 import {
   faBars,
   faCheck,
@@ -97,7 +98,7 @@ function validateNotePayload(payload: { title?: string; content?: string; tags?:
 }
 
 function buildShareUrl(token: string): string {
-  const origin = ((globalThis as any).location as Location | undefined)?.origin;
+  const origin = getLocation()?.origin;
   if (!origin || !token) return '';
   return `${origin}/share?share_token=${encodeURIComponent(token)}`;
 }

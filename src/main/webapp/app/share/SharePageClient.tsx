@@ -13,6 +13,7 @@ import { faNoteSticky, faCalendar, faClock } from '@fortawesome/free-regular-svg
 import AppNavbar from '../components/AppNavbar';
 import Footer from '../components/Footer';
 import Api, { ApiError } from '../lib/api';
+import { getLocation } from '../lib/window';
 import type { NoteDTO } from '../types';
 
 function splitDateTime(value: string | null | undefined): { date: string; time: string } {
@@ -33,7 +34,7 @@ export default function SharePageClient() {
   const [error, setError] = useState('');
 
   const tokenFromPath = useMemo(() => {
-    const path = ((globalThis as any).location as Location | undefined)?.pathname || '';
+    const path = getLocation()?.pathname || '';
     const parts = path.split('/').filter(Boolean);
     if (parts.length >= 2 && parts[0] === 'share') {
       return parts[1];

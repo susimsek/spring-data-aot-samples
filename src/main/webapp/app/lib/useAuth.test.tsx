@@ -13,11 +13,15 @@ jest.mock('./api', () => ({
   },
 }));
 
-jest.mock('./window', () => ({
-  __esModule: true,
-  reloadPage: jest.fn(),
-  replaceLocation: jest.fn(),
-}));
+jest.mock('./window', () => {
+  const actual = jest.requireActual('./window');
+  return {
+    __esModule: true,
+    ...actual,
+    reloadPage: jest.fn(),
+    replaceLocation: jest.fn(),
+  };
+});
 
 import Api from './api';
 import * as Window from './window';

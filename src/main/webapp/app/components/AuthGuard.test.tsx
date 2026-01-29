@@ -5,10 +5,14 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { render, screen, waitFor } from '@testing-library/react';
 
-jest.mock('../lib/window', () => ({
-  __esModule: true,
-  replaceLocation: jest.fn(),
-}));
+jest.mock('../lib/window', () => {
+  const actual = jest.requireActual('../lib/window');
+  return {
+    __esModule: true,
+    ...actual,
+    replaceLocation: jest.fn(),
+  };
+});
 
 import * as Window from '../lib/window';
 import ThemeProvider from './ThemeProvider';

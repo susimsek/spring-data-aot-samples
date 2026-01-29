@@ -4,7 +4,7 @@ import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { isAdmin as isAdminUser } from './auth';
 import { logoutUser } from '../slices/authSlice';
-import { replaceLocation } from './window';
+import { getLocation, replaceLocation } from './window';
 import { isPublicRoute } from './routes';
 import type { StoredUser } from '../types';
 
@@ -34,7 +34,7 @@ export default function useAuth(
     if (!redirectOnFail) return;
     if (user) return;
 
-    const location = (globalThis as any).location as Location | undefined;
+    const location = getLocation();
     const path = location?.pathname || '';
     const queryString = location?.search?.replace(/^\?/, '') || '';
 

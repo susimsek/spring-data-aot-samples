@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { setTheme, toggleTheme as toggleThemeAction } from '../slices/themeSlice';
+import { getDocument, getMatchMedia } from '../lib/window';
 import type { Theme } from '../types';
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
@@ -13,7 +14,7 @@ const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
 const STORAGE_KEY = 'theme';
 
 function getSystemTheme(): Theme {
-  const matchMedia = (globalThis as any).matchMedia as ((query: string) => MediaQueryList) | undefined;
+  const matchMedia = getMatchMedia();
   return matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
 }
 
@@ -50,7 +51,7 @@ export default function ThemeProvider({ children }: Readonly<{ children: ReactNo
   }, [dispatch]);
 
   useEffect(() => {
-    const document = (globalThis as any).document as Document | undefined;
+    const document = getDocument();
     if (document?.documentElement) {
       document.documentElement.dataset.bsTheme = theme;
     }

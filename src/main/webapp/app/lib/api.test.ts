@@ -1,6 +1,9 @@
 'use client';
 
+import type { StoredUser } from '../types';
+
 type MockAxiosInstance = jest.Mock & {
+  request: jest.Mock;
   get: jest.Mock;
   post: jest.Mock;
   put: jest.Mock;
@@ -11,6 +14,7 @@ type MockAxiosInstance = jest.Mock & {
 
 function createAxiosInstance(): MockAxiosInstance {
   const instance: any = jest.fn();
+  instance.request = jest.fn();
   instance.get = jest.fn();
   instance.post = jest.fn();
   instance.put = jest.fn();
@@ -34,10 +38,10 @@ jest.mock('axios', () => ({
 }));
 
 const auth = {
-  buildRedirectQuery: jest.fn(() => encodeURIComponent('/')),
-  clearStoredUser: jest.fn(),
-  isAdmin: jest.fn(() => false),
-  loadStoredUser: jest.fn(() => null),
+  buildRedirectQuery: jest.fn((): string => encodeURIComponent('/')),
+  clearStoredUser: jest.fn((): void => undefined),
+  isAdmin: jest.fn((): boolean => false),
+  loadStoredUser: jest.fn((): StoredUser | null => null),
 };
 
 jest.mock('./auth', () => ({
@@ -50,10 +54,14 @@ const win = {
   reloadPage: jest.fn(),
 };
 
-jest.mock('./window', () => ({
-  __esModule: true,
-  ...win,
-}));
+jest.mock('./window', () => {
+  const actual = jest.requireActual<typeof import('./window')>('./window');
+  return {
+    __esModule: true,
+    ...actual,
+    ...win,
+  };
+});
 
 describe('Api client', () => {
   afterEach(() => {
@@ -75,6 +83,7 @@ describe('Api client', () => {
     apiInstance.put.mockReset();
     apiInstance.patch.mockReset();
     apiInstance.delete.mockReset();
+    apiInstance.request.mockReset();
     apiInstance.mockReset();
     apiInstance.interceptors.response.use.mockReset();
 
@@ -83,6 +92,7 @@ describe('Api client', () => {
     publicApiInstance.put.mockReset();
     publicApiInstance.patch.mockReset();
     publicApiInstance.delete.mockReset();
+    publicApiInstance.request.mockReset();
     publicApiInstance.mockReset();
     publicApiInstance.interceptors.response.use.mockReset();
 
@@ -195,7 +205,7 @@ describe('Api client', () => {
   test('response interceptor retries once on 401 by refreshing', async () => {
     apiInstance.get.mockResolvedValueOnce({ data: { ok: true } });
     publicApiInstance.post.mockResolvedValueOnce({ data: { refreshed: true } });
-    apiInstance.mockResolvedValueOnce({ data: { ok: true } });
+    apiInstance.request.mockResolvedValueOnce({ data: { ok: true } });
 
     const { default: Api } = await import('./api');
     void Api;
@@ -215,7 +225,7 @@ describe('Api client', () => {
     await errorHandler(err);
 
     expect(publicApiInstance.post).toHaveBeenCalledWith('/api/auth/refresh');
-    expect(apiInstance).toHaveBeenCalledWith(expect.objectContaining({ url: '/api/notes', _retry: true }));
+    expect(apiInstance.request).toHaveBeenCalledWith(expect.objectContaining({ url: '/api/notes', _retry: true }));
   });
 
   test('does not attempt refresh for excluded auth endpoints', async () => {

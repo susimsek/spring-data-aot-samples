@@ -20,7 +20,7 @@ jest.mock('../lib/auth', () => ({
 
 import Api from '../lib/api';
 import { clearStoredUser, persistUser } from '../lib/auth';
-import reducer, { clearUser, loginUser, logoutUser } from './authSlice';
+import reducer, { type AuthState, clearUser, loginUser, logoutUser } from './authSlice';
 
 describe('authSlice', () => {
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('authSlice', () => {
 
     const store = configureStore({
       reducer: { auth: reducer },
-      preloadedState: { auth: { user: { username: 'alice' } as any, status: 'succeeded', error: null } },
+      preloadedState: { auth: { user: { username: 'alice' }, status: 'succeeded', error: null } satisfies AuthState },
     });
 
     const res = await store.dispatch(logoutUser());

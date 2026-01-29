@@ -29,6 +29,7 @@ import AppNavbar from '../components/AppNavbar';
 import Footer from '../components/Footer';
 import Api, { ApiError } from '../lib/api';
 import { addDays, addHours, formatDate, toIsoString } from '../lib/format';
+import { getLocation } from '../lib/window';
 import { useToasts } from '../components/ToastProvider';
 import useAuth from '../lib/useAuth';
 import type { ShareLinkDTO } from '../types';
@@ -36,7 +37,7 @@ import type { ShareLinkDTO } from '../types';
 const defaultPageSize = 10;
 
 function buildShareUrl(token: string | undefined) {
-  const origin = ((globalThis as any).location as Location | undefined)?.origin;
+  const origin = getLocation()?.origin;
   if (!origin || !token) return '';
   return `${origin}/share?share_token=${encodeURIComponent(token)}`;
 }

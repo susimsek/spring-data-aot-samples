@@ -8,11 +8,15 @@ import ToastProvider from './ToastProvider';
 import AuthGuard from './AuthGuard';
 import { createTestStore } from '../__tests__/test-utils';
 
-jest.mock('../lib/window', () => ({
-  __esModule: true,
-  replaceLocation: jest.fn(),
-  reloadPage: jest.fn(),
-}));
+jest.mock('../lib/window', () => {
+  const actual = jest.requireActual('../lib/window');
+  return {
+    __esModule: true,
+    ...actual,
+    replaceLocation: jest.fn(),
+    reloadPage: jest.fn(),
+  };
+});
 
 const setPath = (pathname: string) => {
   window.history.pushState({}, '', pathname);

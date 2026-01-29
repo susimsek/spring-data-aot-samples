@@ -1,4 +1,5 @@
 import type { StoredUser } from '../types';
+import { getLocation } from './window';
 
 const USER_STORAGE_KEY = 'currentUser';
 
@@ -35,7 +36,7 @@ export function isAdmin(user: StoredUser | null): boolean {
 }
 
 export function buildRedirectQuery(): string {
-  const location = (globalThis as any).location as Location | undefined;
+  const location = getLocation();
   if (!location) return '';
   const path = location.pathname || '/';
   const search = location.search || '';

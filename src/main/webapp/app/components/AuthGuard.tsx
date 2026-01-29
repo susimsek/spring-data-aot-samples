@@ -4,7 +4,7 @@ import { type ReactNode, useMemo } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import { useAppSelector } from '../hooks';
 import { isPublicRoute } from '../lib/routes';
-import { replaceLocation } from '../lib/window';
+import { getLocation, replaceLocation } from '../lib/window';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ function buildLoginUrl(currentPath: string, queryString: string): string {
 }
 
 function getLocationInfo(): { path: string; queryString: string } {
-  const location = (globalThis as any).location as Location | undefined;
+  const location = getLocation();
   return {
     path: location?.pathname || '',
     queryString: location?.search?.replace(/^\?/, '') || '',

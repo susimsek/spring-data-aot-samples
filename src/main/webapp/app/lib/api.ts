@@ -1,6 +1,6 @@
-import axios, { type AxiosError, type AxiosInstance, type AxiosResponse } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import { buildRedirectQuery, clearStoredUser, isAdmin, loadStoredUser } from './auth';
-import { replaceLocation } from './window';
+import { getDocument, getLocation, replaceLocation } from './window';
 import type { NoteDTO, NoteRevisionDTO, PageResponse, ShareLinkDTO, StoredUser } from '../types';
 
 type JsonObject = Record<string, unknown>;
@@ -36,8 +36,8 @@ let refreshInFlight: Promise<JsonObject> | null = null;
 let refreshDisabled = false;
 
 function redirectToLogin() {
-  const location = (globalThis as any).location as Location | undefined;
-  const document = (globalThis as any).document as Document | undefined;
+  const location = getLocation();
+  const document = getDocument();
   if (!location || !document) return;
   const path = location.pathname || '';
   if (path.includes('/login') || path.includes('/register')) return;
@@ -99,6 +99,11 @@ function shouldAttemptRefresh(url: string | undefined): boolean {
   return !refreshExcludedPaths.some((path) => url.includes(path));
 }
 
+type RetriableRequestConfig = AxiosRequestConfig & {
+  _retry?: boolean;
+  skipAuthRedirect?: boolean;
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
@@ -106,7 +111,7 @@ api.interceptors.response.use(
       return Promise.reject(normalizeError(error));
     }
     const status = error.response?.status;
-    const config = (error.config ?? {}) as { url?: string; _retry?: boolean; skipAuthRedirect?: boolean };
+    const config = (error.config ?? {}) as RetriableRequestConfig;
     const url = config.url || '';
     if (status === 401 && !config._retry && shouldAttemptRefresh(url) && !config.skipAuthRedirect) {
       config._retry = true;
@@ -116,7 +121,7 @@ api.interceptors.response.use(
           return Promise.reject(normalizeError(error));
         }
         await refresh();
-        return api(config as any);
+        return api.request(config);
       } catch (err) {
         redirectToLogin();
         return Promise.reject(normalizeError(err));
@@ -248,7 +253,16 @@ const Api = {
     }
     if (body && typeof body === 'object' && Array.isArray((body as { content?: unknown }).content)) {
       const content = (body as { content: unknown[] }).content;
-      return content.map((t: any) => t.name ?? t.label ?? t).filter((t: unknown): t is string => typeof t === 'string');
+      return content
+        .map((value): unknown => {
+          if (typeof value === 'string') return value;
+          if (value && typeof value === 'object') {
+            const record = value as Record<string, unknown>;
+            return record.name ?? record.label ?? value;
+          }
+          return value;
+        })
+        .filter((t): t is string => typeof t === 'string');
     }
     return [];
   },
