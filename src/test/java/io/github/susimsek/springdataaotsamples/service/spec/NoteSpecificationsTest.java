@@ -29,6 +29,8 @@ import java.time.Instant;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
+@ResourceLock(value = "jpa-metamodel", mode = ResourceAccessMode.READ_WRITE)
 class NoteSpecificationsTest {
 
     @Mock private Root<Note> root;

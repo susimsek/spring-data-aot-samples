@@ -28,6 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -42,6 +44,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
+@ResourceLock(value = "jpa-metamodel", mode = ResourceAccessMode.READ_WRITE)
 class NoteQueryServiceTest {
 
     private static final Instant DEFAULT_TIMESTAMP = Instant.parse("2024-01-01T10:15:30Z");
