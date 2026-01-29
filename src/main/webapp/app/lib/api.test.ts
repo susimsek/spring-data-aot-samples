@@ -101,8 +101,7 @@ describe('Api client', () => {
 
     apiInstance.post.mockResolvedValueOnce({ data: { id: 1 } });
 
-    await import('./api');
-    void Api;
+    const { default: Api } = await import('./api');
     await Api.createNote({ title: 'x' });
 
     expect(apiInstance.post).toHaveBeenCalledWith('/api/admin/notes', { title: 'x' });
