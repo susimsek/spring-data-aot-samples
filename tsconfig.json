@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
-    "allowJs": false,
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -19,6 +19,15 @@
       }
     ]
   },
-  "include": ["src/main/webapp/next-env.d.ts", "src/main/webapp/**/*.ts", "src/main/webapp/**/*.tsx"],
-  "exclude": ["node_modules", "node_modules.link", "src/main/webapp/build", "src/main/webapp/.next"]
+  "include": [
+    "src/main/webapp/next-env.d.ts",
+    "src/main/webapp/**/*.ts",
+    "src/main/webapp/**/*.tsx",
+    "src/main/webapp/.next/types/**/*.ts",
+    "src/main/webapp/.next/dev/types/**/*.ts",
+    "src/main/webapp/**/*.mts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "src/main/webapp/build"]
 }

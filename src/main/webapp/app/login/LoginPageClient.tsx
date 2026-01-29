@@ -27,8 +27,9 @@ interface LoginFormValues {
 export default function LoginPageClient() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
-  const registered = searchParams.get('registered') === '1';
-  const redirect = searchParams.get('redirect') || '/';
+
+  const registered = (searchParams?.get('registered') ?? '') === '1';
+  const redirect = searchParams?.get('redirect') ?? '/';
   const { pushToast } = useToasts();
 
   const {
