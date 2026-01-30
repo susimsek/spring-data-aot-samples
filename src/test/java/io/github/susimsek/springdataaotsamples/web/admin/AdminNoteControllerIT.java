@@ -21,6 +21,7 @@ import io.github.susimsek.springdataaotsamples.service.dto.NotePatchRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.NoteUpdateRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.OwnerChangeRequest;
 import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -40,6 +41,11 @@ class AdminNoteControllerIT {
     @Autowired private JsonMapper jsonMapper;
 
     @Autowired private NoteRepository noteRepository;
+
+    @AfterEach
+    void cleanup() {
+        noteRepository.deleteAll();
+    }
 
     @Test
     void createShouldReturnCreatedNote() throws Exception {

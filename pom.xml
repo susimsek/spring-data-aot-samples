@@ -385,8 +385,9 @@
                         <exclude>**/*IT*</exclude>
                         <exclude>**/*IntTest*</exclude>
                     </excludes>
-                    <!-- Single JVM: JUnit 5 controls parallelism via src/test/resources/junit-platform.properties. -->
-                    <forkCount>0</forkCount>
+                    <!-- Fork a single JVM for unit tests and reuse it for performance. -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
@@ -399,8 +400,12 @@
                         <include>**/*IT*</include>
                         <include>**/*IntTest*</include>
                     </includes>
-                    <!-- Single JVM: JUnit 5 controls parallelism via src/test/resources/junit-platform.properties. -->
-                    <forkCount>0</forkCount>
+                    <!-- Fork a single JVM for integration tests and reuse it for performance. -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <systemPropertyVariables>
+                        <junit.jupiter.execution.parallel.enabled>false</junit.jupiter.execution.parallel.enabled>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
