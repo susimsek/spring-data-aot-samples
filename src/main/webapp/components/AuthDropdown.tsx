@@ -4,7 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faKey, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'next-i18next';
-import useAuth from '../lib/useAuth';
+import useAuth from '@lib/useAuth';
 
 export default function AuthDropdown({ showChangePassword = false }: Readonly<{ showChangePassword?: boolean }>) {
   const { user, isAuthenticated, logout } = useAuth();

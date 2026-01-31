@@ -2,7 +2,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-jest.mock('../lib/api', () => ({
+jest.mock('@lib/api', () => ({
   __esModule: true,
   default: {
     currentUser: jest.fn(),
@@ -11,15 +11,15 @@ jest.mock('../lib/api', () => ({
   },
 }));
 
-jest.mock('../lib/auth', () => ({
+jest.mock('@lib/auth', () => ({
   __esModule: true,
   loadStoredUser: jest.fn(() => null),
   persistUser: jest.fn(),
   clearStoredUser: jest.fn(),
 }));
 
-import Api from '../lib/api';
-import { clearStoredUser, persistUser } from '../lib/auth';
+import Api from '@lib/api';
+import { clearStoredUser, persistUser } from '@lib/auth';
 import reducer, { type AuthState, clearUser, loginUser, logoutUser } from './authSlice';
 
 describe('authSlice', () => {

@@ -5,8 +5,8 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { render, screen, waitFor } from '@testing-library/react';
 
-jest.mock('../lib/window', () => {
-  const actual = jest.requireActual('../lib/window');
+jest.mock('@lib/window', () => {
+  const actual = jest.requireActual('@lib/window');
   return {
     __esModule: true,
     ...actual,
@@ -14,9 +14,9 @@ jest.mock('../lib/window', () => {
   };
 });
 
-import * as Window from '../lib/window';
+import * as Window from '@lib/window';
 import ThemeProvider from './ThemeProvider';
-import { createTestStore } from '../__tests__/test-utils';
+import { createTestStore } from '@tests/test-utils';
 import AuthGuard from './AuthGuard';
 
 const setPath = (pathname: string, search = '') => {

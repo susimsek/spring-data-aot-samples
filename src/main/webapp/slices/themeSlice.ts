@@ -2,7 +2,7 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { Theme } from '../lib/types';
+import type { Theme } from '@lib/types';
 
 export interface ThemeState {
   theme: Theme;

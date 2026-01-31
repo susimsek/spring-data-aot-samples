@@ -13,7 +13,7 @@ import AuthDropdown from './AuthDropdown';
 import Brand from './Brand';
 import LanguageSelect from './LanguageSelect';
 import Link from './Link';
-import useAuth from '../lib/useAuth';
+import useAuth from '@lib/useAuth';
 
 export interface AppNavbarProps {
   search?: string;

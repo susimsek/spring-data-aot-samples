@@ -1,7 +1,7 @@
 import type { GetStaticPathsResult, GetStaticPropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { UserConfig } from 'next-i18next';
-import rootConfig from '../../../../next-i18next.config';
+import rootConfig from '@root/next-i18next.config';
 
 const i18nextConfig = rootConfig as UserConfig;
 

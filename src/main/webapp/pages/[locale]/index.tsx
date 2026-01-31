@@ -17,7 +17,6 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
-import { getLocation } from '../../lib/window';
 import {
   faBars,
   faCheck,
@@ -41,17 +40,18 @@ import {
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { faCalendar, faClock, faNoteSticky } from '@fortawesome/free-regular-svg-icons';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import TagInput from '../../components/TagInput';
-import Api from '../../lib/api';
-import useAuth from '../../lib/useAuth';
-import { useToasts } from '../../components/ToastProvider';
-import { formatDate, toIsoString } from '../../lib/format';
-import { diffLinesDetailed, diffTypes } from '../../lib/diff';
-import type { DiffOp } from '../../lib/diff';
-import type { NoteDTO, NoteRevisionDTO, ShareLinkDTO, StoredUser, TagDTO } from '../../lib/types';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import TagInput from '@components/TagInput';
+import { useToasts } from '@components/ToastProvider';
+import Api from '@lib/api';
+import { diffLinesDetailed, diffTypes } from '@lib/diff';
+import type { DiffOp } from '@lib/diff';
+import { formatDate, toIsoString } from '@lib/format';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { getLocation } from '@lib/window';
+import useAuth from '@lib/useAuth';
+import type { NoteDTO, NoteRevisionDTO, ShareLinkDTO, StoredUser, TagDTO } from '@lib/types';
 
 const TAG_PATTERN = /^[A-Za-z0-9_-]{1,30}$/;
 const DEFAULT_COLOR = '#2563eb';

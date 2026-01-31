@@ -1,9 +1,9 @@
 'use client';
 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import Api from '../lib/api';
-import { clearStoredUser, loadStoredUser, persistUser } from '../lib/auth';
-import type { ApiErrorPayload, AuthStatus, StoredUser } from '../lib/types';
+import Api from '@lib/api';
+import { clearStoredUser, loadStoredUser, persistUser } from '@lib/auth';
+import type { ApiErrorPayload, AuthStatus, StoredUser } from '@lib/types';
 
 export interface AuthState {
   user: StoredUser | null;

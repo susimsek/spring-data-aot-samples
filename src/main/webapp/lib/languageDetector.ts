@@ -1,6 +1,6 @@
 import languageDetector from 'next-language-detector';
 import type { UserConfig } from 'next-i18next';
-import rootConfig from '../../../../next-i18next.config';
+import rootConfig from '@root/next-i18next.config';
 
 const i18nextConfig = rootConfig as UserConfig;
 

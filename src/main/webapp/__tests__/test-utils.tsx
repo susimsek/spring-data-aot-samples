@@ -7,11 +7,11 @@ import { Provider } from 'react-redux';
 import { render, type RenderOptions } from '@testing-library/react';
 import { combineReducers } from 'redux';
 import { I18nextProvider } from 'react-i18next';
-import authReducer from '../slices/authSlice';
-import themeReducer from '../slices/themeSlice';
-import ThemeProvider from '../components/ThemeProvider';
+import ThemeProvider from '@components/ThemeProvider';
+import authReducer from '@slices/authSlice';
+import themeReducer from '@slices/themeSlice';
 import i18n from './test-i18n';
-import type { RootState } from '../lib/store';
+import type { RootState } from '@lib/store';
 
 const rootReducer = combineReducers({
   auth: authReducer,

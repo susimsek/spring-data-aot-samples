@@ -4,7 +4,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { render, screen, waitFor } from '@testing-library/react';
 import ThemeProvider from './ThemeProvider';
-import { createTestStore } from '../__tests__/test-utils';
+import { createTestStore } from '@tests/test-utils';
 
 describe('ThemeProvider', () => {
   beforeEach(() => {

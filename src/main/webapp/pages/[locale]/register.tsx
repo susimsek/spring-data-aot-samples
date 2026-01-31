@@ -12,12 +12,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import Api, { ApiError } from '../../lib/api';
-import { getLocation, replaceLocation } from '../../lib/window';
-import { getLocalePrefix } from '../../lib/routes';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import Api, { ApiError } from '@lib/api';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { getLocalePrefix } from '@lib/routes';
+import { getLocation, replaceLocation } from '@lib/window';
 
 const usernamePattern = /^[a-zA-Z0-9_-]+$/;
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;

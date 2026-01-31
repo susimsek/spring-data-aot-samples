@@ -3,7 +3,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import languageDetector from '../lib/languageDetector';
+import languageDetector from '@lib/languageDetector';
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> & {
   locale: string;

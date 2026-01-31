@@ -26,15 +26,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faNoteSticky } from '@fortawesome/free-regular-svg-icons';
 import { useTranslation } from 'next-i18next';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import Api, { ApiError } from '../../lib/api';
-import { addDays, addHours, formatDate, toIsoString } from '../../lib/format';
-import { getLocation } from '../../lib/window';
-import { useToasts } from '../../components/ToastProvider';
-import useAuth from '../../lib/useAuth';
-import type { ShareLinkDTO } from '../../lib/types';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import { useToasts } from '@components/ToastProvider';
+import Api, { ApiError } from '@lib/api';
+import { addDays, addHours, formatDate, toIsoString } from '@lib/format';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import type { ShareLinkDTO } from '@lib/types';
+import useAuth from '@lib/useAuth';
+import { getLocation } from '@lib/window';
 
 const defaultPageSize = 10;
 

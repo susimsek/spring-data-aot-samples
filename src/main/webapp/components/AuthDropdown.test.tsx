@@ -3,7 +3,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AuthDropdown from './AuthDropdown';
-import { renderWithProviders } from '../__tests__/test-utils';
+import { renderWithProviders } from '@tests/test-utils';
 
 describe('AuthDropdown', () => {
   test('renders nothing when not authenticated', () => {

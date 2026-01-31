@@ -25,8 +25,8 @@ jest.mock('./window', () => {
 
 import Api from './api';
 import * as Window from './window';
-import ThemeProvider from '../components/ThemeProvider';
-import { createTestStore } from '../__tests__/test-utils';
+import ThemeProvider from '@components/ThemeProvider';
+import { createTestStore } from '@tests/test-utils';
 import useAuth from './useAuth';
 
 describe('useAuth', () => {

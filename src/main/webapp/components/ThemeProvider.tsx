@@ -1,10 +1,10 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react';
-import { useAppDispatch, useAppSelector } from '../lib/store';
-import { setTheme, toggleTheme as toggleThemeAction } from '../slices/themeSlice';
-import { getDocument, getMatchMedia } from '../lib/window';
-import type { Theme } from '../lib/types';
+import { useAppDispatch, useAppSelector } from '@lib/store';
+import type { Theme } from '@lib/types';
+import { getDocument, getMatchMedia } from '@lib/window';
+import { setTheme, toggleTheme as toggleThemeAction } from '@slices/themeSlice';
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
   theme: 'light',

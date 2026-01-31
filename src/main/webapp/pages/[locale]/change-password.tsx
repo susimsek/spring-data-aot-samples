@@ -11,13 +11,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import Api, { ApiError } from '../../lib/api';
-import { replaceLocation } from '../../lib/window';
-import { useAppDispatch } from '../../lib/store';
-import { clearUser } from '../../slices/authSlice';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import Api, { ApiError } from '@lib/api';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { useAppDispatch } from '@lib/store';
+import { replaceLocation } from '@lib/window';
+import { clearUser } from '@slices/authSlice';
 
 const passwordPattern = /^(?=.*[A-ZÇĞİÖŞÜ])(?=.*[a-zçğıöşü])(?=.*\d).+$/;
 

@@ -2,8 +2,8 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import authReducer from '../slices/authSlice';
-import themeReducer from '../slices/themeSlice';
+import authReducer from '@slices/authSlice';
+import themeReducer from '@slices/themeSlice';
 import { getMatchMedia } from './window';
 import type { Theme } from './types';
 

@@ -3,7 +3,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ThemeToggleButton from './ThemeToggleButton';
-import { renderWithProviders } from '../__tests__/test-utils';
+import { renderWithProviders } from '@tests/test-utils';
 
 describe('ThemeToggleButton', () => {
   test('toggles between light and dark', async () => {

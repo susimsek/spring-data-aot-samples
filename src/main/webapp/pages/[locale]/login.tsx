@@ -12,14 +12,14 @@ import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faRightToBracket, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useForm } from 'react-hook-form';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import { useAppDispatch } from '../../lib/store';
-import { loginUser } from '../../slices/authSlice';
-import { useToasts } from '../../components/ToastProvider';
-import { getLocation, replaceLocation } from '../../lib/window';
-import { getLocalePrefix } from '../../lib/routes';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import { useToasts } from '@components/ToastProvider';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { getLocalePrefix } from '@lib/routes';
+import { useAppDispatch } from '@lib/store';
+import { getLocation, replaceLocation } from '@lib/window';
+import { loginUser } from '@slices/authSlice';
 
 interface LoginFormValues {
   username: string;

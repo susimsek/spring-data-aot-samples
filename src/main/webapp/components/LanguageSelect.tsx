@@ -4,7 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { useRouter } from 'next/router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLanguage } from '@fortawesome/free-solid-svg-icons';
-import languageDetector from '../lib/languageDetector';
+import languageDetector from '@lib/languageDetector';
 
 function stripLocalePrefix(path: string, locales: readonly string[]): string {
   for (const locale of locales) {

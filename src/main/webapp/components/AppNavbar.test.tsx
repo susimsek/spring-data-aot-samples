@@ -3,7 +3,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AppNavbar from './AppNavbar';
-import { renderWithProviders } from '../__tests__/test-utils';
+import { renderWithProviders } from '@tests/test-utils';
 
 describe('AppNavbar', () => {
   test('renders search and calls callbacks', async () => {

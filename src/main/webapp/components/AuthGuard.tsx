@@ -3,9 +3,9 @@
 import { type ReactNode, useMemo } from 'react';
 import Spinner from 'react-bootstrap/Spinner';
 import { useTranslation } from 'next-i18next';
-import { useAppSelector } from '../lib/store';
-import { getLocalePrefix, isPublicRoute } from '../lib/routes';
-import { getLocation, replaceLocation } from '../lib/window';
+import { useAppSelector } from '@lib/store';
+import { getLocalePrefix, isPublicRoute } from '@lib/routes';
+import { getLocation, replaceLocation } from '@lib/window';
 
 interface AuthGuardProps {
   children: ReactNode;

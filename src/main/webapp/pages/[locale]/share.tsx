@@ -10,12 +10,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faThumbtack, faUser } from '@fortawesome/free-solid-svg-icons';
 import { faNoteSticky, faCalendar, faClock } from '@fortawesome/free-regular-svg-icons';
 import { useTranslation } from 'next-i18next';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import Api, { ApiError } from '../../lib/api';
-import { getLocation } from '../../lib/window';
-import type { NoteDTO } from '../../lib/types';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import Api, { ApiError } from '@lib/api';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import type { NoteDTO } from '@lib/types';
+import { getLocation } from '@lib/window';
 
 function splitDateTime(value: string | null | undefined): { date: string; time: string } {
   if (!value) return { date: '—', time: '—' };

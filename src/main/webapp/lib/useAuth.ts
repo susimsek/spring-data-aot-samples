@@ -3,7 +3,7 @@
 import { useCallback, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './store';
 import { isAdmin as isAdminUser } from './auth';
-import { logoutUser } from '../slices/authSlice';
+import { logoutUser } from '@slices/authSlice';
 import { getLocation, replaceLocation } from './window';
 import { getLocalePrefix, isPublicRoute } from './routes';
 import type { StoredUser } from './types';

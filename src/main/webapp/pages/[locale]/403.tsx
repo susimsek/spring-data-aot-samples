@@ -4,10 +4,10 @@ import Container from 'react-bootstrap/Container';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBan, faHouse, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'next-i18next';
-import AppNavbar from '../../components/AppNavbar';
-import Footer from '../../components/Footer';
-import Link from '../../components/Link';
-import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
+import AppNavbar from '@components/AppNavbar';
+import Footer from '@components/Footer';
+import Link from '@components/Link';
+import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
 
 export default function AccessDeniedPage() {
   const { t } = useTranslation();
