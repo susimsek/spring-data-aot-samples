@@ -2037,7 +2037,7 @@ export default function NotesPage() {
       setShareResult({
         url,
         permission: typeof result.permission === 'string' && result.permission ? result.permission : 'READ',
-        expiresAt: (result.expiresAt ?? null) as string | null,
+        expiresAt: result.expiresAt ?? null,
         oneTime: !!result.oneTime,
       });
       pushToast(t('notes.share.toast.created'), 'success');
