@@ -3,11 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@lib/fontawesome';
 import type { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
-import type { UserConfig } from 'next-i18next';
 import AppProviders from '@components/AppProviders';
 import rootConfig from '@root/next-i18next.config';
-
-const nextI18nextConfig = rootConfig as UserConfig;
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -17,4 +14,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default appWithTranslation(MyApp, nextI18nextConfig);
+export default appWithTranslation(MyApp, rootConfig);

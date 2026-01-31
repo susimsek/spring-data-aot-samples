@@ -1,16 +1,13 @@
 import type { GetStaticPathsResult, GetStaticPropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import type { UserConfig } from 'next-i18next';
 import rootConfig from '@root/next-i18next.config';
-
-const i18nextConfig = rootConfig as UserConfig;
 
 type LocaleParams = {
   locale: string;
 };
 
 export const getI18nPaths = () =>
-  i18nextConfig.i18n.locales.map((locale) => ({
+  rootConfig.i18n.locales.map((locale) => ({
     params: {
       locale,
     },
@@ -22,9 +19,9 @@ export const getStaticPaths = (): GetStaticPathsResult<LocaleParams> => ({
 });
 
 export const getI18nProps = async (ctx: GetStaticPropsContext<LocaleParams> | undefined, ns: string[] = ['common']) => {
-  const locale = ctx?.params?.locale || i18nextConfig.i18n.defaultLocale;
+  const locale = ctx?.params?.locale || rootConfig.i18n.defaultLocale;
   return {
-    ...(await serverSideTranslations(locale, ns, i18nextConfig)),
+    ...(await serverSideTranslations(locale, ns, rootConfig)),
   };
 };
 
