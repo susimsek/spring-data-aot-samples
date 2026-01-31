@@ -2,13 +2,6 @@
   "name": "note-app",
   "private": true,
   "packageManager": "pnpm@10.28.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "core-js",
-      "sharp",
-      "unrs-resolver"
-    ]
-  },
   "scripts": {
     "backend:start": "./mvnw -B -ntp -Dskip.frontend=true spring-boot:run",
     "backend:debug": "./mvnw -B -ntp -Dskip.frontend=true spring-boot:run -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000\"",
