@@ -1171,7 +1171,7 @@ function ShareLinkItem({
 }: Readonly<{
   link: ShareLinkDTO;
   onCopy: (token: string | undefined) => void;
-  onRevoke: (id: number) => void;
+  onRevoke: (id: string | number) => void;
   t: TranslateFn;
 }>) {
   const token = link.token || '';
@@ -1286,7 +1286,7 @@ function ShareModal({
   shareLinksLoading: boolean;
   shareLinksHasMore: boolean;
   onCopyToken: (token: string | undefined) => void;
-  onRevokeLink: (id: number) => void;
+  onRevokeLink: (id: string | number) => void;
   onLoadMore: () => void;
   t: TranslateFn;
 }>) {
