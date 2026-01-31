@@ -62,6 +62,15 @@ const OWNER_SEARCH_PAGE_SIZE = 5;
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 type IconProp = Parameters<typeof FontAwesomeIcon>[0]['icon'];
 
+function replaceNoteById(notes: NoteDTO[], id: number, updated: NoteDTO): NoteDTO[] {
+  const next = [...notes];
+  const idx = next.findIndex((note) => note.id === id);
+  if (idx !== -1) {
+    next[idx] = updated;
+  }
+  return next;
+}
+
 function tagLabel(tag: unknown): string {
   if (tag == null) return '';
   if (typeof tag === 'string') return tag;
@@ -1876,7 +1885,7 @@ export default function NotesPage() {
       'toggle-pin': async (note) => {
         try {
           const updated = await Api.patchNote(note.id, { pinned: !note.pinned });
-          setNotes((prev) => prev.map((item) => (item.id === note.id ? updated : item)));
+          setNotes((prev) => replaceNoteById(prev, note.id, updated));
         } catch (err) {
           pushToast(messageFromError(err, t('notes.toast.pinFailed')), 'danger');
         }
