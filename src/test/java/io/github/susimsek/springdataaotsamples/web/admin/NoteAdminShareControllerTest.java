@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.github.susimsek.springdataaotsamples.config.TestWebMvcConfig;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
 import io.github.susimsek.springdataaotsamples.service.NoteShareService;
 import io.github.susimsek.springdataaotsamples.service.dto.CreateShareTokenRequest;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +29,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(controllers = NoteAdminShareController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(TestWebMvcConfig.class)
 class NoteAdminShareControllerTest {
 
     @Autowired private MockMvc mockMvc;

@@ -22,6 +22,14 @@ spring:
   liquibase:
     change-log: classpath:config/liquibase/master.xml
     contexts: test
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+        max-page-size: 100
+        one-indexed-parameters: false
+        serialization-mode: via_dto
+
 
 application:
   security:
