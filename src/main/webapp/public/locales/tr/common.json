@@ -21,7 +21,7 @@
   "validation": {
     "required": "Bu alan zorunludur.",
     "password": {
-      "complexity": "Şifre büyük, küçük harf ve rakam içermelidir.",
+      "complexity": "Şifre büyük/küçük harf ve rakam içermelidir.",
       "match": "Şifreler eşleşmiyor.",
       "maxLength": "Şifre en fazla 64 karakter olmalıdır.",
       "minLength": "Şifre en az 8 karakter olmalıdır."
@@ -38,5 +38,467 @@
   "brand": {
     "logoAlt": "Notlar logosu",
     "name": "Notlar"
+  },
+  "footer": {
+    "copyright": "© 2025 Notlar",
+    "tech": "Spring Boot"
+  },
+  "auth": {
+    "dropdown": {
+      "changePassword": "Şifre değiştir",
+      "signedInAs": "{{username}} olarak giriş yapıldı",
+      "signOut": "Çıkış yap"
+    }
+  },
+  "theme": {
+    "dark": "Koyu",
+    "light": "Açık",
+    "switchToDarkAria": "Koyu temaya geç",
+    "switchToLightAria": "Açık temaya geç"
+  },
+  "errors": {
+    "accessDenied": {
+      "message": "Bu sayfayı görüntüleme izniniz yok.",
+      "title": "Erişim reddedildi"
+    },
+    "notFound": {
+      "message": "Aradığınız sayfa bulunamadı.",
+      "title": "Sayfa bulunamadı"
+    }
+  },
+  "login": {
+    "defaultUsers": "Varsayılan kullanıcılar: admin/admin, user/user",
+    "error": {
+      "failed": "Giriş başarısız"
+    },
+    "form": {
+      "password": {
+        "label": "Şifre",
+        "placeholder": "Şifre",
+        "toggleAria": "Şifre görünürlüğünü değiştir"
+      },
+      "rememberMe": "Beni hatırla",
+      "submitting": "Giriş yapılıyor...",
+      "submit": "Giriş yap",
+      "username": {
+        "label": "Kullanıcı adı veya e-posta",
+        "placeholder": "Kullanıcı adı veya e-posta"
+      }
+    },
+    "link": {
+      "register": "Hesap oluştur"
+    },
+    "title": "Notlar’a giriş yap",
+    "toast": {
+      "signedIn": "Başarıyla giriş yapıldı."
+    }
+  },
+  "register": {
+    "accountCreatedSignIn": "Hesap oluşturuldu. Lütfen giriş yapın.",
+    "error": {
+      "failed": "Kayıt başarısız"
+    },
+    "form": {
+      "confirm": {
+        "label": "Şifreyi doğrula",
+        "placeholder": "Şifreyi doğrula"
+      },
+      "email": {
+        "label": "E-posta",
+        "placeholder": "E-posta",
+        "validation": {
+          "maxLength": "Lütfen geçerli bir e-posta adresi girin (en fazla 255 karakter)."
+        }
+      },
+      "password": {
+        "label": "Şifre",
+        "placeholder": "Şifre"
+      },
+      "submitting": "Oluşturuluyor...",
+      "submit": "Hesap oluştur",
+      "username": {
+        "label": "Kullanıcı adı",
+        "placeholder": "Kullanıcı adı",
+        "validation": {
+          "maxLength": "Kullanıcı adı en fazla 50 karakter olmalıdır.",
+          "minLength": "Kullanıcı adı en az 3 karakter olmalıdır.",
+          "pattern": "Kullanıcı adı sadece harf, rakam, alt çizgi ve tire içerebilir."
+        }
+      }
+    },
+    "link": {
+      "login": "Zaten hesabın var mı? Giriş yap"
+    },
+    "title": "Hesabını oluştur"
+  },
+  "changePassword": {
+    "error": {
+      "failed": "Şifre güncelleme başarısız."
+    },
+    "form": {
+      "confirm": {
+        "label": "Şifreyi doğrula"
+      },
+      "current": {
+        "label": "Mevcut şifre"
+      },
+      "new": {
+        "label": "Yeni şifre"
+      },
+      "submitting": "Güncelleniyor...",
+      "submit": "Şifreyi güncelle"
+    },
+    "title": "Şifre değiştir"
+  },
+  "share": {
+    "badge": "Paylaşılan",
+    "error": {
+      "invalidLink": "Geçersiz paylaşım bağlantısı.",
+      "loadFailed": "Not yüklenemedi.",
+      "unavailable": "Bu paylaşım bağlantısı artık geçerli değil. Lütfen yeni bir bağlantı isteyin."
+    },
+    "fields": {
+      "created": "Oluşturuldu:",
+      "createdBy": "Oluşturan:",
+      "owner": "Sahip:",
+      "updated": "Güncellendi:",
+      "updatedBy": "Güncelleyen:"
+    },
+    "note": {
+      "pinnedTitle": "Sabitlendi",
+      "untitled": "Başlıksız"
+    }
+  },
+  "sharedLinks": {
+    "actions": {
+      "copy": "Kopyala",
+      "revoke": "İptal et"
+    },
+    "customRange": {
+      "error": {
+        "order": "Başlangıç tarihi bitiş tarihinden sonra olamaz.",
+        "required": "Başlangıç ve bitiş tarihleri zorunludur."
+      },
+      "from": "Başlangıç",
+      "helper": "Her iki tarih de zorunludur. Başlangıç tarihi bitiş tarihinden sonra olmamalıdır.",
+      "title": "Özel tarih aralığı",
+      "to": "Bitiş"
+    },
+    "empty": "Paylaşılan bağlantı bulunamadı. Başlamak için bir tane oluşturun.",
+    "error": {
+      "loadFailed": "Paylaşılan bağlantılar yüklenemedi."
+    },
+    "fields": {
+      "created": "Oluşturuldu:",
+      "expires": "Bitiş:",
+      "lastUsed": "Son kullanım:",
+      "note": "Not:",
+      "owner": "Sahip:",
+      "used": "Kullanım:"
+    },
+    "filters": {
+      "createdDate": {
+        "label": "Oluşturulma tarihi",
+        "options": {
+          "anyTime": "Herhangi bir zaman",
+          "custom": "Özel aralık",
+          "last24h": "Son 24 saat",
+          "last7d": "Son 7 gün",
+          "lastMonth": "Geçen ay"
+        }
+      },
+      "search": {
+        "clearAria": "Aramayı temizle",
+        "label": "Ara",
+        "placeholder": "Bağlantı veya başlık ara"
+      },
+      "status": {
+        "label": "Durum",
+        "options": {
+          "active": "Aktif",
+          "all": "Tümü",
+          "expired": "Süresi dolmuş",
+          "revoked": "İptal edilmiş"
+        }
+      }
+    },
+    "link": {
+      "label": "Bağlantı"
+    },
+    "noExpiry": "Süresiz",
+    "oneTime": "Tek kullanımlık",
+    "sort": {
+      "label": "Sırala",
+      "options": {
+        "createdNewest": "Oluşturulma (en yeni)",
+        "createdOldest": "Oluşturulma (en eski)",
+        "usedMost": "Kullanım (en çok)"
+      }
+    },
+    "status": {
+      "active": "Aktif",
+      "expired": "Süresi dolmuş",
+      "revoked": "İptal edilmiş"
+    },
+    "subtitle": "Oluşturduğunuz tüm bağlantıları görün, durumlarını kontrol edin ve gerektiğinde iptal edin.",
+    "summary": {
+      "pageOf": "Sayfa {{current}} / {{total}}",
+      "total": "Toplam: {{count}}"
+    },
+    "title": "Paylaşılan Bağlantılar",
+    "toast": {
+      "copied": "Paylaşım bağlantısı kopyalandı",
+      "copyFailed": "Bağlantı kopyalanamadı. Lütfen manuel kopyalayın.",
+      "revokeFailed": "Bağlantı iptal edilemedi.",
+      "revoked": "Paylaşım bağlantısı iptal edildi"
+    },
+    "pageSize": {
+      "label": "Sayfa boyutu"
+    }
+  },
+  "notes": {
+    "actions": {
+      "changeOwner": "Sahibi değiştir",
+      "copyContent": "İçeriği kopyala",
+      "createShareLink": "Paylaşım bağlantısı oluştur",
+      "delete": "Sil",
+      "deletePermanently": "Kalıcı sil",
+      "editInModal": "Modalda düzenle",
+      "emptyTrash": "Çöp Kutusunu boşalt",
+      "existingLinks": "Mevcut bağlantılar",
+      "inlineEdit": "Satır içi düzenle",
+      "new": "Yeni Not",
+      "pin": "Sabitle",
+      "restore": "Geri yükle",
+      "revisions": "Revizyon geçmişi",
+      "unpin": "Sabitlemeyi kaldır"
+    },
+    "badges": {
+      "jpaAuditing": "JPA Auditing",
+      "liquibase": "Liquibase",
+      "springdoc": "Springdoc"
+    },
+    "bulk": {
+      "message": "Seçilen öğelere bu işlem uygulansın mı?",
+      "title": "Toplu işlemi onayla"
+    },
+    "delete": {
+      "message": "Bu notu silmek istediğinize emin misiniz?",
+      "title": "Notu Sil"
+    },
+    "deleteForever": {
+      "message": "Bu işlem geri alınamaz. Bu not kalıcı olarak silinsin mi?",
+      "title": "Kalıcı Sil"
+    },
+    "diff": {
+      "content": "İçerik",
+      "title": "Başlık"
+    },
+    "empty": {
+      "none": "Not bulunamadı. Başlamak için yeni bir not oluşturun.",
+      "search": "Aramanızla eşleşen not yok.",
+      "trash": "Çöp Kutusu boş."
+    },
+    "emptyTrash": {
+      "message": "Bu işlem Çöp Kutusu’ndaki tüm öğeleri kalıcı olarak silecektir. Devam edilsin mi?",
+      "title": "Çöp Kutusunu Boşalt"
+    },
+    "error": {
+      "loadFailed": "Notlar yüklenemedi."
+    },
+    "fields": {
+      "createdAt": "Oluşturuldu:",
+      "createdBy": "Oluşturan:",
+      "deletedAt": "Silindi:",
+      "deletedBy": "Silen:",
+      "owner": "Sahip:",
+      "updatedAt": "Güncellendi:",
+      "updatedBy": "Güncelleyen:"
+    },
+    "form": {
+      "color": {
+        "label": "Renk"
+      },
+      "content": {
+        "label": "İçerik",
+        "placeholder": "Notunuzu açıklayın"
+      },
+      "pinned": {
+        "label": "Bu notu sabitle"
+      },
+      "tags": {
+        "label": "Etiketler"
+      },
+      "title": {
+        "label": "Başlık",
+        "placeholder": "Kısa bir başlık girin"
+      }
+    },
+    "inline": {
+      "color": {
+        "label": "Renk"
+      },
+      "content": {
+        "placeholder": "İçerik"
+      },
+      "pinned": {
+        "label": "Bu notu sabitle"
+      },
+      "tags": {
+        "label": "Etiketler"
+      },
+      "title": {
+        "placeholder": "Başlık"
+      }
+    },
+    "modal": {
+      "editTitle": "Notu Düzenle",
+      "newTitle": "Yeni Not"
+    },
+    "noTitle": "(başlık yok)",
+    "owner": {
+      "form": {
+        "helper": "Aramak için yazın ve sahibi olarak ayarlamak için bir kullanıcı seçin.",
+        "newOwner": "Yeni sahip",
+        "searchPlaceholder": "Kullanıcı adı ara"
+      },
+      "required": "Sahip zorunludur.",
+      "searchFailed": "Kullanıcı arama başarısız.",
+      "submit": "Sahibi değiştir",
+      "title": "Sahibi Değiştir",
+      "updateFailed": "Sahip değiştirilemedi.",
+      "updated": "Sahip güncellendi"
+    },
+    "pinned": "Sabitlendi",
+    "revisions": {
+      "diff": "Fark",
+      "empty": "Henüz revizyon yok.",
+      "error": {
+        "loadFailed": "Revizyonlar yüklenemedi."
+      },
+      "hideDiff": "Farkı gizle",
+      "title": "Revizyonlar",
+      "toast": {
+        "restoreFailed": "Revizyon geri yüklenemedi.",
+        "restored": "Revizyon geri yüklendi"
+      }
+    },
+    "selection": {
+      "selectAllOnPage": "Sayfadakilerin hepsini seç",
+      "selected": "Seçili: {{count}}"
+    },
+    "share": {
+      "createLink": "Bağlantı oluştur",
+      "error": {
+        "createFailed": "Paylaşım bağlantısı oluşturulamadı.",
+        "customExpiryRequired": "Özel bitiş tarihi zorunludur.",
+        "loadLinksFailed": "Paylaşım bağlantıları yüklenemedi.",
+        "tokenMissing": "Paylaşım token’ı eksik."
+      },
+      "expires": {
+        "label": "Bitiş",
+        "helper": "Özel veya süresiz seçilmedikçe varsayılan 24 saattir.",
+        "options": {
+          "1h": "1 saat",
+          "24h": "24 saat",
+          "30d": "30 gün",
+          "3d": "3 gün",
+          "7d": "7 gün",
+          "custom": "Özel…",
+          "never": "Süresiz"
+        }
+      },
+      "link": {
+        "expiresAt": "{{date}} tarihinde sona erer",
+        "label": "Paylaşım bağlantısı",
+        "noExpiry": "Süresiz"
+      },
+      "links": {
+        "empty": "Henüz paylaşım bağlantısı yok."
+      },
+      "oneTime": "Tek seferlik kullanım",
+      "status": {
+        "active": "Aktif",
+        "expired": "Süresi dolmuş",
+        "revoked": "İptal edilmiş"
+      },
+      "title": "Notu Paylaş",
+      "toast": {
+        "copyFailed": "Bağlantı kopyalanamadı. Lütfen manuel kopyalayın.",
+        "copied": "Paylaşım bağlantısı kopyalandı",
+        "created": "Paylaşım bağlantısı oluşturuldu",
+        "revokeFailed": "Paylaşım bağlantısı iptal edilemedi.",
+        "revoked": "Paylaşım bağlantısı iptal edildi"
+      }
+    },
+    "sort": {
+      "label": "Sırala",
+      "options": {
+        "createdNewest": "Oluşturulma (en yeni)",
+        "createdOldest": "Oluşturulma (en eski)",
+        "titleAsc": "Başlık A-Z",
+        "titleDesc": "Başlık Z-A",
+        "updatedNewest": "Güncelleme (en yeni)",
+        "updatedOldest": "Güncelleme (en eski)"
+      }
+    },
+    "subtitle": "Oluştur, düzenle, sil — denetime hazır. JWT almak için giriş yapın; denetim metadatası kullanıcıyı kullanır.",
+    "summary": {
+      "pageOf": "Sayfa {{current}} / {{total}}",
+      "total": "Toplam: {{count}}",
+      "totalTrash": "Toplam (çöp): {{count}}"
+    },
+    "tabs": {
+      "active": "Aktif",
+      "trash": "Çöp"
+    },
+    "title": "Notlar",
+    "toast": {
+      "bulkCompleted": "Toplu işlem tamamlandı",
+      "bulkFailed": "Toplu işlem başarısız.",
+      "copied": "Not içeriği kopyalandı",
+      "copyFailed": "Not kopyalanamadı. Lütfen manuel kopyalayın.",
+      "created": "Not oluşturuldu",
+      "deleteFailed": "Not silinemedi.",
+      "deleted": "Not silindi",
+      "deletedPermanent": "Not kalıcı olarak silindi",
+      "emptyTrashFailed": "Çöp Kutusu boşaltılamadı.",
+      "pinFailed": "Sabitleme güncellenemedi.",
+      "restoreFailed": "Not geri yüklenemedi.",
+      "restored": "Not geri yüklendi",
+      "saveFailed": "Not kaydedilemedi.",
+      "trashEmptied": "Çöp Kutusu boşaltıldı",
+      "updated": "Not güncellendi"
+    },
+    "unpinned": "Sabitleme kaldırıldı",
+    "validation": {
+      "content": {
+        "size": "Uzunluk 10 ile 1024 karakter arasında olmalıdır."
+      },
+      "tags": {
+        "format": "Etiketler harf, rakam, tire veya alt çizgi içerebilir.",
+        "max": "En fazla 5 etiket kullanılabilir.",
+        "size": "Etiketler 1-30 karakter olmalıdır."
+      },
+      "title": {
+        "size": "Uzunluk 3 ile 255 karakter arasında olmalıdır."
+      }
+    },
+    "view": {
+      "all": "Tüm Notlar",
+      "trash": "Çöp"
+    },
+    "filters": {
+      "color": "Renk",
+      "pinned": {
+        "label": "Sabitlendi",
+        "options": {
+          "all": "Tümü",
+          "pinned": "Sabitlenen",
+          "unpinned": "Sabitleme kaldırılan"
+        }
+      },
+      "tags": "Etiketlere göre filtrele"
+    }
   }
 }
