@@ -81,7 +81,7 @@ export default function LoginPageClient() {
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-body-tertiary">
-      <AppNavbar />
+      <AppNavbar showSharedButton={false} />
       <main className="flex-fill d-flex align-items-center justify-content-center py-5">
         <Container className="d-flex justify-content-center">
           <Card className="shadow-sm border-0" style={{ maxWidth: 420, width: '100%' }}>
