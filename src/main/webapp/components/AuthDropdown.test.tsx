@@ -15,7 +15,7 @@ describe('AuthDropdown', () => {
 
   test('renders username and change-password link when authenticated', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<AuthDropdown showChangePassword />, {
+    renderWithProviders(<AuthDropdown />, {
       preloadedState: {
         auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
         theme: { theme: 'light' },
@@ -29,18 +29,5 @@ describe('AuthDropdown', () => {
 
     expect(screen.getByText(/signed in as alice/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /change password/i })).toHaveAttribute('href', '/change-password');
-  });
-
-  test('does not render change-password link when disabled', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<AuthDropdown />, {
-      preloadedState: {
-        auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
-        theme: { theme: 'light' },
-      },
-    });
-
-    await user.click(screen.getByRole('button', { name: /alice/i }));
-    expect(screen.queryByRole('link', { name: /change password/i })).not.toBeInTheDocument();
   });
 });

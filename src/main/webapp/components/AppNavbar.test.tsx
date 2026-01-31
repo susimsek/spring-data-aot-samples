@@ -12,15 +12,7 @@ describe('AppNavbar', () => {
     const onSearchClear = jest.fn();
 
     renderWithProviders(
-      <AppNavbar
-        search=""
-        showSearch
-        onSearchChange={onSearchChange}
-        onSearchClear={onSearchClear}
-        showHomeButton
-        showAuthDropdown
-        badgeLabel="Admin"
-      />,
+      <AppNavbar search="" showSearch onSearchChange={onSearchChange} onSearchClear={onSearchClear} showHomeButton badgeLabel="Admin" />,
       {
         preloadedState: {
           auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
@@ -50,7 +42,7 @@ describe('AppNavbar', () => {
   });
 
   test('hides auth dropdown when requireAuthForActions is true and user is not authenticated', () => {
-    renderWithProviders(<AppNavbar showAuthDropdown requireAuthForActions />, {
+    renderWithProviders(<AppNavbar requireAuthForActions />, {
       preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
     });
 
@@ -59,15 +51,7 @@ describe('AppNavbar', () => {
 
   test('keeps search visible while hiding home/auth actions when unauthenticated and requireAuthForActions is true', () => {
     renderWithProviders(
-      <AppNavbar
-        showSearch
-        showHomeButton
-        showAuthDropdown
-        requireAuthForActions
-        search=""
-        onSearchChange={() => {}}
-        onSearchClear={() => {}}
-      />,
+      <AppNavbar showSearch showHomeButton requireAuthForActions search="" onSearchChange={() => {}} onSearchClear={() => {}} />,
       {
         preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
       },

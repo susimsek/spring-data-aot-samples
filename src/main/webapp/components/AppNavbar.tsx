@@ -23,8 +23,6 @@ export interface AppNavbarProps {
   showSearch?: boolean;
   showSharedButton?: boolean;
   showHomeButton?: boolean;
-  showAuthDropdown?: boolean;
-  showChangePassword?: boolean;
   badgeLabel?: string;
   requireAuthForActions?: boolean;
   showSignInButton?: boolean;
@@ -101,9 +99,9 @@ function SignInLink({ show, label }: { show: boolean; label: string }) {
   );
 }
 
-function AuthDropdownBlock({ show, showChangePassword }: { show: boolean; showChangePassword: boolean }) {
+function AuthDropdownBlock({ show }: { show: boolean }) {
   if (!show) return null;
-  return <AuthDropdown showChangePassword={showChangePassword} />;
+  return <AuthDropdown />;
 }
 
 function NavbarActions({
@@ -111,7 +109,6 @@ function NavbarActions({
   showShared,
   showSignIn,
   showAuth,
-  showChangePassword,
   homeLabel,
   sharedLabel,
   signInLabel,
@@ -120,7 +117,6 @@ function NavbarActions({
   showShared: boolean;
   showSignIn: boolean;
   showAuth: boolean;
-  showChangePassword: boolean;
   homeLabel: string;
   sharedLabel: string;
   signInLabel: string;
@@ -132,7 +128,7 @@ function NavbarActions({
       <LanguageSelect />
       <ThemeToggleButton size="sm" />
       <SignInLink show={showSignIn} label={signInLabel} />
-      <AuthDropdownBlock show={showAuth} showChangePassword={showChangePassword} />
+      <AuthDropdownBlock show={showAuth} />
     </>
   );
 }
@@ -183,8 +179,6 @@ export default function AppNavbar({
   showSearch = false,
   showSharedButton = true,
   showHomeButton = true,
-  showAuthDropdown = true,
-  showChangePassword = true,
   badgeLabel = '',
   requireAuthForActions = false,
   showSignInButton = false,
@@ -195,7 +189,7 @@ export default function AppNavbar({
   const canShowActions = !requireAuthForActions || isAuthenticated;
   const showShared = showSharedButton && canShowActions;
   const showHome = showHomeButton && canShowActions;
-  const showAuth = showAuthDropdown && canShowActions;
+  const showAuth = isAuthenticated && canShowActions;
   const showSignIn = showSignInButton && !isAuthenticated;
   const hasActions = showSearch || showShared || showHome || showAuth || showSignIn;
 
@@ -205,7 +199,6 @@ export default function AppNavbar({
       showShared={showShared}
       showSignIn={showSignIn}
       showAuth={showAuth}
-      showChangePassword={showChangePassword}
       homeLabel={t('nav.home')}
       sharedLabel={t('nav.shared')}
       signInLabel={t('common.signIn')}

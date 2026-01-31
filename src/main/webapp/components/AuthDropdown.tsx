@@ -6,7 +6,7 @@ import { faUser, faKey, faRightFromBracket } from '@fortawesome/free-solid-svg-i
 import { useTranslation } from 'next-i18next';
 import useAuth from '@lib/useAuth';
 
-export default function AuthDropdown({ showChangePassword = false }: Readonly<{ showChangePassword?: boolean }>) {
+export default function AuthDropdown() {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation();
 
@@ -22,12 +22,10 @@ export default function AuthDropdown({ showChangePassword = false }: Readonly<{ 
       </Dropdown.Toggle>
       <Dropdown.Menu>
         <Dropdown.Header className="text-muted small">{t('auth.dropdown.signedInAs', { username: user?.username || '' })}</Dropdown.Header>
-        {showChangePassword ? (
-          <Dropdown.Item href="/change-password" className="d-flex align-items-center gap-2">
-            <FontAwesomeIcon icon={faKey} />
-            <span>{t('auth.dropdown.changePassword')}</span>
-          </Dropdown.Item>
-        ) : null}
+        <Dropdown.Item href="/change-password" className="d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faKey} />
+          <span>{t('auth.dropdown.changePassword')}</span>
+        </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item onClick={logout} className="d-flex align-items-center gap-2">
           <FontAwesomeIcon icon={faRightFromBracket} />

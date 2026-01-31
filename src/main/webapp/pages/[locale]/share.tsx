@@ -82,7 +82,7 @@ export default function SharePageClient() {
 
   return (
     <>
-      <AppNavbar badgeLabel={t('share.badge')} showHomeButton={true} showAuthDropdown={true} requireAuthForActions={true} />
+      <AppNavbar badgeLabel={t('share.badge')} showHomeButton={true} requireAuthForActions={true} />
       <main className="bg-body-tertiary flex-grow-1">
         <Container className="py-5">
           {loading ? (
