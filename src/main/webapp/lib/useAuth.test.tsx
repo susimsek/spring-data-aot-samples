@@ -36,7 +36,7 @@ describe('useAuth', () => {
 
   test('returns auth flags based on store state', () => {
     const store = createTestStore({
-      auth: { user: { username: 'admin', authorities: ['ROLE_ADMIN'] }, status: 'succeeded', error: null },
+      auth: { user: { username: 'admin', authorities: ['ROLE_ADMIN'] }, status: 'succeeded', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 
@@ -56,7 +56,7 @@ describe('useAuth', () => {
 
   test('logout dispatches and navigates to home page', async () => {
     const store = createTestStore({
-      auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
+      auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 
@@ -77,7 +77,7 @@ describe('useAuth', () => {
 
   test('redirectOnFail triggers navigation when fetching user fails', async () => {
     const store = createTestStore({
-      auth: { user: null, status: 'idle', error: null },
+      auth: { user: null, status: 'idle', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 

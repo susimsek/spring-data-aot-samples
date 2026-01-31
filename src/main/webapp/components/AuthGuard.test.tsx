@@ -31,7 +31,7 @@ describe('AuthGuard', () => {
 
   test('renders children when user is authenticated', async () => {
     const store = createTestStore({
-      auth: { user: { username: 'admin', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
+      auth: { user: { username: 'admin', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 
@@ -52,7 +52,7 @@ describe('AuthGuard', () => {
 
   test('redirects to login when user is not authenticated on protected route', async () => {
     const store = createTestStore({
-      auth: { user: null, status: 'idle', error: null },
+      auth: { user: null, status: 'idle', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 
@@ -75,7 +75,7 @@ describe('AuthGuard', () => {
 
   test('renders children on public route without authentication', async () => {
     const store = createTestStore({
-      auth: { user: null, status: 'idle', error: null },
+      auth: { user: null, status: 'idle', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 
@@ -99,7 +99,7 @@ describe('AuthGuard', () => {
 
   test('includes query string in redirect URL', async () => {
     const store = createTestStore({
-      auth: { user: null, status: 'idle', error: null },
+      auth: { user: null, status: 'idle', sessionChecked: true, error: null },
       theme: { theme: 'light' },
     });
 

@@ -23,7 +23,7 @@ describe('AppNavbar', () => {
       />,
       {
         preloadedState: {
-          auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
+          auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
           theme: { theme: 'light' },
         },
       },
@@ -51,7 +51,7 @@ describe('AppNavbar', () => {
 
   test('hides auth dropdown when requireAuthForActions is true and user is not authenticated', () => {
     renderWithProviders(<AppNavbar showAuthDropdown requireAuthForActions />, {
-      preloadedState: { auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } },
+      preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
     });
 
     expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('AppNavbar', () => {
         onSearchClear={() => {}}
       />,
       {
-        preloadedState: { auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } },
+        preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
       },
     );
 

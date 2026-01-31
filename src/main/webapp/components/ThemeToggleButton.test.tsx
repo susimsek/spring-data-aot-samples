@@ -11,7 +11,7 @@ describe('ThemeToggleButton', () => {
 
     renderWithProviders(<ThemeToggleButton />, {
       preloadedState: {
-        auth: { user: null, status: 'idle', error: null },
+        auth: { user: null, status: 'idle', sessionChecked: true, error: null },
         theme: { theme: 'light' },
       },
     });

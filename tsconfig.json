@@ -30,15 +30,6 @@
       }
     ]
   },
-  "include": [
-    "src/main/webapp/next-env.d.ts",
-    "src/main/webapp/**/*.ts",
-    "src/main/webapp/**/*.tsx",
-    "src/main/webapp/.next/types/**/*.ts",
-    "src/main/webapp/.next/dev/types/**/*.ts",
-    "src/main/webapp/**/*.mts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", "src/main/webapp/build"]
+  "include": ["src/main/webapp/next-env.d.ts", "src/main/webapp/**/*.ts", "src/main/webapp/**/*.tsx", "src/main/webapp/**/*.mts"],
+  "exclude": ["node_modules", "src/main/webapp/.next", "src/main/webapp/out"]
 }

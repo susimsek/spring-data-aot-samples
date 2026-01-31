@@ -8,6 +8,7 @@ import type { ApiErrorPayload, AuthStatus, StoredUser } from '@lib/types';
 export interface AuthState {
   user: StoredUser | null;
   status: AuthStatus;
+  sessionChecked: boolean;
   error: string | null;
 }
 
@@ -16,6 +17,7 @@ const initialUser = loadStoredUser();
 const initialState: AuthState = {
   user: initialUser,
   status: initialUser ? 'succeeded' : 'idle',
+  sessionChecked: !initialUser,
   error: null,
 };
 
@@ -53,6 +55,20 @@ export const loginUser = createAsyncThunk<StoredUser, LoginPayload, { rejectValu
   },
 );
 
+export const verifySession = createAsyncThunk<StoredUser, void, { rejectValue: ApiErrorPayload }>(
+  'auth/verifySession',
+  async (_: void, { rejectWithValue }) => {
+    try {
+      const user = await Api.currentUser();
+      persistUser(user);
+      return user;
+    } catch (err) {
+      clearStoredUser();
+      return rejectWithValue(normalizeError(err));
+    }
+  },
+);
+
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: ApiErrorPayload }>(
   'auth/logout',
   async (_: void, { rejectWithValue }) => {
@@ -73,6 +89,7 @@ const authSlice = createSlice({
     clearUser(state) {
       state.user = null;
       state.status = 'idle';
+      state.sessionChecked = true;
       state.error = null;
       clearStoredUser();
     },
@@ -81,25 +98,45 @@ const authSlice = createSlice({
     builder
       .addCase(loginUser.pending, (state) => {
         state.status = 'loading';
+        state.sessionChecked = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.user = action.payload || null;
+        state.sessionChecked = true;
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'failed';
+        state.sessionChecked = true;
         state.error = action.payload?.message || action.error?.message || 'Login failed';
+      })
+      .addCase(verifySession.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(verifySession.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload || null;
+        state.sessionChecked = true;
+        state.error = null;
+      })
+      .addCase(verifySession.rejected, (state) => {
+        state.status = 'idle';
+        state.user = null;
+        state.sessionChecked = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.status = 'idle';
         state.user = null;
+        state.sessionChecked = true;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state) => {
         state.status = 'idle';
         state.user = null;
+        state.sessionChecked = true;
       });
   },
 });

@@ -2,7 +2,7 @@ export const PUBLIC_ROUTES = ['/login', '/register', '/share', '/403', '/404'];
 
 export const PROTECTED_ROUTES = ['/', '/change-password', '/shared-links'];
 
-export const LOCALE_ROUTES = ['en'] as const;
+export const LOCALE_ROUTES = ['en', 'tr'] as const;
 
 export function stripLocalePrefix(path: string): string {
   if (!path) return '/';

@@ -8,7 +8,7 @@ import { renderWithProviders } from '@tests/test-utils';
 describe('AuthDropdown', () => {
   test('renders nothing when not authenticated', () => {
     const { container } = renderWithProviders(<AuthDropdown />, {
-      preloadedState: { auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } },
+      preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
     });
     expect(container).toBeEmptyDOMElement();
   });
@@ -17,7 +17,7 @@ describe('AuthDropdown', () => {
     const user = userEvent.setup();
     renderWithProviders(<AuthDropdown showChangePassword />, {
       preloadedState: {
-        auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
+        auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
         theme: { theme: 'light' },
       },
     });
@@ -35,7 +35,7 @@ describe('AuthDropdown', () => {
     const user = userEvent.setup();
     renderWithProviders(<AuthDropdown />, {
       preloadedState: {
-        auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', error: null },
+        auth: { user: { username: 'alice', authorities: ['ROLE_USER'] }, status: 'succeeded', sessionChecked: true, error: null },
         theme: { theme: 'light' },
       },
     });

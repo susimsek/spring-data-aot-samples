@@ -15,7 +15,7 @@ describe('ThemeProvider', () => {
 
   test('uses stored theme when present', async () => {
     localStorage.setItem('theme', 'dark');
-    const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
+    const store = createTestStore({ auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } });
 
     render(
       <Provider store={store}>
@@ -35,7 +35,7 @@ describe('ThemeProvider', () => {
 
   test('falls back to system theme when no stored theme', async () => {
     (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
-    const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
+    const store = createTestStore({ auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } });
 
     render(
       <Provider store={store}>
@@ -54,7 +54,7 @@ describe('ThemeProvider', () => {
   test('ignores invalid stored theme values', async () => {
     localStorage.setItem('theme', 'blue');
     (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
-    const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
+    const store = createTestStore({ auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } });
 
     render(
       <Provider store={store}>
@@ -75,7 +75,7 @@ describe('ThemeProvider', () => {
     });
 
     (globalThis as any).matchMedia = jest.fn(() => ({ matches: false }));
-    const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'dark' } });
+    const store = createTestStore({ auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'dark' } });
 
     render(
       <Provider store={store}>
@@ -98,7 +98,7 @@ describe('ThemeProvider', () => {
     });
 
     (globalThis as any).matchMedia = jest.fn(() => ({ matches: true }));
-    const store = createTestStore({ auth: { user: null, status: 'idle', error: null }, theme: { theme: 'light' } });
+    const store = createTestStore({ auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } });
 
     render(
       <Provider store={store}>
