@@ -15,7 +15,7 @@ export default defineConfig([
     '**/node/**',
     '**/target/**',
     '**/next-env.d.ts',
-    'jest.config.js',
+    'jest.config.ts',
     'jest.setup.ts',
     'postcss.config.js',
   ]),
