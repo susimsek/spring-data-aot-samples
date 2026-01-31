@@ -133,7 +133,7 @@ export default function LoginPageClient() {
                 <Form.Check type="checkbox" label={t('login.form.rememberMe')} className="mb-3" {...register('rememberMe')} />
                 <Button type="submit" variant="primary" className="w-100" disabled={!canSubmit || isSubmitting}>
                   {isSubmitting ? (
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                    <output className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
                   ) : (
                     <FontAwesomeIcon icon={faRightToBracket} className="me-2" />
                   )}

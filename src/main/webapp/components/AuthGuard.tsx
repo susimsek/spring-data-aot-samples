@@ -1,7 +1,6 @@
 'use client';
 
 import { type ReactNode, useEffect } from 'react';
-import Spinner from 'react-bootstrap/Spinner';
 import { useTranslation } from 'next-i18next';
 import { useAppDispatch, useAppSelector } from '@lib/store';
 import { getLocalePrefix, isPublicRoute } from '@lib/routes';
@@ -59,9 +58,10 @@ export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
   if (!shouldRender) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary">
-        <Spinner animation="border" variant="primary" role="status">
+        <output aria-live="polite" className="d-inline-flex align-items-center">
+          <span className="spinner-border text-primary" aria-hidden="true" />
           <span className="visually-hidden">{t('common.loading')}</span>
-        </Spinner>
+        </output>
       </div>
     );
   }
