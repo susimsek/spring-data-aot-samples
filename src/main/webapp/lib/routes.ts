@@ -6,9 +6,15 @@ export const PROTECTED_ROUTES = ['/', '/change-password', '/shared-links'];
 
 export const LOCALE_ROUTES = rootConfig.i18n.locales;
 
+function normalizePathname(path: string): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  const cutIndex = normalized.search(/[?#]/);
+  return cutIndex === -1 ? normalized : normalized.slice(0, cutIndex) || '/';
+}
+
 export function stripLocalePrefix(path: string): string {
   if (!path) return '/';
-  const normalized = path.startsWith('/') ? path : `/${path}`;
+  const normalized = normalizePathname(path);
   for (const locale of LOCALE_ROUTES) {
     const prefix = `/${locale}`;
     if (normalized === prefix) return '/';
@@ -22,7 +28,7 @@ export function stripLocalePrefix(path: string): string {
 
 export function getLocalePrefix(path: string): string {
   if (!path) return '';
-  const normalized = path.startsWith('/') ? path : `/${path}`;
+  const normalized = normalizePathname(path);
   for (const locale of LOCALE_ROUTES) {
     const prefix = `/${locale}`;
     if (normalized === prefix || normalized.startsWith(`${prefix}/`)) {
