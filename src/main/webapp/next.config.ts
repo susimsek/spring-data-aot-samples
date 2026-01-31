@@ -14,7 +14,6 @@ const sources = ['/api/:path*'];
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  distDir: 'build',
   // This app is nested under src/main/webapp while node_modules lives at repo root (npm workspaces).
   outputFileTracingRoot: path.join(dirname, '..', '..', '..'),
   typescript: {

@@ -64,6 +64,7 @@ tsconfig.tsbuildinfo
 ######################
 .next/
 build/
+out/
 
 ######################
 # Git hooks

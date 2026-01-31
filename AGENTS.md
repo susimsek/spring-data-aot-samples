@@ -283,8 +283,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 - Source lives under `src/main/webapp`, but dependencies are managed at repo root via pnpm workspaces (`pnpm-workspace.yaml`).
 - Frontend is written in TypeScript (`.ts`/`.tsx`); TypeScript config lives at repo root (`tsconfig.json`) and is referenced from `src/main/webapp/next.config.js`.
-- Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.ts`).
-  - Maven runs `pnpm install --frozen-lockfile` + `pnpm run build` via `frontend-maven-plugin` and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
+- Production build uses a static export (`output: 'export'`) with `trailingSlash: true` (see `src/main/webapp/next.config.ts`).
+  - Maven runs `pnpm install --frozen-lockfile` + `pnpm run build` via `frontend-maven-plugin` and copies `src/main/webapp/out` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
 - Routing is owned by Next.js; backend forwards unknown non-API routes to the corresponding `.html` file via `SpaWebFilter` registered in the Spring Security filter chain (see `SecurityConfig`).
 - Authentication redirects are handled client-side by Next.js via `AuthGuard` component and `routes.ts` configuration (see `src/main/webapp/app/components/AuthGuard.tsx` and `src/main/webapp/app/lib/routes.ts`).
 - API calls in the Next UI should go through `src/main/webapp/app/lib/api.ts` (relative `/api/...` URLs).
