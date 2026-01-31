@@ -13,6 +13,7 @@ This image runs a REST API for managing notes (CRUD) with soft delete (trash) an
 - Tags, pinned, color; search (`q`) and pagination/sorting
 - JWT-based authentication (`/api/auth/*`)
 - Next.js UI (static export) served by Spring Boot (SPA routing)
+- Internationalization (i18n): EN/TR support (Next.js + Spring message bundles)
 - Actuator + Prometheus metrics + OpenTelemetry (OTLP) configuration
 
 ### How to use this image
