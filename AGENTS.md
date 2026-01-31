@@ -105,7 +105,6 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - `next.config.ts`: Next config (static export: `output: 'export'`, `trailingSlash: true`, output dir: `build/`)
   - `next-env.d.ts`: Next-generated TS types (do not edit manually)
   - `build`: Next static export output (Maven copies to `target/classes/static`; see `pom.xml` `copy-frontend-build`)
-  - `.next`: Next build cache/types output (generated)
 - Frontend i18n config (next-i18next): `next-i18next.config.js` (repo root; `localePath` points at `src/main/webapp/public/locales`)
 
 ### Deployment
