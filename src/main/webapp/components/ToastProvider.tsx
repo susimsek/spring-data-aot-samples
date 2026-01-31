@@ -59,18 +59,20 @@ export default function ToastProvider({ children }: Readonly<{ children: ReactNo
         {toasts.map((toast) => {
           const icon = iconMap[toast.variant] || iconMap.info;
           const action = toast.action;
+          const hasTitle = Boolean(toast.title);
+          const showBodyIcon = !hasTitle;
           return (
             <Toast key={toast.id} bg={toast.variant} onClose={() => removeToast(toast.id)} delay={4000} autohide className="text-white">
-              {toast.title ? (
+              {hasTitle && (
                 <Toast.Header closeButton={true} className={`text-bg-${toast.variant} border-0`}>
                   <FontAwesomeIcon icon={icon} className="me-2" />
                   <strong className="me-auto">{toast.title}</strong>
                 </Toast.Header>
-              ) : null}
+              )}
               <Toast.Body className="d-flex align-items-center gap-2">
-                {!toast.title ? <FontAwesomeIcon icon={icon} /> : null}
+                {showBodyIcon && <FontAwesomeIcon icon={icon} />}
                 <span>{toast.message}</span>
-                {action ? (
+                {action && (
                   <button
                     type="button"
                     className="btn btn-outline-light btn-sm ms-2 d-inline-flex align-items-center gap-1"
@@ -82,7 +84,7 @@ export default function ToastProvider({ children }: Readonly<{ children: ReactNo
                     <FontAwesomeIcon icon={action.icon || faCircleInfo} />
                     {action.label}
                   </button>
-                ) : null}
+                )}
               </Toast.Body>
             </Toast>
           );
