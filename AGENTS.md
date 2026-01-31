@@ -71,14 +71,29 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
-- Frontend (Next.js App Router, TypeScript): `src/main/webapp`
-  - App Router pages/components: `src/main/webapp/app`
-  - Build output (static export): `src/main/webapp/build`
-  - Package management lives at repo root (`package.json` + `package-lock.json`) via npm workspaces.
-  - Maven copies build output to: `target/classes/static` (see `pom.xml` `copy-frontend-build`)
+- Frontend (Next.js Pages Router, TypeScript): `src/main/webapp`
+  - Routing (Pages Router): `src/main/webapp/pages`
+    - Locale-prefixed pages: `src/main/webapp/pages/[locale]/*` (static export outputs `/en/login/index.html`, etc.)
+    - Root entry/redirect pages: `src/main/webapp/pages/index.tsx`, plus top-level route shims (e.g. `/login`) that redirect to `/{locale}/...`
+    - App wrapper: `src/main/webapp/pages/_app.tsx`
+  - Shared UI components: `src/main/webapp/components`
+  - Shared frontend code: `src/main/webapp/lib`
+    - API client: `api.ts`
+    - Auth helpers: `auth.ts`
+    - i18n SSG helpers: `getStatic.ts`
+    - Locale redirect + detection: `redirect.tsx`, `languageDetector.ts`
+    - Redux store: `store.ts`
+  - Redux slices: `src/main/webapp/slices`
+  - Static assets + translations: `src/main/webapp/public`
+    - next-i18next locales: `src/main/webapp/public/locales/<lng>/<ns>.json`
+  - Styling: `src/main/webapp/styles`
+  - Frontend tests: `src/main/webapp/**/*.test.ts(x)` + shared helpers in `src/main/webapp/__tests__`
+  - Next config: `src/main/webapp/next.config.ts` (static export: `output: 'export'`, `trailingSlash: true`, output dir: `build/`)
+  - Build output (static export): `src/main/webapp/build` (Maven copies to `target/classes/static`; see `pom.xml` `copy-frontend-build`)
+- Frontend i18n config (next-i18next): `next-i18next.config.js` (repo root; `localePath` points at `src/main/webapp/public/locales`)
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
-- Tests: `src/test/java` and `src/test/resources`
+- Backend tests: `src/test/java` and `src/test/resources`
 
 ## Code Style and Quality Gates
 
