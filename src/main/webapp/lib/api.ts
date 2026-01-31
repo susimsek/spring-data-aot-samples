@@ -5,6 +5,24 @@ import type { NoteDTO, NoteRevisionDTO, PageResponse, ShareLinkDTO, StoredUser }
 
 type JsonObject = Record<string, unknown>;
 
+function getStoredLanguage(): string | undefined {
+  const storage = (globalThis as { localStorage?: Storage }).localStorage;
+  if (!storage) return undefined;
+  const language = storage.getItem('i18nextLng');
+  if (!language) return undefined;
+  const trimmed = language.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function applyAcceptLanguageHeader(config: AxiosRequestConfig): AxiosRequestConfig {
+  const language = getStoredLanguage();
+  if (!language) return config;
+  const headers = (config.headers ?? {}) as Record<string, unknown>;
+  headers['Accept-Language'] = language;
+  config.headers = headers;
+  return config;
+}
+
 const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
@@ -104,6 +122,7 @@ type RetriableRequestConfig = AxiosRequestConfig & {
   skipAuthRedirect?: boolean;
 };
 
+api.interceptors.request.use((config) => applyAcceptLanguageHeader(config));
 api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
@@ -131,6 +150,7 @@ api.interceptors.response.use(
   },
 );
 
+publicApi.interceptors.request.use((config) => applyAcceptLanguageHeader(config));
 publicApi.interceptors.response.use(
   (response) => response,
   (error: unknown) => Promise.reject(normalizeError(error)),

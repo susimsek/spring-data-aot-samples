@@ -9,7 +9,7 @@ type MockAxiosInstance = jest.Mock & {
   put: jest.Mock;
   patch: jest.Mock;
   delete: jest.Mock;
-  interceptors: { response: { use: jest.Mock } };
+  interceptors: { request: { use: jest.Mock }; response: { use: jest.Mock } };
 };
 
 function createAxiosInstance(): MockAxiosInstance {
@@ -20,7 +20,7 @@ function createAxiosInstance(): MockAxiosInstance {
   instance.put = jest.fn();
   instance.patch = jest.fn();
   instance.delete = jest.fn();
-  instance.interceptors = { response: { use: jest.fn() } };
+  instance.interceptors = { request: { use: jest.fn() }, response: { use: jest.fn() } };
   return instance as MockAxiosInstance;
 }
 
@@ -85,6 +85,7 @@ describe('Api client', () => {
     apiInstance.delete.mockReset();
     apiInstance.request.mockReset();
     apiInstance.mockReset();
+    apiInstance.interceptors.request.use.mockReset();
     apiInstance.interceptors.response.use.mockReset();
 
     publicApiInstance.get.mockReset();
@@ -94,6 +95,7 @@ describe('Api client', () => {
     publicApiInstance.delete.mockReset();
     publicApiInstance.request.mockReset();
     publicApiInstance.mockReset();
+    publicApiInstance.interceptors.request.use.mockReset();
     publicApiInstance.interceptors.response.use.mockReset();
 
     auth.buildRedirectQuery.mockClear();
@@ -115,6 +117,16 @@ describe('Api client', () => {
     await Api.createNote({ title: 'x' });
 
     expect(apiInstance.post).toHaveBeenCalledWith('/api/admin/notes', { title: 'x' });
+  });
+
+  test('adds Accept-Language to API calls from localStorage', async () => {
+    globalThis.localStorage.setItem('i18nextLng', 'en');
+
+    await import('./api');
+    expect(apiInstance.interceptors.request.use).toHaveBeenCalledTimes(1);
+
+    const requestInterceptor = apiInstance.interceptors.request.use.mock.calls[0][0] as (cfg: any) => any;
+    expect(requestInterceptor({ headers: {} })).toEqual({ headers: { 'Accept-Language': 'en' } });
   });
 
   test('fetchNotes builds a query string', async () => {
