@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -30,6 +31,151 @@ export interface AppNavbarProps {
   collapseId?: string;
 }
 
+function BrandBlock({ badgeLabel }: { badgeLabel: string }) {
+  return (
+    <div className="d-flex align-items-center gap-2">
+      <Navbar.Brand as="div">
+        <Link href="/" className="text-decoration-none">
+          <Brand />
+        </Link>
+      </Navbar.Brand>
+      {badgeLabel ? (
+        <Badge bg="secondary-subtle" text="secondary">
+          {badgeLabel}
+        </Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function SearchInput({
+  search,
+  onSearchChange,
+  onSearchClear,
+  placeholder,
+  clearAriaLabel,
+}: {
+  search: string;
+  onSearchChange?: (next: string) => void;
+  onSearchClear?: () => void;
+  placeholder: string;
+  clearAriaLabel: string;
+}) {
+  return (
+    <InputGroup size="sm" className="w-100" style={{ maxWidth: 360 }}>
+      <Form.Control type="text" placeholder={placeholder} value={search} onChange={(event) => onSearchChange?.(event.target.value)} />
+      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onSearchClear} aria-label={clearAriaLabel}>
+        <FontAwesomeIcon icon={faXmark} />
+      </button>
+    </InputGroup>
+  );
+}
+
+function HomeLink({ show, label }: { show: boolean; label: string }) {
+  if (!show) return null;
+  return (
+    <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
+      <FontAwesomeIcon icon={faHouse} />
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function SharedLinksButton({ show, label }: { show: boolean; label: string }) {
+  if (!show) return null;
+  return (
+    <Link href="/shared-links" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
+      <FontAwesomeIcon icon={faShareNodes} />
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function SignInLink({ show, label }: { show: boolean; label: string }) {
+  if (!show) return null;
+  return (
+    <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
+      <FontAwesomeIcon icon={faRightToBracket} />
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function AuthDropdownBlock({ show, showChangePassword }: { show: boolean; showChangePassword: boolean }) {
+  if (!show) return null;
+  return <AuthDropdown showChangePassword={showChangePassword} />;
+}
+
+function NavbarActions({
+  showHome,
+  showShared,
+  showSignIn,
+  showAuth,
+  showChangePassword,
+  homeLabel,
+  sharedLabel,
+  signInLabel,
+}: {
+  showHome: boolean;
+  showShared: boolean;
+  showSignIn: boolean;
+  showAuth: boolean;
+  showChangePassword: boolean;
+  homeLabel: string;
+  sharedLabel: string;
+  signInLabel: string;
+}) {
+  return (
+    <>
+      <HomeLink show={showHome} label={homeLabel} />
+      <SharedLinksButton show={showShared} label={sharedLabel} />
+      <LanguageSelect />
+      <ThemeToggleButton size="sm" />
+      <SignInLink show={showSignIn} label={signInLabel} />
+      <AuthDropdownBlock show={showAuth} showChangePassword={showChangePassword} />
+    </>
+  );
+}
+
+function CollapseContentWithSearch({
+  search,
+  onSearchChange,
+  onSearchClear,
+  searchPlaceholder,
+  searchClearAriaLabel,
+  actions,
+}: {
+  search: string;
+  onSearchChange?: (next: string) => void;
+  onSearchClear?: () => void;
+  searchPlaceholder: string;
+  searchClearAriaLabel: string;
+  actions: ReactNode;
+}) {
+  return (
+    <div className="d-flex flex-column flex-lg-row align-items-center gap-2 w-100 justify-content-center justify-content-lg-end">
+      <SearchInput
+        search={search}
+        onSearchChange={onSearchChange}
+        onSearchClear={onSearchClear}
+        placeholder={searchPlaceholder}
+        clearAriaLabel={searchClearAriaLabel}
+      />
+      <div className="d-flex align-items-center gap-2 flex-column flex-lg-row justify-content-center justify-content-lg-end order-2 order-lg-2 w-100">
+        {actions}
+      </div>
+    </div>
+  );
+}
+
+function CollapseContentWithoutSearch({ actions }: { actions: ReactNode }) {
+  return (
+    <div className="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
+      {actions}
+    </div>
+  );
+}
+
 export default function AppNavbar({
   search = '',
   onSearchChange,
@@ -51,34 +197,28 @@ export default function AppNavbar({
   const showHome = showHomeButton && canShowActions;
   const showAuth = showAuthDropdown && canShowActions;
   const showSignIn = showSignInButton && !isAuthenticated;
-  const showBadge = Boolean(badgeLabel);
-  const hasSearch = showSearch;
-  const hasActions = hasSearch || showShared || showHome || showAuth || showSignIn;
+  const hasActions = showSearch || showShared || showHome || showAuth || showSignIn;
 
-  const brandBlock = (
-    <div className="d-flex align-items-center gap-2">
-      <Navbar.Brand as="div">
-        <Link href="/" className="text-decoration-none">
-          <Brand />
-        </Link>
-      </Navbar.Brand>
-      {showBadge ? (
-        <Badge bg="secondary-subtle" text="secondary">
-          {badgeLabel}
-        </Badge>
-      ) : null}
-    </div>
+  const actions = (
+    <NavbarActions
+      showHome={showHome}
+      showShared={showShared}
+      showSignIn={showSignIn}
+      showAuth={showAuth}
+      showChangePassword={showChangePassword}
+      homeLabel={t('nav.home')}
+      sharedLabel={t('nav.shared')}
+      signInLabel={t('common.signIn')}
+    />
   );
-
-  const languageBlock = <LanguageSelect />;
 
   if (!hasActions) {
     return (
       <Navbar expand="lg" className="bg-body border-bottom shadow-sm">
         <Container className="d-flex align-items-center gap-3 flex-wrap justify-content-between">
-          {brandBlock}
+          <BrandBlock badgeLabel={badgeLabel} />
           <div className="ms-auto d-flex align-items-center gap-2">
-            {languageBlock}
+            <LanguageSelect />
             <ThemeToggleButton size="sm" />
           </div>
         </Container>
@@ -89,80 +229,22 @@ export default function AppNavbar({
   return (
     <Navbar expand="lg" className="bg-body border-bottom shadow-sm">
       <Container>
-        {brandBlock}
+        <BrandBlock badgeLabel={badgeLabel} />
         <Navbar.Toggle aria-controls={collapseId}>
           <FontAwesomeIcon icon={faBars} />
         </Navbar.Toggle>
         <Navbar.Collapse id={collapseId}>
-          {hasSearch ? (
-            <div className="d-flex flex-column flex-lg-row align-items-center gap-2 w-100 justify-content-center justify-content-lg-end">
-              <InputGroup size="sm" className="w-100" style={{ maxWidth: 360 }}>
-                <Form.Control
-                  type="text"
-                  placeholder={t('nav.search.placeholder')}
-                  value={search}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={onSearchClear}
-                  aria-label={t('nav.search.clearAria')}
-                >
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
-              </InputGroup>
-              <div className="d-flex align-items-center gap-2 flex-column flex-lg-row justify-content-center justify-content-lg-end order-2 order-lg-2 w-100">
-                {showHome ? (
-                  <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
-                    <FontAwesomeIcon icon={faHouse} />
-                    <span>{t('nav.home')}</span>
-                  </Link>
-                ) : null}
-                {showShared ? (
-                  <Link
-                    href="/shared-links"
-                    className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
-                  >
-                    <FontAwesomeIcon icon={faShareNodes} />
-                    <span>{t('nav.shared')}</span>
-                  </Link>
-                ) : null}
-                {languageBlock}
-                <ThemeToggleButton size="sm" />
-                {showSignIn ? (
-                  <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
-                    <FontAwesomeIcon icon={faRightToBracket} />
-                    <span>{t('common.signIn')}</span>
-                  </Link>
-                ) : null}
-                {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
-              </div>
-            </div>
+          {showSearch ? (
+            <CollapseContentWithSearch
+              search={search}
+              onSearchChange={onSearchChange}
+              onSearchClear={onSearchClear}
+              searchPlaceholder={t('nav.search.placeholder')}
+              searchClearAriaLabel={t('nav.search.clearAria')}
+              actions={actions}
+            />
           ) : (
-            <div className="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
-              {showHome ? (
-                <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
-                  <FontAwesomeIcon icon={faHouse} />
-                  <span>{t('nav.home')}</span>
-                </Link>
-              ) : null}
-              {showShared ? (
-                <Link href="/shared-links" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
-                  <FontAwesomeIcon icon={faShareNodes} />
-                  <span>{t('nav.shared')}</span>
-                </Link>
-              ) : null}
-              {languageBlock}
-              <ThemeToggleButton size="sm" />
-              {showSignIn ? (
-                <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
-                  <FontAwesomeIcon icon={faRightToBracket} />
-                  <span>{t('common.signIn')}</span>
-                </Link>
-              ) : null}
-              {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
-            </div>
+            <CollapseContentWithoutSearch actions={actions} />
           )}
         </Navbar.Collapse>
       </Container>
