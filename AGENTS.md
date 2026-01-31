@@ -41,6 +41,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Frontend lint (ESLint)              | `npm run lint`                                    |
 | Frontend unit tests (Jest)          | `npm test`                                        |
 | Frontend format apply (Prettier)    | `npm run format`                                  |
+| Frontend typecheck (tsc)            | `npm run typecheck`                               |
 
 ### Prerequisites
 
