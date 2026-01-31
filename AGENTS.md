@@ -106,7 +106,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - `.next`: Next build cache/types output (generated)
 - Frontend i18n config (next-i18next): `next-i18next.config.js` (repo root; `localePath` points at `src/main/webapp/public/locales`)
 
-### Platform
+### Deployment
 
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
