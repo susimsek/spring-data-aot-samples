@@ -38,9 +38,7 @@
     "src/main/webapp/.next/dev/types/**/*.ts",
     "src/main/webapp/**/*.mts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "build/types/**/*.ts",
-    "build/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "src/main/webapp/build"]
 }
