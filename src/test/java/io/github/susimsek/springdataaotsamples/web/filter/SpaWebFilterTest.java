@@ -18,7 +18,27 @@ class SpaWebFilterTest {
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isEqualTo("/login.html");
+        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
+    }
+
+    @Test
+    void forwardsLocaleRoutesToLocaleIndex() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/en");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertThat(response.getForwardedUrl()).isEqualTo("/en/index.html");
+    }
+
+    @Test
+    void forwardsLocalePageRoutesToLocalePageIndex() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/en/login");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertThat(response.getForwardedUrl()).isEqualTo("/en/login/index.html");
     }
 
     @Test
@@ -49,7 +69,7 @@ class SpaWebFilterTest {
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isEqualTo("/dffgg.html");
+        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
     }
 
     @Test
@@ -59,6 +79,6 @@ class SpaWebFilterTest {
 
         filter.doFilter(request, response, new MockFilterChain());
 
-        assertThat(response.getForwardedUrl()).isEqualTo("/login.html");
+        assertThat(response.getForwardedUrl()).isEqualTo("/index.html");
     }
 }
