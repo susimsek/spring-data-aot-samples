@@ -1,3 +1,3 @@
-import { getRedirect } from '../lib/redirect';
+import { Redirect } from '../lib/redirect';
 
-export default getRedirect('/shared-links');
+export default Redirect;
