@@ -184,16 +184,7 @@ interface ShareResult {
   oneTime: boolean;
 }
 
-function NoteCard({
-  note,
-  view,
-  showOwner,
-  selected,
-  onSelectToggle,
-  onAction,
-  loadTagSuggestions,
-  onInlineSave,
-}: Readonly<{
+type NoteCardProps = Readonly<{
   note: NoteDTO;
   view: NoteView;
   showOwner: boolean;
@@ -205,15 +196,365 @@ function NoteCard({
     noteId: number,
     payload: { title: string; content: string; color: string; pinned: boolean; tags: string[] },
   ) => Promise<NoteDTO | null>;
+}>;
+
+type DateTimeText = Readonly<{ date: string; time: string }>;
+
+function splitDateTimeText(text: string): DateTimeText {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return { date: '', time: '' };
+  const firstSpace = trimmed.indexOf(' ');
+  if (firstSpace === -1) return { date: trimmed, time: '' };
+  return { date: trimmed.slice(0, firstSpace), time: trimmed.slice(firstSpace + 1).trim() };
+}
+
+function NoteTagBadges({ tags }: Readonly<{ tags: string[] }>) {
+  if (!tags.length) return null;
+  return (
+    <div className="d-flex flex-wrap gap-1 mt-1">
+      {tags.map((tag) => (
+        <Badge key={tag} bg="secondary-subtle" text="secondary">
+          {tag}
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function NoteSummary({ note, tags }: Readonly<{ note: NoteDTO; tags: string[] }>) {
+  const title = note.title || '';
+  const content = note.content || '';
+  const pinned = !!note.pinned;
+  const color = note.color || '';
+
+  return (
+    <>
+      <div className="d-flex align-items-center gap-2">
+        <div className="fw-bold text-primary mb-0">{title}</div>
+        {pinned && <FontAwesomeIcon icon={faThumbtack} className="text-warning" />}
+        {color && (
+          <Badge bg="body-secondary" text="body" className="border" style={{ borderColor: color }}>
+            <FontAwesomeIcon icon={faCircle} style={{ color }} />
+          </Badge>
+        )}
+      </div>
+      <div className="text-muted small">{content}</div>
+      <NoteTagBadges tags={tags} />
+    </>
+  );
+}
+
+function NoteActions({
+  view,
+  note,
+  showOwner,
+  onAction,
+  onInlineToggle,
+  t,
+}: Readonly<{
+  view: NoteView;
+  note: NoteDTO;
+  showOwner: boolean;
+  onAction: (action: NoteAction, note: NoteDTO) => void | Promise<void>;
+  onInlineToggle: () => void;
+  t: TranslateFn;
 }>) {
+  if (view === 'trash') {
+    return (
+      <div className="d-flex flex-wrap gap-1 justify-content-end">
+        <Button variant="success" size="sm" onClick={() => onAction('restore', note)} title={t('notes.actions.restore')}>
+          <FontAwesomeIcon icon={faRotateLeft} />
+        </Button>
+        <Button variant="outline-secondary" size="sm" onClick={() => onAction('copy', note)} title={t('notes.actions.copyContent')}>
+          <FontAwesomeIcon icon={faCopy} />
+        </Button>
+        {showOwner && (
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => onAction('change-owner', note)}
+            title={t('notes.actions.changeOwner')}
+          >
+            <FontAwesomeIcon icon={faUserGear} />
+          </Button>
+        )}
+        <Button variant="outline-info" size="sm" onClick={() => onAction('revisions', note)} title={t('notes.actions.revisions')}>
+          <FontAwesomeIcon icon={faClockRotateLeft} />
+        </Button>
+        <Button
+          variant="outline-danger"
+          size="sm"
+          onClick={() => onAction('delete-forever', note)}
+          title={t('notes.actions.deletePermanently')}
+        >
+          <FontAwesomeIcon icon={faTrash} />
+        </Button>
+      </div>
+    );
+  }
+
+  const pinned = !!note.pinned;
+
+  return (
+    <div className="d-grid gap-1" style={{ gridTemplateColumns: 'repeat(3, 32px)' }}>
+      <Button
+        variant="outline-warning"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('toggle-pin', note)}
+        title={pinned ? t('notes.actions.unpin') : t('notes.actions.pin')}
+      >
+        <FontAwesomeIcon icon={faThumbtack} className={pinned ? '' : 'opacity-50'} />
+      </Button>
+      <Button
+        variant="outline-primary"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('edit-modal', note)}
+        title={t('notes.actions.editInModal')}
+      >
+        <FontAwesomeIcon icon={faPenToSquare} />
+      </Button>
+      <Button
+        variant="outline-secondary"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={onInlineToggle}
+        title={t('notes.actions.inlineEdit')}
+      >
+        <FontAwesomeIcon icon={faPen} />
+      </Button>
+      <Button
+        variant="outline-secondary"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('copy', note)}
+        title={t('notes.actions.copyContent')}
+      >
+        <FontAwesomeIcon icon={faCopy} />
+      </Button>
+      <Button
+        variant="outline-secondary"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('share-links', note)}
+        title={t('notes.actions.existingLinks')}
+      >
+        <FontAwesomeIcon icon={faLink} />
+      </Button>
+      <Button
+        variant="outline-secondary"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('share', note)}
+        title={t('notes.actions.createShareLink')}
+      >
+        <FontAwesomeIcon icon={faShareFromSquare} />
+      </Button>
+      {showOwner && (
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          style={{ width: 32, height: 32 }}
+          onClick={() => onAction('change-owner', note)}
+          title={t('notes.actions.changeOwner')}
+        >
+          <FontAwesomeIcon icon={faUserGear} />
+        </Button>
+      )}
+      <Button
+        variant="outline-info"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('revisions', note)}
+        title={t('notes.actions.revisions')}
+      >
+        <FontAwesomeIcon icon={faClockRotateLeft} />
+      </Button>
+      <Button
+        variant="outline-danger"
+        size="sm"
+        style={{ width: 32, height: 32 }}
+        onClick={() => onAction('delete', note)}
+        title={t('notes.actions.delete')}
+      >
+        <FontAwesomeIcon icon={faTrash} />
+      </Button>
+    </div>
+  );
+}
+
+function NoteInlineEditor({
+  noteId,
+  draft,
+  inlineErrors,
+  inlineSaving,
+  onDraftChange,
+  loadTagSuggestions,
+  onCancel,
+  onSave,
+  t,
+}: Readonly<{
+  noteId: number;
+  draft: NoteDraft;
+  inlineErrors: Record<string, string>;
+  inlineSaving: boolean;
+  onDraftChange: (draft: NoteDraft) => void;
+  loadTagSuggestions: (query: string) => Promise<string[]>;
+  onCancel: () => void;
+  onSave: () => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <div className="mt-2 border-top pt-2">
+      <Form.Group className="mb-2">
+        <Form.Control
+          size="sm"
+          type="text"
+          placeholder={t('notes.inline.title.placeholder')}
+          value={draft.title}
+          isInvalid={!!inlineErrors.title}
+          onChange={(event) => onDraftChange({ ...draft, title: event.target.value })}
+        />
+        {inlineErrors.title && <div className="invalid-feedback d-block">{inlineErrors.title}</div>}
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Control
+          size="sm"
+          as="textarea"
+          rows={3}
+          placeholder={t('notes.inline.content.placeholder')}
+          value={draft.content}
+          isInvalid={!!inlineErrors.content}
+          onChange={(event) => onDraftChange({ ...draft, content: event.target.value })}
+        />
+        {inlineErrors.content && <div className="invalid-feedback d-block">{inlineErrors.content}</div>}
+      </Form.Group>
+      <Form.Group className="mb-2">
+        <Form.Label className="small mb-1">{t('notes.inline.color.label')}</Form.Label>
+        <Form.Control
+          type="color"
+          value={draft.color || DEFAULT_COLOR}
+          onChange={(event) => onDraftChange({ ...draft, color: event.target.value })}
+        />
+      </Form.Group>
+      <TagInput
+        id={`inline-tags-${noteId}`}
+        label={t('notes.inline.tags.label')}
+        tags={draft.tags}
+        onChange={(tags) => onDraftChange({ ...draft, tags })}
+        loadSuggestions={loadTagSuggestions}
+        maxTags={5}
+        errorMessage={t('notes.validation.tags.format')}
+      />
+      {inlineErrors.tags && <div className="invalid-feedback d-block">{inlineErrors.tags}</div>}
+      <Form.Check
+        type="switch"
+        id={`inlinePinned-${noteId}`}
+        label={t('notes.inline.pinned.label')}
+        checked={draft.pinned}
+        onChange={(event) => onDraftChange({ ...draft, pinned: event.target.checked })}
+        className="mb-3"
+      />
+      <div className="d-flex justify-content-end gap-2">
+        <Button variant="outline-secondary" size="sm" onClick={onCancel}>
+          <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
+        </Button>
+        <Button variant="primary" size="sm" onClick={onSave} disabled={inlineSaving}>
+          {inlineSaving ? <Spinner size="sm" className="me-1" /> : <FontAwesomeIcon icon={faCheck} className="me-1" />}
+          {t('common.save')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function NoteMetaInfo({
+  note,
+  showOwner,
+  view,
+  meta,
+  t,
+}: Readonly<{
+  note: NoteDTO;
+  showOwner: boolean;
+  view: NoteView;
+  meta: { created: DateTimeText; modified: DateTimeText; deleted: DateTimeText | null };
+  t: TranslateFn;
+}>) {
+  return (
+    <>
+      <div className="d-flex flex-column gap-1 text-muted small">
+        {showOwner && (
+          <span>
+            <FontAwesomeIcon icon={faUserShield} className="me-1" />
+            {t('notes.fields.owner')} {note.owner || '—'}
+          </span>
+        )}
+        <span>
+          <FontAwesomeIcon icon={faUser} className="me-1" />
+          {t('notes.fields.createdBy')} {note.createdBy || '—'}
+        </span>
+        {note.lastModifiedBy && (
+          <span>
+            <FontAwesomeIcon icon={faUser} className="me-1" />
+            {t('notes.fields.updatedBy')} {note.lastModifiedBy}
+          </span>
+        )}
+      </div>
+      <div className="d-flex flex-column text-muted small gap-1">
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <FontAwesomeIcon icon={faCalendar} className="me-1" />
+          <span>{t('notes.fields.createdAt')}</span>
+          <span className="text-nowrap">{meta.created.date}</span>
+          <span className="d-inline-flex align-items-center gap-1 text-nowrap">
+            <FontAwesomeIcon icon={faClock} />
+            {meta.created.time}
+          </span>
+        </div>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <FontAwesomeIcon icon={faCalendar} className="me-1" />
+          <span>{t('notes.fields.updatedAt')}</span>
+          <span className="text-nowrap">{meta.modified.date}</span>
+          <span className="d-inline-flex align-items-center gap-1 text-nowrap">
+            <FontAwesomeIcon icon={faClock} />
+            {meta.modified.time}
+          </span>
+        </div>
+      </div>
+      {view === 'trash' && (
+        <div className="d-flex gap-2 text-muted small">
+          <span>
+            <FontAwesomeIcon icon={faUser} className="me-1" />
+            {t('notes.fields.deletedBy')} {note.deletedBy || '—'}
+          </span>
+        </div>
+      )}
+      {view === 'trash' && meta.deleted && (
+        <div className="d-flex text-muted small align-items-center gap-2 flex-wrap mt-1">
+          <FontAwesomeIcon icon={faCalendar} className="me-1" />
+          <span>{t('notes.fields.deletedAt')}</span>
+          <span className="text-nowrap">{meta.deleted.date}</span>
+          <span className="d-inline-flex align-items-center gap-1 text-nowrap">
+            <FontAwesomeIcon icon={faClock} />
+            {meta.deleted.time}
+          </span>
+        </div>
+      )}
+    </>
+  );
+}
+
+function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, loadTagSuggestions, onInlineSave }: NoteCardProps) {
   const { t } = useTranslation();
+  const tags = useMemo(() => normalizeTags(note.tags), [note.tags]);
   const [inlineMode, setInlineMode] = useState(false);
   const [draft, setDraft] = useState<NoteDraft>({
     title: note.title || '',
     content: note.content || '',
     color: note.color || DEFAULT_COLOR,
     pinned: !!note.pinned,
-    tags: normalizeTags(note.tags),
+    tags,
   });
   const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
   const [inlineSaving, setInlineSaving] = useState(false);
@@ -225,19 +566,19 @@ function NoteCard({
       content: note.content || '',
       color: note.color || DEFAULT_COLOR,
       pinned: !!note.pinned,
-      tags: normalizeTags(note.tags),
+      tags,
     });
     setInlineErrors({});
-  }, [inlineMode, note]);
+  }, [inlineMode, note, tags]);
 
   const meta = useMemo(() => {
     const createdText = formatDate(note.createdDate);
     const modifiedText = note.lastModifiedDate ? formatDate(note.lastModifiedDate) : createdText;
     const deletedText = note.deletedDate ? formatDate(note.deletedDate) : '';
     return {
-      createdText,
-      modifiedText,
-      deletedText,
+      created: splitDateTimeText(createdText),
+      modified: splitDateTimeText(modifiedText),
+      deleted: deletedText ? splitDateTimeText(deletedText) : null,
     };
   }, [note]);
 
@@ -274,265 +615,33 @@ function NoteCard({
               onChange={(event) => onSelectToggle(note.id, event.target.checked)}
             />
             <div className="flex-grow-1">
-              <div className="d-flex align-items-center gap-2">
-                <div className="fw-bold text-primary mb-0">{note.title}</div>
-                {note.pinned ? <FontAwesomeIcon icon={faThumbtack} className="text-warning" /> : null}
-                {note.color ? (
-                  <Badge bg="body-secondary" text="body" className="border" style={{ borderColor: note.color }}>
-                    <FontAwesomeIcon icon={faCircle} style={{ color: note.color }} />
-                  </Badge>
-                ) : null}
-              </div>
-              <div className="text-muted small">{note.content}</div>
-              {normalizeTags(note.tags).length ? (
-                <div className="d-flex flex-wrap gap-1 mt-1">
-                  {normalizeTags(note.tags).map((tag) => (
-                    <Badge key={tag} bg="secondary-subtle" text="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              ) : null}
+              <NoteSummary note={note} tags={tags} />
             </div>
-            {view === 'trash' ? (
-              <div className="d-flex flex-wrap gap-1 justify-content-end">
-                <Button variant="success" size="sm" onClick={() => onAction('restore', note)} title={t('notes.actions.restore')}>
-                  <FontAwesomeIcon icon={faRotateLeft} />
-                </Button>
-                <Button variant="outline-secondary" size="sm" onClick={() => onAction('copy', note)} title={t('notes.actions.copyContent')}>
-                  <FontAwesomeIcon icon={faCopy} />
-                </Button>
-                {showOwner ? (
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => onAction('change-owner', note)}
-                    title={t('notes.actions.changeOwner')}
-                  >
-                    <FontAwesomeIcon icon={faUserGear} />
-                  </Button>
-                ) : null}
-                <Button variant="outline-info" size="sm" onClick={() => onAction('revisions', note)} title={t('notes.actions.revisions')}>
-                  <FontAwesomeIcon icon={faClockRotateLeft} />
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => onAction('delete-forever', note)}
-                  title={t('notes.actions.deletePermanently')}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </div>
-            ) : (
-              <div className="d-grid gap-1" style={{ gridTemplateColumns: 'repeat(3, 32px)' }}>
-                <Button
-                  variant="outline-warning"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('toggle-pin', note)}
-                  title={note.pinned ? t('notes.actions.unpin') : t('notes.actions.pin')}
-                >
-                  <FontAwesomeIcon icon={faThumbtack} className={note.pinned ? '' : 'opacity-50'} />
-                </Button>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('edit-modal', note)}
-                  title={t('notes.actions.editInModal')}
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} />
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => setInlineMode((prev) => !prev)}
-                  title={t('notes.actions.inlineEdit')}
-                >
-                  <FontAwesomeIcon icon={faPen} />
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('copy', note)}
-                  title={t('notes.actions.copyContent')}
-                >
-                  <FontAwesomeIcon icon={faCopy} />
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('share-links', note)}
-                  title={t('notes.actions.existingLinks')}
-                >
-                  <FontAwesomeIcon icon={faLink} />
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('share', note)}
-                  title={t('notes.actions.createShareLink')}
-                >
-                  <FontAwesomeIcon icon={faShareFromSquare} />
-                </Button>
-                {showOwner ? (
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    style={{ width: 32, height: 32 }}
-                    onClick={() => onAction('change-owner', note)}
-                    title={t('notes.actions.changeOwner')}
-                  >
-                    <FontAwesomeIcon icon={faUserGear} />
-                  </Button>
-                ) : null}
-                <Button
-                  variant="outline-info"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('revisions', note)}
-                  title={t('notes.actions.revisions')}
-                >
-                  <FontAwesomeIcon icon={faClockRotateLeft} />
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  style={{ width: 32, height: 32 }}
-                  onClick={() => onAction('delete', note)}
-                  title={t('notes.actions.delete')}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </div>
-            )}
+            <NoteActions
+              view={view}
+              note={note}
+              showOwner={showOwner}
+              onAction={onAction}
+              onInlineToggle={() => setInlineMode((prev) => !prev)}
+              t={t}
+            />
           </div>
 
-          {inlineMode ? (
-            <div className="mt-2 border-top pt-2">
-              <Form.Group className="mb-2">
-                <Form.Control
-                  size="sm"
-                  type="text"
-                  placeholder={t('notes.inline.title.placeholder')}
-                  value={draft.title}
-                  isInvalid={!!inlineErrors.title}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))}
-                />
-                {inlineErrors.title ? <div className="invalid-feedback d-block">{inlineErrors.title}</div> : null}
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Control
-                  size="sm"
-                  as="textarea"
-                  rows={3}
-                  placeholder={t('notes.inline.content.placeholder')}
-                  value={draft.content}
-                  isInvalid={!!inlineErrors.content}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, content: event.target.value }))}
-                />
-                {inlineErrors.content ? <div className="invalid-feedback d-block">{inlineErrors.content}</div> : null}
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Label className="small mb-1">{t('notes.inline.color.label')}</Form.Label>
-                <Form.Control
-                  type="color"
-                  value={draft.color || DEFAULT_COLOR}
-                  onChange={(event) => setDraft((prev) => ({ ...prev, color: event.target.value }))}
-                />
-              </Form.Group>
-              <TagInput
-                id={`inline-tags-${note.id}`}
-                label={t('notes.inline.tags.label')}
-                tags={draft.tags}
-                onChange={(tags) => setDraft((prev) => ({ ...prev, tags }))}
-                loadSuggestions={loadTagSuggestions}
-                maxTags={5}
-                errorMessage={t('notes.validation.tags.format')}
-              />
-              {inlineErrors.tags ? <div className="invalid-feedback d-block">{inlineErrors.tags}</div> : null}
-              <Form.Check
-                type="switch"
-                id={`inlinePinned-${note.id}`}
-                label={t('notes.inline.pinned.label')}
-                checked={draft.pinned}
-                onChange={(event) => setDraft((prev) => ({ ...prev, pinned: event.target.checked }))}
-                className="mb-3"
-              />
-              <div className="d-flex justify-content-end gap-2">
-                <Button variant="outline-secondary" size="sm" onClick={() => setInlineMode(false)}>
-                  <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-                </Button>
-                <Button variant="primary" size="sm" onClick={handleInlineSave} disabled={inlineSaving}>
-                  {inlineSaving ? <Spinner size="sm" className="me-1" /> : <FontAwesomeIcon icon={faCheck} className="me-1" />}
-                  {t('common.save')}
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          {inlineMode && (
+            <NoteInlineEditor
+              noteId={note.id}
+              draft={draft}
+              inlineErrors={inlineErrors}
+              inlineSaving={inlineSaving}
+              onDraftChange={setDraft}
+              loadTagSuggestions={loadTagSuggestions}
+              onCancel={() => setInlineMode(false)}
+              onSave={handleInlineSave}
+              t={t}
+            />
+          )}
 
-          <div className="d-flex flex-column gap-1 text-muted small">
-            {showOwner ? (
-              <span>
-                <FontAwesomeIcon icon={faUserShield} className="me-1" />
-                {t('notes.fields.owner')} {note.owner || '—'}
-              </span>
-            ) : null}
-            <span>
-              <FontAwesomeIcon icon={faUser} className="me-1" />
-              {t('notes.fields.createdBy')} {note.createdBy || '—'}
-            </span>
-            {note.lastModifiedBy ? (
-              <span>
-                <FontAwesomeIcon icon={faUser} className="me-1" />
-                {t('notes.fields.updatedBy')} {note.lastModifiedBy}
-              </span>
-            ) : null}
-          </div>
-          <div className="d-flex flex-column text-muted small gap-1">
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-              <FontAwesomeIcon icon={faCalendar} className="me-1" />
-              <span>{t('notes.fields.createdAt')}</span>
-              <span className="text-nowrap">{meta.createdText.split(' ')[0]}</span>
-              <span className="d-inline-flex align-items-center gap-1 text-nowrap">
-                <FontAwesomeIcon icon={faClock} />
-                {meta.createdText.split(' ')[1] || ''}
-              </span>
-            </div>
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-              <FontAwesomeIcon icon={faCalendar} className="me-1" />
-              <span>{t('notes.fields.updatedAt')}</span>
-              <span className="text-nowrap">{meta.modifiedText.split(' ')[0]}</span>
-              <span className="d-inline-flex align-items-center gap-1 text-nowrap">
-                <FontAwesomeIcon icon={faClock} />
-                {meta.modifiedText.split(' ')[1] || ''}
-              </span>
-            </div>
-          </div>
-          {view === 'trash' ? (
-            <div className="d-flex gap-2 text-muted small">
-              <span>
-                <FontAwesomeIcon icon={faUser} className="me-1" />
-                {t('notes.fields.deletedBy')} {note.deletedBy || '—'}
-              </span>
-            </div>
-          ) : null}
-          {view === 'trash' && meta.deletedText ? (
-            <div className="d-flex text-muted small align-items-center gap-2 flex-wrap mt-1">
-              <FontAwesomeIcon icon={faCalendar} className="me-1" />
-              <span>{t('notes.fields.deletedAt')}</span>
-              <span className="text-nowrap">{meta.deletedText.split(' ')[0]}</span>
-              <span className="d-inline-flex align-items-center gap-1 text-nowrap">
-                <FontAwesomeIcon icon={faClock} />
-                {meta.deletedText.split(' ')[1] || ''}
-              </span>
-            </div>
-          ) : null}
+          <NoteMetaInfo note={note} showOwner={showOwner} view={view} meta={meta} t={t} />
         </Card.Body>
       </Card>
     </Col>
