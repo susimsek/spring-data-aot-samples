@@ -15,7 +15,7 @@ import Pagination from 'react-bootstrap/Pagination';
 import Spinner from 'react-bootstrap/Spinner';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { useTranslation } from 'next-i18next';
 import {
   faBars,
@@ -60,6 +60,7 @@ const REVISION_PAGE_SIZE = 5;
 const OWNER_SEARCH_PAGE_SIZE = 5;
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
+type IconProp = Parameters<typeof FontAwesomeIcon>[0]['icon'];
 
 function tagLabel(tag: unknown): string {
   if (tag == null) return '';
@@ -648,6 +649,955 @@ function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, l
   );
 }
 
+function NotesPageHero({ t }: Readonly<{ t: TranslateFn }>) {
+  return (
+    <header className="py-4 mb-4 shadow-sm bg-body-tertiary">
+      <Container className="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+        <div>
+          <h1 className="h4 mb-1 text-body">{t('notes.title')}</h1>
+          <p className="mb-0 text-muted">{t('notes.subtitle')}</p>
+        </div>
+        <div className="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+          <Badge bg="primary-subtle" text="primary">
+            {t('notes.badges.jpaAuditing')}
+          </Badge>
+          <Badge bg="primary-subtle" text="primary">
+            {t('notes.badges.liquibase')}
+          </Badge>
+          <Badge bg="primary-subtle" text="primary">
+            {t('notes.badges.springdoc')}
+          </Badge>
+        </div>
+      </Container>
+    </header>
+  );
+}
+
+function NotesViewTabs({
+  view,
+  onViewChange,
+  pageInfo,
+  showPageInfo,
+  t,
+}: Readonly<{
+  view: NoteView;
+  onViewChange: (next: NoteView) => void;
+  pageInfo: string;
+  showPageInfo: boolean;
+  t: TranslateFn;
+}>) {
+  return (
+    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <div className="nav nav-tabs nav-tabs-sm shadow-sm">
+        <button
+          className={`nav-link d-inline-flex align-items-center gap-2 ${view === 'active' ? 'active' : ''}`}
+          onClick={() => onViewChange('active')}
+          type="button"
+        >
+          <FontAwesomeIcon icon={faLayerGroup} />
+          <span>{t('notes.tabs.active')}</span>
+        </button>
+        <button
+          className={`nav-link d-inline-flex align-items-center gap-2 ${view === 'trash' ? 'active' : ''}`}
+          onClick={() => onViewChange('trash')}
+          type="button"
+        >
+          <FontAwesomeIcon icon={faTrashCan} />
+          <span>{t('notes.tabs.trash')}</span>
+        </button>
+      </div>
+      {showPageInfo && <div className="text-muted small">{pageInfo}</div>}
+    </div>
+  );
+}
+
+function NotesFiltersCard({
+  filterTags,
+  setFilterTags,
+  filterColor,
+  setFilterColor,
+  filterPinned,
+  setFilterPinned,
+  loadTagSuggestions,
+  onReset,
+  onApply,
+  t,
+}: Readonly<{
+  filterTags: string[];
+  setFilterTags: (tags: string[]) => void;
+  filterColor: string;
+  setFilterColor: (color: string) => void;
+  filterPinned: string;
+  setFilterPinned: (value: string) => void;
+  loadTagSuggestions: (query: string) => Promise<string[]>;
+  onReset: () => void;
+  onApply: () => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <Card className="shadow-sm border-0 mb-3">
+      <Card.Body>
+        <div className="d-flex flex-wrap align-items-start gap-3">
+          <div className="d-flex flex-column gap-2 flex-grow-1" style={{ minWidth: 320 }}>
+            <Form.Label className="small text-muted mb-0">{t('notes.filters.tags')}</Form.Label>
+            <TagInput
+              id="filter-tags"
+              tags={filterTags}
+              onChange={setFilterTags}
+              loadSuggestions={loadTagSuggestions}
+              maxTags={5}
+              errorMessage={t('notes.validation.tags.format')}
+              className="mb-0"
+            />
+          </div>
+          <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 180 }}>
+            <Form.Label className="small text-muted mb-0">{t('notes.filters.color')}</Form.Label>
+            <div className="d-flex align-items-center gap-2">
+              <Form.Control
+                type="color"
+                value={filterColor || DEFAULT_COLOR}
+                onChange={(event) => setFilterColor(event.target.value)}
+                style={{ width: 48, height: 38 }}
+              />
+              <Button variant="outline-secondary" size="sm" onClick={() => setFilterColor('')}>
+                <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.clear')}
+              </Button>
+            </div>
+          </div>
+          <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 160 }}>
+            <Form.Label className="small text-muted mb-0">{t('notes.filters.pinned.label')}</Form.Label>
+            <Form.Select size="sm" value={filterPinned} onChange={(event) => setFilterPinned(event.target.value)}>
+              <option value="">{t('notes.filters.pinned.options.all')}</option>
+              <option value="true">{t('notes.filters.pinned.options.pinned')}</option>
+              <option value="false">{t('notes.filters.pinned.options.unpinned')}</option>
+            </Form.Select>
+          </div>
+        </div>
+        <div className="d-flex gap-2 flex-wrap mt-3">
+          <Button variant="outline-secondary" size="sm" onClick={onReset}>
+            <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('common.reset')}
+          </Button>
+          <Button variant="primary" size="sm" onClick={onApply}>
+            <FontAwesomeIcon icon={faFilter} className="me-1" /> {t('common.apply')}
+          </Button>
+        </div>
+      </Card.Body>
+    </Card>
+  );
+}
+
+function NotesListControls({
+  pageSize,
+  onPageSizeChange,
+  sort,
+  onSortChange,
+  showEmptyTrash,
+  onEmptyTrash,
+  t,
+}: Readonly<{
+  pageSize: number;
+  onPageSizeChange: (next: number) => void;
+  sort: string;
+  onSortChange: (next: string) => void;
+  showEmptyTrash: boolean;
+  onEmptyTrash: () => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <div className="d-flex flex-wrap align-items-center gap-3">
+        <div className="d-flex align-items-center gap-2">
+          <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.pageSize.label')}</Form.Label>
+          <Form.Select
+            size="sm"
+            value={pageSize}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+            style={{ width: 'auto' }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+          </Form.Select>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.sort.label')}</Form.Label>
+          <Form.Select size="sm" value={sort} onChange={(event) => onSortChange(event.target.value)} style={{ width: 'auto' }}>
+            <option value="createdDate,desc">{t('notes.sort.options.createdNewest')}</option>
+            <option value="createdDate,asc">{t('notes.sort.options.createdOldest')}</option>
+            <option value="lastModifiedDate,desc">{t('notes.sort.options.updatedNewest')}</option>
+            <option value="lastModifiedDate,asc">{t('notes.sort.options.updatedOldest')}</option>
+            <option value="title,asc">{t('notes.sort.options.titleAsc')}</option>
+            <option value="title,desc">{t('notes.sort.options.titleDesc')}</option>
+          </Form.Select>
+        </div>
+      </div>
+      {showEmptyTrash && (
+        <Button variant="outline-danger" size="sm" onClick={onEmptyTrash}>
+          <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.emptyTrash')}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function NotesSelectionBar({
+  allSelected,
+  onSelectAllToggle,
+  selectedCount,
+  view,
+  openBulkModal,
+  t,
+}: Readonly<{
+  allSelected: boolean;
+  onSelectAllToggle: (checked: boolean) => void;
+  selectedCount: number;
+  view: NoteView;
+  openBulkModal: (action: string) => void;
+  t: TranslateFn;
+}>) {
+  const hasSelected = selectedCount > 0;
+
+  return (
+    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+      <Form.Check
+        type="checkbox"
+        checked={allSelected}
+        label={t('notes.selection.selectAllOnPage')}
+        onChange={(event) => onSelectAllToggle(event.target.checked)}
+      />
+      <div className="d-flex flex-wrap gap-2 align-items-center">
+        {hasSelected && <span className="text-muted small">{t('notes.selection.selected', { count: selectedCount })}</span>}
+        {view === 'trash' ? (
+          <>
+            <Button variant="outline-success" size="sm" disabled={!hasSelected} onClick={() => openBulkModal('RESTORE')}>
+              <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('notes.actions.restore')}
+            </Button>
+            <Button variant="outline-danger" size="sm" disabled={!hasSelected} onClick={() => openBulkModal('DELETE_FOREVER')}>
+              <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.deletePermanently')}
+            </Button>
+          </>
+        ) : (
+          <Button variant="outline-danger" size="sm" disabled={!hasSelected} onClick={() => openBulkModal('DELETE_SOFT')}>
+            <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.delete')}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NotesListStatus({
+  alert,
+  loading,
+  showEmptyMessage,
+  emptyMessage,
+  emptyIcon,
+}: Readonly<{
+  alert: string;
+  loading: boolean;
+  showEmptyMessage: boolean;
+  emptyMessage: string;
+  emptyIcon: IconProp;
+}>) {
+  return (
+    <>
+      {alert && <Alert variant="danger">{alert}</Alert>}
+      {loading && (
+        <div className="text-center py-3">
+          <Spinner animation="border" variant="primary" />
+        </div>
+      )}
+      {showEmptyMessage && (
+        <ListGroup>
+          <ListGroup.Item className="text-muted small d-flex align-items-center gap-2">
+            <FontAwesomeIcon icon={emptyIcon} />
+            <span>{emptyMessage}</span>
+          </ListGroup.Item>
+        </ListGroup>
+      )}
+    </>
+  );
+}
+
+function NotesGrid({
+  notes,
+  view,
+  showOwner,
+  selected,
+  onSelectToggle,
+  onAction,
+  loadTagSuggestions,
+  onInlineSave,
+}: Readonly<{
+  notes: NoteDTO[];
+  view: NoteView;
+  showOwner: boolean;
+  selected: Set<number>;
+  onSelectToggle: (noteId: number, checked: boolean) => void;
+  onAction: (action: NoteAction, note: NoteDTO) => void | Promise<void>;
+  loadTagSuggestions: (query: string) => Promise<string[]>;
+  onInlineSave: (
+    noteId: number,
+    payload: { title: string; content: string; color: string; pinned: boolean; tags: string[] },
+  ) => Promise<NoteDTO | null>;
+}>) {
+  return (
+    <Row className="g-3">
+      {notes.map((note) => (
+        <NoteCard
+          key={note.id}
+          note={note}
+          view={view}
+          showOwner={showOwner}
+          selected={selected.has(note.id)}
+          onSelectToggle={onSelectToggle}
+          onAction={onAction}
+          loadTagSuggestions={loadTagSuggestions}
+          onInlineSave={onInlineSave}
+        />
+      ))}
+    </Row>
+  );
+}
+
+function NotesPagination({
+  show,
+  items,
+}: Readonly<{
+  show: boolean;
+  items: JSX.Element[];
+}>) {
+  if (!show) return null;
+  return (
+    <div className="d-flex justify-content-center mt-3">
+      <Pagination>{items}</Pagination>
+    </div>
+  );
+}
+
+function ConfirmModal({
+  show,
+  title,
+  message,
+  confirmLabel,
+  onCancel,
+  onConfirm,
+  t,
+}: Readonly<{
+  show: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <Modal show={show} onHide={onCancel} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>{message}</p>
+        <div className="d-flex justify-content-end gap-2">
+          <Button variant="outline-secondary" onClick={onCancel}>
+            <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
+          </Button>
+          <Button variant="danger" onClick={onConfirm}>
+            <FontAwesomeIcon icon={faTrash} className="me-1" /> {confirmLabel}
+          </Button>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function BulkConfirmModal({
+  show,
+  onCancel,
+  onConfirm,
+  t,
+}: Readonly<{
+  show: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <Modal show={show} onHide={onCancel} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{t('notes.bulk.title')}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>{t('notes.bulk.message')}</p>
+        <div className="d-flex justify-content-end gap-2">
+          <Button variant="outline-secondary" onClick={onCancel}>
+            <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
+          </Button>
+          <Button variant="danger" onClick={onConfirm}>
+            <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('common.confirm')}
+          </Button>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function NoteEditModal({
+  show,
+  onHide,
+  editingNote,
+  saveNote,
+  registerNote,
+  control,
+  noteFormErrors,
+  noteSubmitting,
+  loadTagSuggestions,
+  t,
+}: Readonly<{
+  show: boolean;
+  onHide: () => void;
+  editingNote: NoteDTO | null;
+  saveNote: (event: FormEvent<HTMLFormElement>) => void;
+  registerNote: UseFormRegister<NoteFormValues>;
+  control: Control<NoteFormValues>;
+  noteFormErrors: FieldErrors<NoteFormValues>;
+  noteSubmitting: boolean;
+  loadTagSuggestions: (query: string) => Promise<string[]>;
+  t: TranslateFn;
+}>) {
+  const titleMessage = noteFormErrors.title?.message;
+  const contentMessage = noteFormErrors.content?.message;
+  return (
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{editingNote ? t('notes.modal.editTitle') : t('notes.modal.newTitle')}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={saveNote} noValidate>
+          <Form.Group className="mb-3">
+            <Form.Label>{t('notes.form.title.label')}</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder={t('notes.form.title.placeholder')}
+              isInvalid={!!noteFormErrors.title}
+              {...registerNote('title', {
+                validate: (value) => {
+                  const trimmed = value.trim();
+                  if (!trimmed) return t('validation.required');
+                  if (trimmed.length < 3 || trimmed.length > 255) {
+                    return t('notes.validation.title.size');
+                  }
+                  return true;
+                },
+              })}
+            />
+            {noteFormErrors.title ? <Form.Control.Feedback type="invalid">{String(titleMessage ?? '')}</Form.Control.Feedback> : null}
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{t('notes.form.content.label')}</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              placeholder={t('notes.form.content.placeholder')}
+              isInvalid={!!noteFormErrors.content}
+              {...registerNote('content', {
+                validate: (value) => {
+                  const trimmed = value.trim();
+                  if (!trimmed) return t('validation.required');
+                  if (trimmed.length < 10 || trimmed.length > 1024) {
+                    return t('notes.validation.content.size');
+                  }
+                  return true;
+                },
+              })}
+            />
+            {noteFormErrors.content ? <Form.Control.Feedback type="invalid">{String(contentMessage ?? '')}</Form.Control.Feedback> : null}
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>{t('notes.form.color.label')}</Form.Label>
+            <Form.Control type="color" {...registerNote('color')} />
+          </Form.Group>
+          <Controller
+            name="tags"
+            control={control}
+            rules={{
+              validate: (value) => {
+                const normalized = normalizeTags(value);
+                if (normalized.length > 5) return t('notes.validation.tags.max');
+                if (normalized.some((tag) => tag.length < 1 || tag.length > 30)) return t('notes.validation.tags.size');
+                if (normalized.some((tag) => !TAG_PATTERN.test(tag))) return t('notes.validation.tags.format');
+                return true;
+              },
+            }}
+            render={({ field }) => (
+              <TagInput
+                id="note-tags"
+                label={t('notes.form.tags.label')}
+                tags={field.value}
+                onChange={field.onChange}
+                loadSuggestions={loadTagSuggestions}
+                maxTags={5}
+                errorMessage={t('notes.validation.tags.format')}
+                isInvalid={!!noteFormErrors.tags}
+                externalError={noteFormErrors.tags?.message}
+              />
+            )}
+          />
+          <Form.Check type="switch" id="note-pinned" label={t('notes.form.pinned.label')} className="mb-3" {...registerNote('pinned')} />
+          <div className="d-flex justify-content-end">
+            <Button type="submit" disabled={noteSubmitting}>
+              {noteSubmitting ? <Spinner size="sm" className="me-2" /> : <FontAwesomeIcon icon={faCheck} className="me-2" />}
+              {editingNote ? t('common.save') : t('common.create')}
+            </Button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function ShareLinkItem({
+  link,
+  onCopy,
+  onRevoke,
+  t,
+}: Readonly<{
+  link: ShareLinkDTO;
+  onCopy: (token: string | undefined) => void;
+  onRevoke: (id: number) => void;
+  t: TranslateFn;
+}>) {
+  const token = link.token || '';
+  const label = token ? `${token.slice(0, 6)}…${token.slice(-4)}` : `#${link.id}`;
+  const status = link.revoked
+    ? t('notes.share.status.revoked')
+    : link.expired
+      ? t('notes.share.status.expired')
+      : t('notes.share.status.active');
+  const expiresAtText = link.expiresAt ? formatDate(link.expiresAt) : t('notes.share.link.noExpiry');
+  const oneTimeSuffix = link.oneTime ? ` · ${t('notes.share.oneTime')}` : '';
+  return (
+    <ListGroup.Item className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <div className="fw-semibold text-primary">{label}</div>
+        <div className="text-muted small">
+          {status}
+          {' · '}
+          {expiresAtText}
+          {oneTimeSuffix}
+        </div>
+      </div>
+      <div className="d-flex gap-2">
+        <Button variant="outline-secondary" size="sm" onClick={() => onCopy(token || undefined)} disabled={link.revoked}>
+          <FontAwesomeIcon icon={faCopy} className="me-1" /> {t('common.copy')}
+        </Button>
+        <Button variant="outline-danger" size="sm" onClick={() => onRevoke(link.id)} disabled={link.revoked}>
+          <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('common.revoke')}
+        </Button>
+      </div>
+    </ListGroup.Item>
+  );
+}
+
+function ShareResultBlock({
+  shareResult,
+  onCopyUrl,
+  t,
+}: Readonly<{
+  shareResult: ShareResult;
+  onCopyUrl: (url: string) => void;
+  t: TranslateFn;
+}>) {
+  return (
+    <div className="mt-3">
+      <Form.Group className="mb-2">
+        <Form.Label>{t('notes.share.link.label')}</Form.Label>
+        <InputGroup>
+          <Form.Control value={shareResult.url} readOnly />
+          <Button variant="outline-secondary" onClick={() => onCopyUrl(shareResult.url)}>
+            <FontAwesomeIcon icon={faCopy} className="me-1" /> {t('common.copy')}
+          </Button>
+        </InputGroup>
+      </Form.Group>
+      <div className="d-flex align-items-center gap-2">
+        <Badge bg="success-subtle" text="success">
+          {shareResult.permission}
+        </Badge>
+        <span className="text-muted small">
+          {shareResult.expiresAt
+            ? t('notes.share.link.expiresAt', { date: formatDate(shareResult.expiresAt) })
+            : t('notes.share.link.noExpiry')}
+        </span>
+        {shareResult.oneTime && (
+          <Badge bg="secondary-subtle" text="secondary">
+            {t('notes.share.oneTime')}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ShareModal({
+  show,
+  onHide,
+  shareAlert,
+  shareNoteTitle,
+  shareExpiry,
+  setShareExpiry,
+  shareExpiresAt,
+  setShareExpiresAt,
+  shareOneTime,
+  setShareOneTime,
+  shareSubmitting,
+  onSubmit,
+  shareResult,
+  onCopyUrl,
+  shareLinks,
+  shareLinksLoading,
+  shareLinksHasMore,
+  onCopyToken,
+  onRevokeLink,
+  onLoadMore,
+  t,
+}: Readonly<{
+  show: boolean;
+  onHide: () => void;
+  shareAlert: string;
+  shareNoteTitle: string;
+  shareExpiry: string;
+  setShareExpiry: (next: string) => void;
+  shareExpiresAt: string;
+  setShareExpiresAt: (next: string) => void;
+  shareOneTime: boolean;
+  setShareOneTime: (next: boolean) => void;
+  shareSubmitting: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  shareResult: ShareResult | null;
+  onCopyUrl: (url: string) => void;
+  shareLinks: ShareLinkDTO[];
+  shareLinksLoading: boolean;
+  shareLinksHasMore: boolean;
+  onCopyToken: (token: string | undefined) => void;
+  onRevokeLink: (id: number) => void;
+  onLoadMore: () => void;
+  t: TranslateFn;
+}>) {
+  const showCustomExpiry = shareExpiry === 'custom';
+  const showEmptyLinksMessage = shareLinks.length === 0 && !shareLinksLoading;
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title className="d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faLink} className="text-primary" />
+          <span>{t('notes.share.title')}</span>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {shareAlert && <Alert variant="danger">{shareAlert}</Alert>}
+        <p className="text-muted small mb-3">{shareNoteTitle}</p>
+        <Form onSubmit={onSubmit}>
+          <input type="hidden" value="READ" />
+          <Form.Group className="mb-3">
+            <Form.Label>{t('notes.share.expires.label')}</Form.Label>
+            <Form.Select value={shareExpiry} onChange={(event) => setShareExpiry(event.target.value)}>
+              <option value="1">{t('notes.share.expires.options.1h')}</option>
+              <option value="24">{t('notes.share.expires.options.24h')}</option>
+              <option value="72">{t('notes.share.expires.options.3d')}</option>
+              <option value="168">{t('notes.share.expires.options.7d')}</option>
+              <option value="720">{t('notes.share.expires.options.30d')}</option>
+              <option value="custom">{t('notes.share.expires.options.custom')}</option>
+              <option value="never">{t('notes.share.expires.options.never')}</option>
+            </Form.Select>
+            {showCustomExpiry && (
+              <Form.Control
+                type="datetime-local"
+                className="mt-2"
+                value={shareExpiresAt}
+                onChange={(event) => setShareExpiresAt(event.target.value)}
+              />
+            )}
+            <div className="form-text">{t('notes.share.expires.helper')}</div>
+          </Form.Group>
+          <Form.Check
+            type="switch"
+            label={t('notes.share.oneTime')}
+            checked={shareOneTime}
+            onChange={(event) => setShareOneTime(event.target.checked)}
+            className="mb-3"
+          />
+          <div className="d-flex justify-content-end gap-2">
+            <Button variant="outline-secondary" onClick={onHide}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" disabled={shareSubmitting}>
+              {shareSubmitting && <Spinner size="sm" className="me-2" />}
+              {t('notes.share.createLink')}
+            </Button>
+          </div>
+        </Form>
+        {shareResult && <ShareResultBlock shareResult={shareResult} onCopyUrl={onCopyUrl} t={t} />}
+        <div className="mt-4">
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <span className="spinner-border spinner-border-sm text-secondary d-none" aria-hidden="true" />
+          </div>
+          {showEmptyLinksMessage && <div className="text-muted small">{t('notes.share.links.empty')}</div>}
+          <ListGroup style={{ maxHeight: '36rem', overflowY: 'auto' }}>
+            {shareLinks.map((link) => (
+              <ShareLinkItem key={link.id} link={link} onCopy={onCopyToken} onRevoke={onRevokeLink} t={t} />
+            ))}
+          </ListGroup>
+          <div className="d-flex justify-content-center mt-2">
+            {shareLinksHasMore && (
+              <Button variant="outline-secondary" size="sm" onClick={onLoadMore} disabled={shareLinksLoading}>
+                {shareLinksLoading && <Spinner size="sm" className="me-1" />}
+                {t('common.loadMore')}
+              </Button>
+            )}
+          </div>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function RevisionListItem({
+  rev,
+  localNumber,
+  previous,
+  showDiff,
+  onToggleDiff,
+  onRestore,
+  t,
+}: Readonly<{
+  rev: NoteRevisionDTO;
+  localNumber: number;
+  previous: NoteRevisionDTO | undefined;
+  showDiff: boolean;
+  onToggleDiff: (revisionId: number) => void;
+  onRestore: (revisionId: number) => void;
+  t: TranslateFn;
+}>) {
+  const noteData = rev.note;
+  const additionsOnly = !previous;
+  const titleDiff = renderDiffSpans(diffLinesDetailed(previous?.note?.title ?? '', noteData?.title ?? ''), additionsOnly);
+  const contentDiff = renderDiffSpans(diffLinesDetailed(previous?.note?.content ?? '', noteData?.content ?? ''), additionsOnly);
+  const tags = normalizeTags(noteData?.tags);
+
+  return (
+    <ListGroup.Item>
+      <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
+        <div className="flex-grow-1">
+          <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+            <Badge bg="primary-subtle" text="primary">
+              v{localNumber}
+            </Badge>
+            <Badge bg="secondary-subtle" text="secondary" className="text-uppercase">
+              {rev.revisionType || t('common.na')}
+            </Badge>
+            <span className="text-muted small">
+              <FontAwesomeIcon icon={faClock} className="me-1" />
+              {formatDate(rev.revisionDate) || '—'}
+            </span>
+            <span className="text-muted small">
+              <FontAwesomeIcon icon={faUser} className="me-1" />
+              {rev.auditor || t('common.unknown')}
+            </span>
+            {noteData?.color && (
+              <Badge bg="body-secondary" text="body" className="border" style={{ borderColor: noteData.color }}>
+                <FontAwesomeIcon icon={faCircle} style={{ color: noteData.color }} />
+              </Badge>
+            )}
+            <Badge bg="warning-subtle" text="warning">
+              {noteData?.pinned ? t('notes.pinned') : t('notes.unpinned')}
+            </Badge>
+          </div>
+          <div className="fw-semibold">{noteData?.title || t('notes.noTitle')}</div>
+          <div className="text-muted small">{noteData?.content || ''}</div>
+          <NoteTagBadges tags={tags} />
+        </div>
+        <div className="d-flex flex-column align-items-end gap-2">
+          <Button variant="outline-secondary" size="sm" onClick={() => onToggleDiff(rev.revision)}>
+            <FontAwesomeIcon icon={faBars} className="me-1" /> {showDiff ? t('notes.revisions.hideDiff') : t('notes.revisions.diff')}
+          </Button>
+          <Button variant="outline-primary" size="sm" onClick={() => onRestore(rev.revision)}>
+            <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('notes.actions.restore')}
+          </Button>
+        </div>
+      </div>
+      {showDiff && (
+        <div className="mt-3 border rounded p-3 bg-body-secondary">
+          <div className="fw-semibold mb-2">{t('notes.diff.title')}</div>
+          <div className="d-flex flex-wrap gap-2">{titleDiff}</div>
+          <div className="fw-semibold mb-2 mt-3">{t('notes.diff.content')}</div>
+          <div className="d-flex flex-column gap-2">{contentDiff}</div>
+        </div>
+      )}
+    </ListGroup.Item>
+  );
+}
+
+function RevisionModal({
+  show,
+  onHide,
+  revisionError,
+  revisionLoading,
+  revisions,
+  revisionTotal,
+  diffOpen,
+  onToggleDiff,
+  onRestoreRevision,
+  hasMore,
+  onLoadMore,
+  t,
+}: Readonly<{
+  show: boolean;
+  onHide: () => void;
+  revisionError: string;
+  revisionLoading: boolean;
+  revisions: NoteRevisionDTO[];
+  revisionTotal: number;
+  diffOpen: Set<number>;
+  onToggleDiff: (revisionId: number) => void;
+  onRestoreRevision: (revisionId: number) => void;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  t: TranslateFn;
+}>) {
+  const showInitialLoading = revisionLoading && revisions.length === 0;
+  const showEmpty = revisions.length === 0 && !revisionLoading;
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title className="d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faClockRotateLeft} className="text-primary" />
+          <span>{t('notes.revisions.title')}</span>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {revisionError && <Alert variant="danger">{revisionError}</Alert>}
+        {showInitialLoading && (
+          <div className="d-flex justify-content-center py-3">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        )}
+        <ListGroup>
+          {showEmpty && <ListGroup.Item className="text-muted">{t('notes.revisions.empty')}</ListGroup.Item>}
+          {revisions.map((rev, idx) => {
+            const localNumber = revisionTotal ? revisionTotal - idx : idx + 1;
+            const previous = revisions[idx + 1];
+            const showDiff = diffOpen.has(rev.revision);
+            return (
+              <RevisionListItem
+                key={rev.revision}
+                rev={rev}
+                localNumber={localNumber}
+                previous={previous}
+                showDiff={showDiff}
+                onToggleDiff={onToggleDiff}
+                onRestore={onRestoreRevision}
+                t={t}
+              />
+            );
+          })}
+        </ListGroup>
+        {hasMore && (
+          <div className="d-flex justify-content-center mt-3">
+            <Button variant="outline-secondary" size="sm" onClick={onLoadMore} disabled={revisionLoading}>
+              {revisionLoading && <Spinner size="sm" className="me-1" />}
+              {t('common.loadMore')}
+            </Button>
+          </div>
+        )}
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function OwnerModal({
+  show,
+  onHide,
+  ownerQuery,
+  onQueryChange,
+  suggestions,
+  onSelectSuggestion,
+  hasMore,
+  onLoadMore,
+  loading,
+  onSubmit,
+  t,
+}: Readonly<{
+  show: boolean;
+  onHide: () => void;
+  ownerQuery: string;
+  onQueryChange: (next: string) => void;
+  suggestions: StoredUser[];
+  onSelectSuggestion: (login: string) => void;
+  hasMore: boolean;
+  onLoadMore: () => void;
+  loading: boolean;
+  onSubmit: () => void;
+  t: TranslateFn;
+}>) {
+  const suggestionLogins = useMemo(
+    () =>
+      suggestions
+        .map((user) => user.login ?? user.username)
+        .filter((login): login is string => typeof login === 'string' && login.length > 0),
+    [suggestions],
+  );
+
+  return (
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Header closeButton>
+        <Modal.Title className="d-flex align-items-center gap-2">
+          <FontAwesomeIcon icon={faUserGear} className="text-primary" />
+          <span>{t('notes.owner.title')}</span>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Label>{t('notes.owner.form.newOwner')}</Form.Label>
+          <InputGroup className="mb-2">
+            <Form.Control
+              value={ownerQuery}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder={t('notes.owner.form.searchPlaceholder')}
+            />
+          </InputGroup>
+          <ListGroup className="mb-2">
+            {suggestionLogins.map((login) => (
+              <ListGroup.Item key={login} action onClick={() => onSelectSuggestion(login)}>
+                {login}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+          {hasMore && (
+            <div className="d-grid">
+              <Button variant="outline-secondary" size="sm" onClick={onLoadMore} disabled={loading}>
+                {loading && <Spinner size="sm" className="me-1" />}
+                {t('common.loadMore')}
+              </Button>
+            </div>
+          )}
+          <div className="form-text text-muted">{t('notes.owner.form.helper')}</div>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="outline-secondary" onClick={onHide}>
+          <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
+        </Button>
+        <Button variant="primary" onClick={onSubmit}>
+          <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('notes.owner.submit')}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 export default function NotesPage() {
   const { pushToast } = useToasts();
   const { loading: authLoading, isAdmin, isAuthenticated } = useAuth();
@@ -1220,28 +2170,45 @@ export default function NotesPage() {
     return items;
   }, [page, totalPages]);
 
+  const viewLabel = view === 'trash' ? t('notes.view.trash') : t('notes.view.all');
+  const emptyIcon = view === 'trash' ? faTrashCan : faNoteSticky;
+  const emptyMessage = debouncedSearch ? t('notes.empty.search') : view === 'trash' ? t('notes.empty.trash') : t('notes.empty.none');
+
+  const toggleRevisionDiff = (revisionId: number) => {
+    setDiffOpen((prev) => {
+      const next = new Set<number>(prev);
+      if (next.has(revisionId)) {
+        next.delete(revisionId);
+      } else {
+        next.add(revisionId);
+      }
+      return next;
+    });
+  };
+
+  const handleRestoreRevision = (revisionId: number) => {
+    if (!revisionNote) return;
+    restoreRevision(revisionNote.id, revisionId);
+  };
+
+  const loadMoreRevisions = () => {
+    if (!revisionNote) return;
+    loadRevisions(revisionNote, true);
+  };
+
+  const handleOwnerQueryChange = (next: string) => {
+    setOwnerQuery(next);
+    if (next.trim().length >= 2) {
+      loadOwnerSuggestions(next.trim(), false);
+      return;
+    }
+    setOwnerSuggestions([]);
+  };
+
   return (
     <>
       <AppNavbar showSearch={true} search={search} onSearchChange={setSearch} onSearchClear={() => setSearch('')} />
-      <header className="py-4 mb-4 shadow-sm bg-body-tertiary">
-        <Container className="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-          <div>
-            <h1 className="h4 mb-1 text-body">{t('notes.title')}</h1>
-            <p className="mb-0 text-muted">{t('notes.subtitle')}</p>
-          </div>
-          <div className="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
-            <Badge bg="primary-subtle" text="primary">
-              {t('notes.badges.jpaAuditing')}
-            </Badge>
-            <Badge bg="primary-subtle" text="primary">
-              {t('notes.badges.liquibase')}
-            </Badge>
-            <Badge bg="primary-subtle" text="primary">
-              {t('notes.badges.springdoc')}
-            </Badge>
-          </div>
-        </Container>
-      </header>
+      <NotesPageHero t={t} />
       <main className="bg-body-tertiary flex-grow-1">
         <Container className="pb-5">
           <Row className="g-4 align-items-start">
@@ -1254,666 +2221,156 @@ export default function NotesPage() {
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2 className="h5 mb-0 d-flex align-items-center gap-2">
                   <FontAwesomeIcon icon={faLayerGroup} className="text-primary" />
-                  <span>{view === 'trash' ? t('notes.view.trash') : t('notes.view.all')}</span>
+                  <span>{viewLabel}</span>
                 </h2>
                 {notes.length ? <span className="text-muted small">{totalLabel}</span> : null}
               </div>
-              <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <div className="nav nav-tabs nav-tabs-sm shadow-sm">
-                  <button
-                    className={`nav-link d-inline-flex align-items-center gap-2 ${view === 'active' ? 'active' : ''}`}
-                    onClick={() => setView('active')}
-                    type="button"
-                  >
-                    <FontAwesomeIcon icon={faLayerGroup} />
-                    <span>{t('notes.tabs.active')}</span>
-                  </button>
-                  <button
-                    className={`nav-link d-inline-flex align-items-center gap-2 ${view === 'trash' ? 'active' : ''}`}
-                    onClick={() => setView('trash')}
-                    type="button"
-                  >
-                    <FontAwesomeIcon icon={faTrashCan} />
-                    <span>{t('notes.tabs.trash')}</span>
-                  </button>
-                </div>
-                {notes.length ? <div className="text-muted small">{pageInfo}</div> : null}
-              </div>
-
-              <Card className="shadow-sm border-0 mb-3">
-                <Card.Body>
-                  <div className="d-flex flex-wrap align-items-start gap-3">
-                    <div className="d-flex flex-column gap-2 flex-grow-1" style={{ minWidth: 320 }}>
-                      <Form.Label className="small text-muted mb-0">{t('notes.filters.tags')}</Form.Label>
-                      <TagInput
-                        id="filter-tags"
-                        tags={filterTags}
-                        onChange={setFilterTags}
-                        loadSuggestions={loadTagSuggestions}
-                        maxTags={5}
-                        errorMessage={t('notes.validation.tags.format')}
-                        className="mb-0"
-                      />
-                    </div>
-                    <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 180 }}>
-                      <Form.Label className="small text-muted mb-0">{t('notes.filters.color')}</Form.Label>
-                      <div className="d-flex align-items-center gap-2">
-                        <Form.Control
-                          type="color"
-                          value={filterColor || DEFAULT_COLOR}
-                          onChange={(event) => setFilterColor(event.target.value)}
-                          style={{ width: 48, height: 38 }}
-                        />
-                        <Button variant="outline-secondary" size="sm" onClick={() => setFilterColor('')}>
-                          <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.clear')}
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="d-flex flex-column gap-2 flex-shrink-0" style={{ minWidth: 160 }}>
-                      <Form.Label className="small text-muted mb-0">{t('notes.filters.pinned.label')}</Form.Label>
-                      <Form.Select size="sm" value={filterPinned} onChange={(event) => setFilterPinned(event.target.value)}>
-                        <option value="">{t('notes.filters.pinned.options.all')}</option>
-                        <option value="true">{t('notes.filters.pinned.options.pinned')}</option>
-                        <option value="false">{t('notes.filters.pinned.options.unpinned')}</option>
-                      </Form.Select>
-                    </div>
-                  </div>
-                  <div className="d-flex gap-2 flex-wrap mt-3">
-                    <Button variant="outline-secondary" size="sm" onClick={handleResetFilters}>
-                      <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('common.reset')}
-                    </Button>
-                    <Button variant="primary" size="sm" onClick={handleApplyFilters}>
-                      <FontAwesomeIcon icon={faFilter} className="me-1" /> {t('common.apply')}
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-
-              <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                <div className="d-flex flex-wrap align-items-center gap-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.pageSize.label')}</Form.Label>
-                    <Form.Select
-                      size="sm"
-                      value={pageSize}
-                      onChange={(event) => setPageSize(Number(event.target.value))}
-                      style={{ width: 'auto' }}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                    </Form.Select>
-                  </div>
-                  <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.sort.label')}</Form.Label>
-                    <Form.Select size="sm" value={sort} onChange={(event) => setSort(event.target.value)} style={{ width: 'auto' }}>
-                      <option value="createdDate,desc">{t('notes.sort.options.createdNewest')}</option>
-                      <option value="createdDate,asc">{t('notes.sort.options.createdOldest')}</option>
-                      <option value="lastModifiedDate,desc">{t('notes.sort.options.updatedNewest')}</option>
-                      <option value="lastModifiedDate,asc">{t('notes.sort.options.updatedOldest')}</option>
-                      <option value="title,asc">{t('notes.sort.options.titleAsc')}</option>
-                      <option value="title,desc">{t('notes.sort.options.titleDesc')}</option>
-                    </Form.Select>
-                  </div>
-                </div>
-                {view === 'trash' && notes.length ? (
-                  <Button variant="outline-danger" size="sm" onClick={() => setEmptyTrashModalOpen(true)}>
-                    <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.emptyTrash')}
-                  </Button>
-                ) : null}
-              </div>
-
-              {notes.length ? (
-                <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                  <Form.Check
-                    type="checkbox"
-                    checked={allSelected}
-                    label={t('notes.selection.selectAllOnPage')}
-                    onChange={(event) => toggleSelectAll(event.target.checked)}
-                  />
-                  <div className="d-flex flex-wrap gap-2 align-items-center">
-                    {selectedCount ? (
-                      <span className="text-muted small">{t('notes.selection.selected', { count: selectedCount })}</span>
-                    ) : null}
-                    {view === 'trash' ? (
-                      <>
-                        <Button variant="outline-success" size="sm" disabled={!selectedCount} onClick={() => openBulkModal('RESTORE')}>
-                          <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('notes.actions.restore')}
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          disabled={!selectedCount}
-                          onClick={() => openBulkModal('DELETE_FOREVER')}
-                        >
-                          <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.deletePermanently')}
-                        </Button>
-                      </>
-                    ) : (
-                      <Button variant="outline-danger" size="sm" disabled={!selectedCount} onClick={() => openBulkModal('DELETE_SOFT')}>
-                        <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.delete')}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-
-              {alert ? <Alert variant="danger">{alert}</Alert> : null}
-              {loading ? (
-                <div className="text-center py-3">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              ) : null}
-              {showEmptyMessage ? (
-                <ListGroup>
-                  <ListGroup.Item className="text-muted small d-flex align-items-center gap-2">
-                    <FontAwesomeIcon icon={view === 'trash' ? faTrashCan : faNoteSticky} />
-                    <span>
-                      {debouncedSearch ? t('notes.empty.search') : view === 'trash' ? t('notes.empty.trash') : t('notes.empty.none')}
-                    </span>
-                  </ListGroup.Item>
-                </ListGroup>
-              ) : null}
-
-              <Row className="g-3">
-                {notes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    view={view}
-                    showOwner={isAdmin}
-                    selected={selected.has(note.id)}
-                    onSelectToggle={toggleSelect}
-                    onAction={handleNoteAction}
-                    loadTagSuggestions={loadTagSuggestions}
-                    onInlineSave={handleInlineSave}
-                  />
-                ))}
-              </Row>
-
-              {totalPages > 1 && notes.length ? (
-                <div className="d-flex justify-content-center mt-3">
-                  <Pagination>{paginationItems}</Pagination>
-                </div>
-              ) : null}
+              <NotesViewTabs view={view} onViewChange={setView} pageInfo={pageInfo} showPageInfo={!!notes.length} t={t} />
+              <NotesFiltersCard
+                filterTags={filterTags}
+                setFilterTags={setFilterTags}
+                filterColor={filterColor}
+                setFilterColor={setFilterColor}
+                filterPinned={filterPinned}
+                setFilterPinned={setFilterPinned}
+                loadTagSuggestions={loadTagSuggestions}
+                onReset={handleResetFilters}
+                onApply={handleApplyFilters}
+                t={t}
+              />
+              <NotesListControls
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                sort={sort}
+                onSortChange={setSort}
+                showEmptyTrash={view === 'trash' && notes.length > 0}
+                onEmptyTrash={() => setEmptyTrashModalOpen(true)}
+                t={t}
+              />
+              {notes.length > 0 && (
+                <NotesSelectionBar
+                  allSelected={allSelected}
+                  onSelectAllToggle={toggleSelectAll}
+                  selectedCount={selectedCount}
+                  view={view}
+                  openBulkModal={openBulkModal}
+                  t={t}
+                />
+              )}
+              <NotesListStatus
+                alert={alert}
+                loading={loading}
+                showEmptyMessage={showEmptyMessage}
+                emptyMessage={emptyMessage}
+                emptyIcon={emptyIcon}
+              />
+              <NotesGrid
+                notes={notes}
+                view={view}
+                showOwner={isAdmin}
+                selected={selected}
+                onSelectToggle={toggleSelect}
+                onAction={handleNoteAction}
+                loadTagSuggestions={loadTagSuggestions}
+                onInlineSave={handleInlineSave}
+              />
+              <NotesPagination show={totalPages > 1 && notes.length > 0} items={paginationItems} />
             </Col>
           </Row>
         </Container>
       </main>
       <Footer />
 
-      <Modal show={noteModalOpen} onHide={() => setNoteModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editingNote ? t('notes.modal.editTitle') : t('notes.modal.newTitle')}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={saveNote} noValidate>
-            <Form.Group className="mb-3">
-              <Form.Label>{t('notes.form.title.label')}</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder={t('notes.form.title.placeholder')}
-                isInvalid={!!noteFormErrors.title}
-                {...registerNote('title', {
-                  validate: (value) => {
-                    const trimmed = value.trim();
-                    if (!trimmed) return t('validation.required');
-                    if (trimmed.length < 3 || trimmed.length > 255) {
-                      return t('notes.validation.title.size');
-                    }
-                    return true;
-                  },
-                })}
-              />
-              {noteFormErrors.title ? <Form.Control.Feedback type="invalid">{noteFormErrors.title.message}</Form.Control.Feedback> : null}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>{t('notes.form.content.label')}</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                placeholder={t('notes.form.content.placeholder')}
-                isInvalid={!!noteFormErrors.content}
-                {...registerNote('content', {
-                  validate: (value) => {
-                    const trimmed = value.trim();
-                    if (!trimmed) return t('validation.required');
-                    if (trimmed.length < 10 || trimmed.length > 1024) {
-                      return t('notes.validation.content.size');
-                    }
-                    return true;
-                  },
-                })}
-              />
-              {noteFormErrors.content ? (
-                <Form.Control.Feedback type="invalid">{noteFormErrors.content.message}</Form.Control.Feedback>
-              ) : null}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>{t('notes.form.color.label')}</Form.Label>
-              <Form.Control type="color" {...registerNote('color')} />
-            </Form.Group>
-            <Controller
-              name="tags"
-              control={control}
-              rules={{
-                validate: (value) => {
-                  const normalized = normalizeTags(value);
-                  if (normalized.length > 5) return t('notes.validation.tags.max');
-                  if (normalized.some((tag) => tag.length < 1 || tag.length > 30)) return t('notes.validation.tags.size');
-                  if (normalized.some((tag) => !TAG_PATTERN.test(tag))) return t('notes.validation.tags.format');
-                  return true;
-                },
-              }}
-              render={({ field }) => (
-                <TagInput
-                  id="note-tags"
-                  label={t('notes.form.tags.label')}
-                  tags={field.value}
-                  onChange={field.onChange}
-                  loadSuggestions={loadTagSuggestions}
-                  maxTags={5}
-                  errorMessage={t('notes.validation.tags.format')}
-                  isInvalid={!!noteFormErrors.tags}
-                  externalError={noteFormErrors.tags?.message}
-                />
-              )}
-            />
-            <Form.Check type="switch" id="note-pinned" label={t('notes.form.pinned.label')} className="mb-3" {...registerNote('pinned')} />
-            <div className="d-flex justify-content-end">
-              <Button type="submit" disabled={noteSubmitting}>
-                {noteSubmitting ? <Spinner size="sm" className="me-2" /> : <FontAwesomeIcon icon={faCheck} className="me-2" />}
-                {editingNote ? t('common.save') : t('common.create')}
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={deleteModalOpen} onHide={() => setDeleteModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{t('notes.delete.title')}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>{t('notes.delete.message')}</p>
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="outline-secondary" onClick={() => setDeleteModalOpen(false)}>
-              <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-            </Button>
-            <Button variant="danger" onClick={confirmDelete}>
-              <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('common.delete')}
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={deleteForeverModalOpen} onHide={() => setDeleteForeverModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{t('notes.deleteForever.title')}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>{t('notes.deleteForever.message')}</p>
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="outline-secondary" onClick={() => setDeleteForeverModalOpen(false)}>
-              <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-            </Button>
-            <Button variant="danger" onClick={confirmDeleteForever}>
-              <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('common.delete')}
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={emptyTrashModalOpen} onHide={() => setEmptyTrashModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{t('notes.emptyTrash.title')}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>{t('notes.emptyTrash.message')}</p>
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="outline-secondary" onClick={() => setEmptyTrashModalOpen(false)}>
-              <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-            </Button>
-            <Button variant="danger" onClick={confirmEmptyTrash}>
-              <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('notes.actions.emptyTrash')}
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={bulkModalOpen} onHide={() => setBulkModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{t('notes.bulk.title')}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>{t('notes.bulk.message')}</p>
-          <div className="d-flex justify-content-end gap-2">
-            <Button variant="outline-secondary" onClick={() => setBulkModalOpen(false)}>
-              <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-            </Button>
-            <Button variant="danger" onClick={confirmBulkAction}>
-              <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('common.confirm')}
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={shareModalOpen} onHide={() => setShareModalOpen(false)} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title className="d-flex align-items-center gap-2">
-            <FontAwesomeIcon icon={faLink} className="text-primary" />
-            <span>{t('notes.share.title')}</span>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {shareAlert ? <Alert variant="danger">{shareAlert}</Alert> : null}
-          <p className="text-muted small mb-3">{shareNote?.title || ''}</p>
-          <Form onSubmit={handleShareSubmit}>
-            <input type="hidden" value="READ" />
-            <Form.Group className="mb-3">
-              <Form.Label>{t('notes.share.expires.label')}</Form.Label>
-              <Form.Select value={shareExpiry} onChange={(event) => setShareExpiry(event.target.value)}>
-                <option value="1">{t('notes.share.expires.options.1h')}</option>
-                <option value="24">{t('notes.share.expires.options.24h')}</option>
-                <option value="72">{t('notes.share.expires.options.3d')}</option>
-                <option value="168">{t('notes.share.expires.options.7d')}</option>
-                <option value="720">{t('notes.share.expires.options.30d')}</option>
-                <option value="custom">{t('notes.share.expires.options.custom')}</option>
-                <option value="never">{t('notes.share.expires.options.never')}</option>
-              </Form.Select>
-              {shareExpiry === 'custom' ? (
-                <Form.Control
-                  type="datetime-local"
-                  className="mt-2"
-                  value={shareExpiresAt}
-                  onChange={(event) => setShareExpiresAt(event.target.value)}
-                />
-              ) : null}
-              <div className="form-text">{t('notes.share.expires.helper')}</div>
-            </Form.Group>
-            <Form.Check
-              type="switch"
-              label={t('notes.share.oneTime')}
-              checked={shareOneTime}
-              onChange={(event) => setShareOneTime(event.target.checked)}
-              className="mb-3"
-            />
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="outline-secondary" onClick={() => setShareModalOpen(false)}>
-                {t('common.cancel')}
-              </Button>
-              <Button type="submit" disabled={shareSubmitting}>
-                {shareSubmitting ? <Spinner size="sm" className="me-2" /> : null}
-                {t('notes.share.createLink')}
-              </Button>
-            </div>
-          </Form>
-          {shareResult ? (
-            <div className="mt-3">
-              <Form.Group className="mb-2">
-                <Form.Label>{t('notes.share.link.label')}</Form.Label>
-                <InputGroup>
-                  <Form.Control value={shareResult.url} readOnly />
-                  <Button variant="outline-secondary" onClick={() => handleShareCopy(shareResult.url, true)}>
-                    <FontAwesomeIcon icon={faCopy} className="me-1" /> {t('common.copy')}
-                  </Button>
-                </InputGroup>
-              </Form.Group>
-              <div className="d-flex align-items-center gap-2">
-                <Badge bg="success-subtle" text="success">
-                  {shareResult.permission}
-                </Badge>
-                <span className="text-muted small">
-                  {shareResult.expiresAt
-                    ? t('notes.share.link.expiresAt', { date: formatDate(shareResult.expiresAt) })
-                    : t('notes.share.link.noExpiry')}
-                </span>
-                {shareResult.oneTime ? (
-                  <Badge bg="secondary-subtle" text="secondary">
-                    {t('notes.share.oneTime')}
-                  </Badge>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-          <div className="mt-4">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="spinner-border spinner-border-sm text-secondary d-none" aria-hidden="true" />
-            </div>
-            {shareLinks.length === 0 && !shareLinksLoading ? <div className="text-muted small">{t('notes.share.links.empty')}</div> : null}
-            <ListGroup style={{ maxHeight: '36rem', overflowY: 'auto' }}>
-              {shareLinks.map((link) => (
-                <ListGroup.Item key={link.id} className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                  <div>
-                    <div className="fw-semibold text-primary">
-                      {link.token ? `${link.token.slice(0, 6)}…${link.token.slice(-4)}` : `#${link.id}`}
-                    </div>
-                    <div className="text-muted small">
-                      {link.revoked
-                        ? t('notes.share.status.revoked')
-                        : link.expired
-                          ? t('notes.share.status.expired')
-                          : t('notes.share.status.active')}
-                      {' · '}
-                      {link.expiresAt ? formatDate(link.expiresAt) : t('notes.share.link.noExpiry')}
-                      {link.oneTime ? ` · ${t('notes.share.oneTime')}` : ''}
-                    </div>
-                  </div>
-                  <div className="d-flex gap-2">
-                    <Button variant="outline-secondary" size="sm" onClick={() => handleShareCopy(link.token)} disabled={link.revoked}>
-                      <FontAwesomeIcon icon={faCopy} className="me-1" /> {t('common.copy')}
-                    </Button>
-                    <Button variant="outline-danger" size="sm" onClick={() => handleShareRevoke(link.id)} disabled={link.revoked}>
-                      <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('common.revoke')}
-                    </Button>
-                  </div>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-            <div className="d-flex justify-content-center mt-2">
-              {shareLinksHasMore ? (
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={() => shareNote && loadShareLinks(shareNote, true)}
-                  disabled={shareLinksLoading}
-                >
-                  {shareLinksLoading ? <Spinner size="sm" className="me-1" /> : null}
-                  {t('common.loadMore')}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={revisionModalOpen} onHide={() => setRevisionModalOpen(false)} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title className="d-flex align-items-center gap-2">
-            <FontAwesomeIcon icon={faClockRotateLeft} className="text-primary" />
-            <span>{t('notes.revisions.title')}</span>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {revisionError ? <Alert variant="danger">{revisionError}</Alert> : null}
-          {revisionLoading && revisions.length === 0 ? (
-            <div className="d-flex justify-content-center py-3">
-              <Spinner animation="border" variant="primary" />
-            </div>
-          ) : null}
-          <ListGroup>
-            {revisions.length === 0 && !revisionLoading ? (
-              <ListGroup.Item className="text-muted">{t('notes.revisions.empty')}</ListGroup.Item>
-            ) : null}
-            {revisions.map((rev, idx) => {
-              const noteData = rev.note;
-              const localNumber = revisionTotal ? revisionTotal - idx : idx + 1;
-              const showDiff = diffOpen.has(rev.revision);
-              const prev = revisions[idx + 1];
-              const additionsOnly = !prev;
-              const titleDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.title ?? '', noteData?.title ?? ''), additionsOnly);
-              const contentDiff = renderDiffSpans(diffLinesDetailed(prev?.note?.content ?? '', noteData?.content ?? ''), additionsOnly);
-              return (
-                <ListGroup.Item key={rev.revision}>
-                  <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
-                    <div className="flex-grow-1">
-                      <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
-                        <Badge bg="primary-subtle" text="primary">
-                          v{localNumber}
-                        </Badge>
-                        <Badge bg="secondary-subtle" text="secondary" className="text-uppercase">
-                          {rev.revisionType || t('common.na')}
-                        </Badge>
-                        <span className="text-muted small">
-                          <FontAwesomeIcon icon={faClock} className="me-1" />
-                          {formatDate(rev.revisionDate) || '—'}
-                        </span>
-                        <span className="text-muted small">
-                          <FontAwesomeIcon icon={faUser} className="me-1" />
-                          {rev.auditor || t('common.unknown')}
-                        </span>
-                        {noteData?.color ? (
-                          <Badge bg="body-secondary" text="body" className="border" style={{ borderColor: noteData.color }}>
-                            <FontAwesomeIcon icon={faCircle} style={{ color: noteData.color }} />
-                          </Badge>
-                        ) : null}
-                        <Badge bg="warning-subtle" text="warning">
-                          {noteData?.pinned ? t('notes.pinned') : t('notes.unpinned')}
-                        </Badge>
-                      </div>
-                      <div className="fw-semibold">{noteData?.title || t('notes.noTitle')}</div>
-                      <div className="text-muted small">{noteData?.content || ''}</div>
-                      {normalizeTags(noteData?.tags).length ? (
-                        <div className="d-flex flex-wrap gap-1 mt-1">
-                          {normalizeTags(noteData?.tags).map((tag) => (
-                            <Badge key={tag} bg="secondary-subtle" text="secondary">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="d-flex flex-column align-items-end gap-2">
-                      <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() =>
-                          setDiffOpen((prev) => {
-                            const next = new Set<number>(prev);
-                            if (next.has(rev.revision)) {
-                              next.delete(rev.revision);
-                            } else {
-                              next.add(rev.revision);
-                            }
-                            return next;
-                          })
-                        }
-                      >
-                        <FontAwesomeIcon icon={faBars} className="me-1" />{' '}
-                        {showDiff ? t('notes.revisions.hideDiff') : t('notes.revisions.diff')}
-                      </Button>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => {
-                          if (revisionNote) {
-                            restoreRevision(revisionNote.id, rev.revision);
-                          }
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faRotateLeft} className="me-1" /> {t('notes.actions.restore')}
-                      </Button>
-                    </div>
-                  </div>
-                  {showDiff ? (
-                    <div className="mt-3 border rounded p-3 bg-body-secondary">
-                      <div className="fw-semibold mb-2">{t('notes.diff.title')}</div>
-                      <div className="d-flex flex-wrap gap-2">{titleDiff}</div>
-                      <div className="fw-semibold mb-2 mt-3">{t('notes.diff.content')}</div>
-                      <div className="d-flex flex-column gap-2">{contentDiff}</div>
-                    </div>
-                  ) : null}
-                </ListGroup.Item>
-              );
-            })}
-          </ListGroup>
-          {revisionHasMore ? (
-            <div className="d-flex justify-content-center mt-3">
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={() => revisionNote && loadRevisions(revisionNote, true)}
-                disabled={revisionLoading}
-              >
-                {revisionLoading ? <Spinner size="sm" className="me-1" /> : null}
-                {t('common.loadMore')}
-              </Button>
-            </div>
-          ) : null}
-        </Modal.Body>
-      </Modal>
-
-      <Modal show={ownerModalOpen} onHide={() => setOwnerModalOpen(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title className="d-flex align-items-center gap-2">
-            <FontAwesomeIcon icon={faUserGear} className="text-primary" />
-            <span>{t('notes.owner.title')}</span>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Label>{t('notes.owner.form.newOwner')}</Form.Label>
-            <InputGroup className="mb-2">
-              <Form.Control
-                value={ownerQuery}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  setOwnerQuery(next);
-                  if (next.trim().length >= 2) {
-                    loadOwnerSuggestions(next.trim(), false);
-                  } else {
-                    setOwnerSuggestions([]);
-                  }
-                }}
-                placeholder={t('notes.owner.form.searchPlaceholder')}
-              />
-            </InputGroup>
-            <ListGroup className="mb-2">
-              {ownerSuggestions.map((user) => {
-                const login = user.login ?? user.username;
-                if (!login) return null;
-                return (
-                  <ListGroup.Item key={login} action onClick={() => setOwnerQuery(login)}>
-                    {login}
-                  </ListGroup.Item>
-                );
-              })}
-            </ListGroup>
-            {ownerHasMore ? (
-              <div className="d-grid">
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={() => loadOwnerSuggestions(ownerQuery.trim(), true)}
-                  disabled={ownerLoading}
-                >
-                  {ownerLoading ? <Spinner size="sm" className="me-1" /> : null}
-                  {t('common.loadMore')}
-                </Button>
-              </div>
-            ) : null}
-            <div className="form-text text-muted">{t('notes.owner.form.helper')}</div>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="outline-secondary" onClick={() => setOwnerModalOpen(false)}>
-            <FontAwesomeIcon icon={faXmark} className="me-1" /> {t('common.cancel')}
-          </Button>
-          <Button variant="primary" onClick={submitOwnerChange}>
-            <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('notes.owner.submit')}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <NoteEditModal
+        show={noteModalOpen}
+        onHide={() => setNoteModalOpen(false)}
+        editingNote={editingNote}
+        saveNote={saveNote}
+        registerNote={registerNote}
+        control={control}
+        noteFormErrors={noteFormErrors}
+        noteSubmitting={noteSubmitting}
+        loadTagSuggestions={loadTagSuggestions}
+        t={t}
+      />
+      <ConfirmModal
+        show={deleteModalOpen}
+        title={t('notes.delete.title')}
+        message={t('notes.delete.message')}
+        confirmLabel={t('common.delete')}
+        onCancel={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        t={t}
+      />
+      <ConfirmModal
+        show={deleteForeverModalOpen}
+        title={t('notes.deleteForever.title')}
+        message={t('notes.deleteForever.message')}
+        confirmLabel={t('common.delete')}
+        onCancel={() => setDeleteForeverModalOpen(false)}
+        onConfirm={confirmDeleteForever}
+        t={t}
+      />
+      <ConfirmModal
+        show={emptyTrashModalOpen}
+        title={t('notes.emptyTrash.title')}
+        message={t('notes.emptyTrash.message')}
+        confirmLabel={t('notes.actions.emptyTrash')}
+        onCancel={() => setEmptyTrashModalOpen(false)}
+        onConfirm={confirmEmptyTrash}
+        t={t}
+      />
+      <BulkConfirmModal show={bulkModalOpen} onCancel={() => setBulkModalOpen(false)} onConfirm={confirmBulkAction} t={t} />
+      <ShareModal
+        show={shareModalOpen}
+        onHide={() => setShareModalOpen(false)}
+        shareAlert={shareAlert}
+        shareNoteTitle={shareNote?.title || ''}
+        shareExpiry={shareExpiry}
+        setShareExpiry={setShareExpiry}
+        shareExpiresAt={shareExpiresAt}
+        setShareExpiresAt={setShareExpiresAt}
+        shareOneTime={shareOneTime}
+        setShareOneTime={setShareOneTime}
+        shareSubmitting={shareSubmitting}
+        onSubmit={handleShareSubmit}
+        shareResult={shareResult}
+        onCopyUrl={(url) => handleShareCopy(url, true)}
+        shareLinks={shareLinks}
+        shareLinksLoading={shareLinksLoading}
+        shareLinksHasMore={shareLinksHasMore}
+        onCopyToken={handleShareCopy}
+        onRevokeLink={handleShareRevoke}
+        onLoadMore={() => (shareNote ? loadShareLinks(shareNote, true) : undefined)}
+        t={t}
+      />
+      <RevisionModal
+        show={revisionModalOpen}
+        onHide={() => setRevisionModalOpen(false)}
+        revisionError={revisionError}
+        revisionLoading={revisionLoading}
+        revisions={revisions}
+        revisionTotal={revisionTotal}
+        diffOpen={diffOpen}
+        onToggleDiff={toggleRevisionDiff}
+        onRestoreRevision={handleRestoreRevision}
+        hasMore={revisionHasMore}
+        onLoadMore={loadMoreRevisions}
+        t={t}
+      />
+      <OwnerModal
+        show={ownerModalOpen}
+        onHide={() => setOwnerModalOpen(false)}
+        ownerQuery={ownerQuery}
+        onQueryChange={handleOwnerQueryChange}
+        suggestions={ownerSuggestions}
+        onSelectSuggestion={setOwnerQuery}
+        hasMore={ownerHasMore}
+        onLoadMore={() => loadOwnerSuggestions(ownerQuery.trim(), true)}
+        loading={ownerLoading}
+        onSubmit={submitOwnerChange}
+        t={t}
+      />
     </>
   );
 }
