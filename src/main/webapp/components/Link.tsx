@@ -30,10 +30,8 @@ const Link = forwardRef<HTMLAnchorElement, Props>(function Link(
   }
 
   return (
-    <NextLink href={resolvedHref} legacyBehavior>
-      <a ref={ref} {...anchorProps}>
-        {children}
-      </a>
+    <NextLink ref={ref} href={resolvedHref} {...anchorProps}>
+      {children}
     </NextLink>
   );
 });
