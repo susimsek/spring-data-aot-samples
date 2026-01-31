@@ -1086,11 +1086,11 @@ export default function NotesPage() {
   };
 
   const totalLabel =
-    view === 'trash' ? t('notes.summary.totalTrash', { count: totalElements }) : t('notes.summary.total', { count: totalElements });
+    view === 'trash' ? t('notes.summary.totalTrash', { count: totalElements }) : t('pagination.summary.total', { count: totalElements });
   const selectedCount = selected.size;
   const allSelected = notes.length > 0 && notes.every((note) => selected.has(note.id));
   const showEmptyMessage = !loading && notes.length === 0 && !alert;
-  const pageInfo = notes.length ? t('notes.summary.pageOf', { current: totalPages ? page + 1 : 0, total: totalPages }) : '';
+  const pageInfo = notes.length ? t('pagination.summary.pageOf', { current: totalPages ? page + 1 : 0, total: totalPages }) : '';
 
   const paginationItems = useMemo(() => {
     if (totalPages <= 1) return [];
@@ -1221,7 +1221,7 @@ export default function NotesPage() {
               <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div className="d-flex flex-wrap align-items-center gap-3">
                   <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('notes.pageSize.label')}</Form.Label>
+                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.pageSize.label')}</Form.Label>
                     <Form.Select
                       size="sm"
                       value={pageSize}
@@ -1234,7 +1234,7 @@ export default function NotesPage() {
                     </Form.Select>
                   </div>
                   <div className="d-flex align-items-center gap-2">
-                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('notes.sort.label')}</Form.Label>
+                    <Form.Label className="text-muted small mb-0 text-nowrap">{t('pagination.sort.label')}</Form.Label>
                     <Form.Select size="sm" value={sort} onChange={(event) => setSort(event.target.value)} style={{ width: 'auto' }}>
                       <option value="createdDate,desc">{t('notes.sort.options.createdNewest')}</option>
                       <option value="createdDate,asc">{t('notes.sort.options.createdOldest')}</option>

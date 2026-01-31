@@ -66,6 +66,18 @@
       "title": "Sayfa bulunamadı"
     }
   },
+  "pagination": {
+    "pageSize": {
+      "label": "Sayfa boyutu"
+    },
+    "sort": {
+      "label": "Sırala"
+    },
+    "summary": {
+      "pageOf": "Sayfa {{current}} / {{total}}",
+      "total": "Toplam: {{count}}"
+    }
+  },
   "login": {
     "defaultUsers": "Varsayılan kullanıcılar: admin/admin, user/user",
     "error": {
@@ -228,7 +240,6 @@
     "noExpiry": "Süresiz",
     "oneTime": "Tek kullanımlık",
     "sort": {
-      "label": "Sırala",
       "options": {
         "createdNewest": "Oluşturulma (en yeni)",
         "createdOldest": "Oluşturulma (en eski)",
@@ -241,19 +252,12 @@
       "revoked": "İptal edilmiş"
     },
     "subtitle": "Oluşturduğunuz tüm bağlantıları görün, durumlarını kontrol edin ve gerektiğinde iptal edin.",
-    "summary": {
-      "pageOf": "Sayfa {{current}} / {{total}}",
-      "total": "Toplam: {{count}}"
-    },
     "title": "Paylaşılan Bağlantılar",
     "toast": {
       "copied": "Paylaşım bağlantısı kopyalandı",
       "copyFailed": "Bağlantı kopyalanamadı. Lütfen manuel kopyalayın.",
       "revokeFailed": "Bağlantı iptal edilemedi.",
       "revoked": "Paylaşım bağlantısı iptal edildi"
-    },
-    "pageSize": {
-      "label": "Sayfa boyutu"
     }
   },
   "notes": {
@@ -432,7 +436,6 @@
       }
     },
     "sort": {
-      "label": "Sırala",
       "options": {
         "createdNewest": "Oluşturulma (en yeni)",
         "createdOldest": "Oluşturulma (en eski)",
@@ -443,12 +446,7 @@
       }
     },
     "subtitle": "Oluştur, düzenle, sil — denetime hazır. JWT almak için giriş yapın; denetim metadatası kullanıcıyı kullanır.",
-    "pageSize": {
-      "label": "Sayfa boyutu"
-    },
     "summary": {
-      "pageOf": "Sayfa {{current}} / {{total}}",
-      "total": "Toplam: {{count}}",
       "totalTrash": "Toplam (çöp): {{count}}"
     },
     "tabs": {

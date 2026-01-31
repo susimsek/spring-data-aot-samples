@@ -66,6 +66,18 @@
       "title": "Page not found"
     }
   },
+  "pagination": {
+    "pageSize": {
+      "label": "Page size"
+    },
+    "sort": {
+      "label": "Sort"
+    },
+    "summary": {
+      "pageOf": "Page {{current}} of {{total}}",
+      "total": "Total: {{count}}"
+    }
+  },
   "login": {
     "defaultUsers": "Default users: admin/admin, user/user",
     "error": {
@@ -228,7 +240,6 @@
     "noExpiry": "No expiry",
     "oneTime": "One-time",
     "sort": {
-      "label": "Sort",
       "options": {
         "createdNewest": "Created (newest)",
         "createdOldest": "Created (oldest)",
@@ -241,19 +252,12 @@
       "revoked": "Revoked"
     },
     "subtitle": "See every link you’ve issued, check status, and revoke when needed.",
-    "summary": {
-      "pageOf": "Page {{current}} of {{total}}",
-      "total": "Total: {{count}}"
-    },
     "title": "Shared Links",
     "toast": {
       "copied": "Share link copied",
       "copyFailed": "Could not copy link. Copy manually.",
       "revokeFailed": "Could not revoke link.",
       "revoked": "Share link revoked"
-    },
-    "pageSize": {
-      "label": "Page size"
     }
   },
   "notes": {
@@ -432,7 +436,6 @@
       }
     },
     "sort": {
-      "label": "Sort",
       "options": {
         "createdNewest": "Created (newest)",
         "createdOldest": "Created (oldest)",
@@ -443,12 +446,7 @@
       }
     },
     "subtitle": "Create, edit, delete — audit-ready. Sign in to get a JWT; audit metadata uses your user.",
-    "pageSize": {
-      "label": "Page size"
-    },
     "summary": {
-      "pageOf": "Page {{current}} of {{total}}",
-      "total": "Total: {{count}}",
       "totalTrash": "Total (trash): {{count}}"
     },
     "tabs": {

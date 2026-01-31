@@ -218,10 +218,10 @@ export default function SharedLinksPage() {
             <div className="d-flex align-items-center gap-2 ms-auto">
               {loading ? <Spinner size="sm" className="text-primary" /> : null}
               <div className="d-flex flex-column text-end">
-                {links.length ? <span className="text-muted small">{t('sharedLinks.summary.total', { count: totalElements })}</span> : null}
+                {links.length ? <span className="text-muted small">{t('pagination.summary.total', { count: totalElements })}</span> : null}
                 {links.length ? (
                   <span className="text-muted small">
-                    {t('sharedLinks.summary.pageOf', { current: totalPages ? page + 1 : 0, total: totalPages })}
+                    {t('pagination.summary.pageOf', { current: totalPages ? page + 1 : 0, total: totalPages })}
                   </span>
                 ) : null}
               </div>
@@ -291,7 +291,7 @@ export default function SharedLinksPage() {
           <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
             <div className="d-flex align-items-center gap-2">
               <Form.Label htmlFor="sharedLinksPageSize" className="small mb-0 text-muted text-nowrap">
-                {t('sharedLinks.pageSize.label')}
+                {t('pagination.pageSize.label')}
               </Form.Label>
               <Form.Select
                 id="sharedLinksPageSize"
@@ -307,7 +307,7 @@ export default function SharedLinksPage() {
             </div>
             <div className="d-flex align-items-center gap-2">
               <Form.Label htmlFor="sharedLinksSort" className="small mb-0 text-muted text-nowrap">
-                {t('sharedLinks.sort.label')}
+                {t('pagination.sort.label')}
               </Form.Label>
               <Form.Select
                 id="sharedLinksSort"
