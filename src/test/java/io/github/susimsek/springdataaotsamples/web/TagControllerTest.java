@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.github.susimsek.springdataaotsamples.config.TestWebMvcConfig;
 import io.github.susimsek.springdataaotsamples.service.dto.TagDTO;
 import io.github.susimsek.springdataaotsamples.service.query.TagQueryService;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = TagController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(TestWebMvcConfig.class)
 class TagControllerTest {
 
     @Autowired private MockMvc mockMvc;

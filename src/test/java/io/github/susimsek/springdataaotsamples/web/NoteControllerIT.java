@@ -80,8 +80,8 @@ class NoteControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].owner").value("alice"))
-                .andExpect(jsonPath("$.number").value(0))
-                .andExpect(jsonPath("$.size").value(10));
+                .andExpect(jsonPath("$.page.number").value(0))
+                .andExpect(jsonPath("$.page.size").value(10));
     }
 
     @Test
@@ -139,7 +139,7 @@ class NoteControllerIT {
         mockMvc.perform(get("/api/notes/deleted").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value(note.getTitle()))
-                .andExpect(jsonPath("$.size").value(10));
+                .andExpect(jsonPath("$.page.size").value(10));
     }
 
     @Test

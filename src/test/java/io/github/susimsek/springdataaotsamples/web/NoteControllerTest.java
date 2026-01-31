@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.github.susimsek.springdataaotsamples.config.TestWebMvcConfig;
 import io.github.susimsek.springdataaotsamples.service.NoteRevisionService;
 import io.github.susimsek.springdataaotsamples.service.NoteTrashService;
 import io.github.susimsek.springdataaotsamples.service.command.NoteCommandService;
@@ -36,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +49,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(controllers = NoteController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(TestWebMvcConfig.class)
 class NoteControllerTest {
 
     private static final Instant DEFAULT_TIMESTAMP = Instant.parse("2024-01-01T10:15:30Z");
@@ -118,8 +121,8 @@ class NoteControllerTest {
                                 .param("size", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Filtered note"))
-                .andExpect(jsonPath("$.number").value(1))
-                .andExpect(jsonPath("$.size").value(5));
+                .andExpect(jsonPath("$.page.number").value(1))
+                .andExpect(jsonPath("$.page.size").value(5));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
@@ -238,7 +241,7 @@ class NoteControllerTest {
                                 .param("size", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Deleted note"))
-                .andExpect(jsonPath("$.size").value(3));
+                .andExpect(jsonPath("$.page.size").value(3));
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
