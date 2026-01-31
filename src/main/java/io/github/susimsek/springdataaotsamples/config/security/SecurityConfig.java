@@ -85,6 +85,7 @@ public class SecurityConfig {
                                         .requestMatchers("/api/admin/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers(
+                                                "/_next/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**")
@@ -97,7 +98,17 @@ public class SecurityConfig {
                                         .permitAll()
                                         .requestMatchers("/actuator/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
-                                        .requestMatchers("/**/*.*")
+                                        .requestMatchers(
+                                                "/**/*.html",
+                                                "/**/*.js",
+                                                "/**/*.txt",
+                                                "/**/*.json",
+                                                "/**/*.map",
+                                                "/**/*.css",
+                                                "/**/*.ico",
+                                                "/**/*.png",
+                                                "/**/*.svg",
+                                                "/**/*.webapp")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())
