@@ -151,8 +151,6 @@ class UserCommandServiceTest {
     @Test
     void changePasswordShouldThrowWhenCurrentPasswordIsIncorrect() {
         Long userId = 1L;
-        ChangePasswordRequest request =
-                new ChangePasswordRequest("wrongPassword", "newPassword456");
         User user = new User();
         user.setId(userId);
         user.setUsername("testuser");
@@ -163,6 +161,8 @@ class UserCommandServiceTest {
         when(passwordEncoder.matches("wrongPassword", "{bcrypt}oldHashedPassword"))
                 .thenReturn(false);
 
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("wrongPassword", "newPassword456");
         assertThatThrownBy(() -> userCommandService.changePassword(userId, request))
                 .isInstanceOf(InvalidPasswordException.class)
                 .hasFieldOrPropertyWithValue(
