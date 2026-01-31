@@ -336,11 +336,12 @@ export default function SharedLinksPage() {
               </ListGroup.Item>
             ) : null}
             {links.map((link) => {
-              const statusBadge = link.revoked
-                ? { text: t('sharedLinks.status.revoked'), className: 'bg-secondary-subtle text-secondary' }
-                : link.expired
-                  ? { text: t('sharedLinks.status.expired'), className: 'bg-warning-subtle text-warning' }
-                  : { text: t('sharedLinks.status.active'), className: 'bg-success-subtle text-success' };
+              let statusBadge = { text: t('sharedLinks.status.active'), className: 'bg-success-subtle text-success' };
+              if (link.revoked) {
+                statusBadge = { text: t('sharedLinks.status.revoked'), className: 'bg-secondary-subtle text-secondary' };
+              } else if (link.expired) {
+                statusBadge = { text: t('sharedLinks.status.expired'), className: 'bg-warning-subtle text-warning' };
+              }
               const linkUrl = buildShareUrl(link.token);
               return (
                 <ListGroup.Item key={link.id} className="d-flex flex-column gap-2">
