@@ -1,7 +1,6 @@
 'use client';
 
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { useRouter } from 'next/router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLanguage } from '@fortawesome/free-solid-svg-icons';
@@ -29,32 +28,39 @@ export default function LanguageSelect() {
   const locales = ['en', 'tr'] as const;
   const currentLocale = getCurrentLocale(router.asPath || '/', locales);
 
+  const currentLabel = currentLocale === 'tr' ? 'Türkçe' : 'English';
+
+  const handleSelect = (nextLocale: string) => {
+    const nextPath = stripLocalePrefix(router.asPath || '/', locales);
+    const href = `/${nextLocale}${nextPath.startsWith('/') ? '' : '/'}${nextPath}`;
+
+    languageDetector.cache?.(nextLocale);
+    if (globalThis.document?.documentElement) {
+      globalThis.document.documentElement.lang = nextLocale;
+    }
+
+    void router.push(href);
+  };
+
   return (
-    <InputGroup size="sm" style={{ width: 140 }}>
-      <InputGroup.Text className="bg-transparent border-secondary">
-        <FontAwesomeIcon icon={faLanguage} />
-      </InputGroup.Text>
-      <Form.Select
+    <Dropdown>
+      <Dropdown.Toggle
+        variant="outline-secondary"
         size="sm"
-        value={currentLocale}
         aria-label="Language"
-        className="bg-transparent border-secondary border-start-0"
-        onChange={(e) => {
-          const nextLocale = e.currentTarget.value;
-          const nextPath = stripLocalePrefix(router.asPath || '/', locales);
-          const href = `/${nextLocale}${nextPath.startsWith('/') ? '' : '/'}${nextPath}`;
-
-          languageDetector.cache?.(nextLocale);
-          if (globalThis.document?.documentElement) {
-            globalThis.document.documentElement.lang = nextLocale;
-          }
-
-          void router.push(href);
-        }}
+        className="d-inline-flex align-items-center gap-2 text-nowrap"
       >
-        <option value="en">English</option>
-        <option value="tr">Türkçe</option>
-      </Form.Select>
-    </InputGroup>
+        <FontAwesomeIcon icon={faLanguage} />
+        <span>{currentLabel}</span>
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Item as="button" type="button" active={currentLocale === 'en'} onClick={() => handleSelect('en')}>
+          English
+        </Dropdown.Item>
+        <Dropdown.Item as="button" type="button" active={currentLocale === 'tr'} onClick={() => handleSelect('tr')}>
+          Türkçe
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
   );
 }
