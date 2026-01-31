@@ -1,4 +1,10 @@
-import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
+import axios, {
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import { buildRedirectQuery, clearStoredUser, isAdmin, loadStoredUser } from './auth';
 import { getDocument, getLocation, replaceLocation } from './window';
 import type { NoteDTO, NoteRevisionDTO, PageResponse, ShareLinkDTO, StoredUser } from './types';
@@ -12,12 +18,10 @@ function getStoredLanguage(): string | undefined {
   return language || undefined;
 }
 
-function applyAcceptLanguageHeader(config: AxiosRequestConfig): AxiosRequestConfig {
+function applyAcceptLanguageHeader<T>(config: InternalAxiosRequestConfig<T>): InternalAxiosRequestConfig<T> {
   const language = getStoredLanguage();
   if (!language) return config;
-  const headers = (config.headers ?? {}) as Record<string, unknown>;
-  headers['Accept-Language'] = language;
-  config.headers = headers;
+  (config.headers as { [key: string]: unknown })['Accept-Language'] = language;
   return config;
 }
 

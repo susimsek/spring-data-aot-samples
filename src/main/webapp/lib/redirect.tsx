@@ -6,37 +6,32 @@ import rootConfig from '../../../../next-i18next.config.js';
 
 const i18nextConfig = rootConfig as UserConfig;
 
-export function useRedirect(to?: string) {
+export const useRedirect = (to?: string): void => {
   const router = useRouter();
   const target = to || router.asPath;
 
   useEffect(() => {
-    const detectedLng = languageDetector.detect?.() || i18nextConfig.i18n.defaultLocale;
-
-    if (target.startsWith(`/${detectedLng}`) && router.route === '/404') {
+    const detectedLng = (languageDetector.detect ? languageDetector.detect() : undefined) || i18nextConfig.i18n.defaultLocale;
+    if (target.startsWith('/' + detectedLng) && router.route === '/404') {
       // prevent endless loop
-      router.replace(`/${detectedLng}${router.route}`);
+      router.replace('/' + detectedLng + router.route);
       return;
     }
 
-    languageDetector.cache?.(detectedLng);
-    router.replace(`/${detectedLng}${target}`);
-
-    if (globalThis.document?.documentElement) {
-      globalThis.document.documentElement.lang = detectedLng;
+    if (languageDetector.cache) {
+      languageDetector.cache(detectedLng);
     }
-  }, [router, target]);
+    router.replace('/' + detectedLng + target);
+    document.documentElement.lang = detectedLng;
+  });
+};
 
-  return null;
-}
-
-export function Redirect() {
+export const Redirect = (): null => {
   useRedirect();
   return null;
-}
+};
 
-export const getRedirect = (to: string) =>
-  function RedirectTo() {
-    useRedirect(to);
-    return null;
-  };
+export const getRedirect = (to: string) => (): null => {
+  useRedirect(to);
+  return null;
+};
