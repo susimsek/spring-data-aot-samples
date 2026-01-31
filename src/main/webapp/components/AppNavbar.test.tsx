@@ -45,7 +45,7 @@ describe('AppNavbar', () => {
     await user.click(screen.getByRole('button', { name: /clear search/i }));
     expect(onSearchClear).toHaveBeenCalledTimes(1);
 
-    const home = screen.getByRole('button', { name: /home/i });
+    const home = screen.getByRole('link', { name: /home/i });
     expect(home).toHaveAttribute('href', '/');
   });
 
@@ -74,7 +74,7 @@ describe('AppNavbar', () => {
     );
 
     expect(screen.getByPlaceholderText('Search notes')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /home/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /home/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /alice/i })).not.toBeInTheDocument();
   });
 });

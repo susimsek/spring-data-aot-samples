@@ -1,7 +1,6 @@
 'use client';
 
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'next-i18next';
@@ -22,10 +21,10 @@ export default function NotFoundRoutePage() {
           </div>
           <h1 className="h3 mb-2">{t('errors.notFound.title')}</h1>
           <p className="text-muted mb-4">{t('errors.notFound.message')}</p>
-          <Button as={Link} variant="primary" href="/" className="d-inline-flex align-items-center gap-2">
+          <Link href="/" className="btn btn-primary d-inline-flex align-items-center gap-2">
             <FontAwesomeIcon icon={faHouse} />
             <span>{t('common.backToHome')}</span>
-          </Button>
+          </Link>
         </Container>
       </main>
       <Footer />

@@ -4,7 +4,6 @@ import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faHouse, faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -55,8 +54,10 @@ export default function AppNavbar({
 
   const brandBlock = (
     <div className="d-flex align-items-center gap-2">
-      <Navbar.Brand as={Link} href="/">
-        <Brand />
+      <Navbar.Brand as="div">
+        <Link href="/" className="text-decoration-none">
+          <Brand />
+        </Link>
       </Navbar.Brand>
       {showBadge ? (
         <Badge bg="secondary-subtle" text="secondary">
@@ -99,34 +100,30 @@ export default function AppNavbar({
                   value={search}
                   onChange={(e) => onSearchChange?.(e.target.value)}
                 />
-                <Button variant="outline-secondary" onClick={onSearchClear} aria-label={t('nav.search.clearAria')}>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={onSearchClear}
+                  aria-label={t('nav.search.clearAria')}
+                >
                   <FontAwesomeIcon icon={faXmark} />
-                </Button>
+                </button>
               </InputGroup>
               <div className="d-flex align-items-center gap-2 flex-column flex-lg-row justify-content-center justify-content-lg-end order-2 order-lg-2 w-100">
                 {showHome ? (
-                  <Button
-                    as={Link}
-                    variant="outline-secondary"
-                    size="sm"
-                    className="d-inline-flex align-items-center gap-2 flex-shrink-0"
-                    href="/"
-                  >
+                  <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
                     <FontAwesomeIcon icon={faHouse} />
                     <span>{t('nav.home')}</span>
-                  </Button>
+                  </Link>
                 ) : null}
                 {showShared ? (
-                  <Button
-                    as={Link}
-                    variant="outline-secondary"
-                    size="sm"
-                    className="d-inline-flex align-items-center gap-2 flex-shrink-0"
+                  <Link
                     href="/shared-links"
+                    className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0"
                   >
                     <FontAwesomeIcon icon={faShareNodes} />
                     <span>{t('nav.shared')}</span>
-                  </Button>
+                  </Link>
                 ) : null}
                 {languageBlock}
                 <ThemeToggleButton size="sm" />
@@ -136,22 +133,16 @@ export default function AppNavbar({
           ) : (
             <div className="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
               {showHome ? (
-                <Button as={Link} variant="outline-secondary" size="sm" href="/" className="d-inline-flex align-items-center gap-2">
+                <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
                   <FontAwesomeIcon icon={faHouse} />
                   <span>{t('nav.home')}</span>
-                </Button>
+                </Link>
               ) : null}
               {showShared ? (
-                <Button
-                  as={Link}
-                  variant="outline-secondary"
-                  size="sm"
-                  href="/shared-links"
-                  className="d-inline-flex align-items-center gap-2"
-                >
+                <Link href="/shared-links" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
                   <FontAwesomeIcon icon={faShareNodes} />
                   <span>{t('nav.shared')}</span>
-                </Button>
+                </Link>
               ) : null}
               {languageBlock}
               <ThemeToggleButton size="sm" />
