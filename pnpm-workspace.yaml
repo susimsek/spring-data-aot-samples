@@ -1,6 +1,5 @@
 packages:
   - 'src/main/webapp'
 onlyBuiltDependencies:
-  - core-js
+  - esbuild
   - sharp
-  - unrs-resolver
