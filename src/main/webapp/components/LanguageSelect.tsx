@@ -30,7 +30,7 @@ export default function LanguageSelect() {
   const currentLocale = getCurrentLocale(router.asPath || '/', locales);
 
   return (
-    <InputGroup size="sm" style={{ maxWidth: 180 }}>
+    <InputGroup size="sm" style={{ width: 140 }}>
       <InputGroup.Text className="bg-transparent border-secondary">
         <FontAwesomeIcon icon={faLanguage} />
       </InputGroup.Text>
