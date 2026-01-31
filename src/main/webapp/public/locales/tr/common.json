@@ -1,0 +1,42 @@
+{
+  "common": {
+    "apply": "Uygula",
+    "backToHome": "Ana sayfaya dön",
+    "cancel": "İptal",
+    "clear": "Temizle",
+    "confirm": "Onayla",
+    "copy": "Kopyala",
+    "create": "Oluştur",
+    "delete": "Sil",
+    "loadMore": "Daha fazla yükle",
+    "loading": "Yükleniyor...",
+    "na": "Yok",
+    "reset": "Sıfırla",
+    "revoke": "İptal et",
+    "save": "Kaydet",
+    "signIn": "Giriş yap",
+    "togglePasswordVisibility": "Şifre görünürlüğünü değiştir",
+    "unknown": "bilinmiyor"
+  },
+  "validation": {
+    "required": "Bu alan zorunludur.",
+    "password": {
+      "complexity": "Şifre büyük, küçük harf ve rakam içermelidir.",
+      "match": "Şifreler eşleşmiyor.",
+      "maxLength": "Şifre en fazla 64 karakter olmalıdır.",
+      "minLength": "Şifre en az 8 karakter olmalıdır."
+    }
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "search": {
+      "clearAria": "Aramayı temizle",
+      "placeholder": "Notlarda ara"
+    },
+    "shared": "Paylaşılanlar"
+  },
+  "brand": {
+    "logoAlt": "Notlar logosu",
+    "name": "Notlar"
+  }
+}

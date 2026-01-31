@@ -12,6 +12,7 @@ import { useTranslation } from 'next-i18next';
 import ThemeToggleButton from './ThemeToggleButton';
 import AuthDropdown from './AuthDropdown';
 import Brand from './Brand';
+import LanguageSwitchLink from './LanguageSwitchLink';
 import useAuth from '../lib/useAuth';
 
 export interface AppNavbarProps {
@@ -64,12 +65,20 @@ export default function AppNavbar({
     </div>
   );
 
+  const languageBlock = (
+    <div className="d-flex align-items-center gap-1">
+      <LanguageSwitchLink locale="en" label="EN" aria-label="English" className="btn btn-outline-secondary btn-sm" />
+      <LanguageSwitchLink locale="tr" label="TR" aria-label="Türkçe" className="btn btn-outline-secondary btn-sm" />
+    </div>
+  );
+
   if (!hasActions) {
     return (
       <Navbar expand="lg" className="bg-body border-bottom shadow-sm">
         <Container className="d-flex align-items-center gap-3 flex-wrap justify-content-between">
           {brandBlock}
           <div className="ms-auto d-flex align-items-center gap-2">
+            {languageBlock}
             <ThemeToggleButton size="sm" />
           </div>
         </Container>
@@ -116,6 +125,7 @@ export default function AppNavbar({
                     <span>{t('nav.shared')}</span>
                   </Button>
                 ) : null}
+                {languageBlock}
                 <ThemeToggleButton size="sm" />
                 {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
               </div>
@@ -134,6 +144,7 @@ export default function AppNavbar({
                   <span>{t('nav.shared')}</span>
                 </Button>
               ) : null}
+              {languageBlock}
               <ThemeToggleButton size="sm" />
               {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
             </div>

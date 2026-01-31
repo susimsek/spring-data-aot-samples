@@ -8,6 +8,7 @@ import languageDetector from '../lib/languageDetector';
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> & {
   locale: string;
   href?: string;
+  label?: string;
 };
 
 function queryValueToString(value: unknown): string {
@@ -16,7 +17,7 @@ function queryValueToString(value: unknown): string {
   return '';
 }
 
-export default function LanguageSwitchLink({ locale, href, ...buttonProps }: Readonly<Props>) {
+export default function LanguageSwitchLink({ locale, href, label, ...buttonProps }: Readonly<Props>) {
   const router = useRouter();
 
   let resolvedHref = href || router.asPath;
@@ -51,7 +52,7 @@ export default function LanguageSwitchLink({ locale, href, ...buttonProps }: Rea
         }}
         {...buttonProps}
       >
-        {locale}
+        {label ?? locale.toUpperCase()}
       </button>
     </NextLink>
   );
