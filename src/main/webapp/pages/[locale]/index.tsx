@@ -1845,66 +1845,56 @@ export default function NotesPage() {
   };
 
   const handleNoteAction = async (action: NoteAction, note: NoteDTO) => {
-    if (action === 'edit-modal') {
-      openEditNote(note);
-      return;
-    }
-    if (action === 'delete') {
-      setDeleteTarget(note);
-      setDeleteModalOpen(true);
-      return;
-    }
-    if (action === 'delete-forever') {
-      setDeleteForeverTarget(note);
-      setDeleteForeverModalOpen(true);
-      return;
-    }
-    if (action === 'restore') {
-      try {
-        await Api.restore(note.id);
-        pushToast(t('notes.toast.restored'), 'success');
-        loadNotes();
-      } catch (err) {
-        pushToast(messageFromError(err, t('notes.toast.restoreFailed')), 'danger');
-      }
-      return;
-    }
-    if (action === 'copy') {
-      try {
-        await navigator.clipboard.writeText(note.content || '');
-        pushToast(t('notes.toast.copied'), 'success');
-      } catch {
-        pushToast(t('notes.toast.copyFailed'), 'warning');
-      }
-      return;
-    }
-    if (action === 'toggle-pin') {
-      try {
-        const updated = await Api.patchNote(note.id, { pinned: !note.pinned });
-        setNotes((prev) => prev.map((item) => (item.id === note.id ? updated : item)));
-      } catch (err) {
-        pushToast(messageFromError(err, t('notes.toast.pinFailed')), 'danger');
-      }
-      return;
-    }
-    if (action === 'share' || action === 'share-links') {
-      openShareModal(note);
-      return;
-    }
-    if (action === 'revisions') {
-      openRevisionModal(note);
-      return;
-    }
-    if (action === 'change-owner') {
-      if (!isAdmin) return;
-      setOwnerTarget(note);
-      setOwnerQuery('');
-      setOwnerSuggestions([]);
-      setOwnerPage(0);
-      setOwnerHasMore(false);
-      setOwnerModalOpen(true);
-      return;
-    }
+    const handlers: Record<NoteAction, (note: NoteDTO) => void | Promise<void>> = {
+      'edit-modal': (note) => openEditNote(note),
+      delete: (note) => {
+        setDeleteTarget(note);
+        setDeleteModalOpen(true);
+      },
+      'delete-forever': (note) => {
+        setDeleteForeverTarget(note);
+        setDeleteForeverModalOpen(true);
+      },
+      restore: async (note) => {
+        try {
+          await Api.restore(note.id);
+          pushToast(t('notes.toast.restored'), 'success');
+          loadNotes();
+        } catch (err) {
+          pushToast(messageFromError(err, t('notes.toast.restoreFailed')), 'danger');
+        }
+      },
+      copy: async (note) => {
+        try {
+          await navigator.clipboard.writeText(note.content || '');
+          pushToast(t('notes.toast.copied'), 'success');
+        } catch {
+          pushToast(t('notes.toast.copyFailed'), 'warning');
+        }
+      },
+      'toggle-pin': async (note) => {
+        try {
+          const updated = await Api.patchNote(note.id, { pinned: !note.pinned });
+          setNotes((prev) => prev.map((item) => (item.id === note.id ? updated : item)));
+        } catch (err) {
+          pushToast(messageFromError(err, t('notes.toast.pinFailed')), 'danger');
+        }
+      },
+      share: (note) => openShareModal(note),
+      'share-links': (note) => openShareModal(note),
+      revisions: (note) => openRevisionModal(note),
+      'change-owner': (note) => {
+        if (!isAdmin) return;
+        setOwnerTarget(note);
+        setOwnerQuery('');
+        setOwnerSuggestions([]);
+        setOwnerPage(0);
+        setOwnerHasMore(false);
+        setOwnerModalOpen(true);
+      },
+    };
+
+    await handlers[action](note);
   };
 
   const confirmDelete = async () => {
