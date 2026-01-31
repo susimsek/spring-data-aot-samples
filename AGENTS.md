@@ -403,4 +403,5 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Rendering untrusted values via `innerHTML` without escaping (XSS risk); prefer `textContent` or escape helpers.
 - Adding/altering a form input but forgetting to add HTML constraints and matching `invalid-feedback` elements (users end up with silent failures or inconsistent validation UX).
 - In TypeScript React components, keep props types read-only (e.g., `Readonly<Props>`); use this pattern consistently.
+- In async functions/promise callbacks, avoid `Promise.resolve()` / `Promise.reject()`; prefer `return` and `throw` respectively (Sonar `typescript:S7746`).
 - In TypeScript, prefer `globalThis` over `window`/`self`/`global` for globals; it keeps code environment-agnostic.
