@@ -443,6 +443,9 @@
       }
     },
     "subtitle": "Create, edit, delete — audit-ready. Sign in to get a JWT; audit metadata uses your user.",
+    "pageSize": {
+      "label": "Page size"
+    },
     "summary": {
       "pageOf": "Page {{current}} of {{total}}",
       "total": "Total: {{count}}",

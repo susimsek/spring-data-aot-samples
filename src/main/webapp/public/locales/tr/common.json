@@ -443,6 +443,9 @@
       }
     },
     "subtitle": "Oluştur, düzenle, sil — denetime hazır. JWT almak için giriş yapın; denetim metadatası kullanıcıyı kullanır.",
+    "pageSize": {
+      "label": "Sayfa boyutu"
+    },
     "summary": {
       "pageOf": "Sayfa {{current}} / {{total}}",
       "total": "Toplam: {{count}}",
