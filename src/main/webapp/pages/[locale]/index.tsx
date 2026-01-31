@@ -1176,11 +1176,12 @@ function ShareLinkItem({
 }>) {
   const token = link.token || '';
   const label = token ? `${token.slice(0, 6)}…${token.slice(-4)}` : `#${link.id}`;
-  const status = link.revoked
-    ? t('notes.share.status.revoked')
-    : link.expired
-      ? t('notes.share.status.expired')
-      : t('notes.share.status.active');
+  let status = t('notes.share.status.active');
+  if (link.revoked) {
+    status = t('notes.share.status.revoked');
+  } else if (link.expired) {
+    status = t('notes.share.status.expired');
+  }
   const expiresAtText = link.expiresAt ? formatDate(link.expiresAt) : t('notes.share.link.noExpiry');
   const oneTimeSuffix = link.oneTime ? ` · ${t('notes.share.oneTime')}` : '';
   return (
