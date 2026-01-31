@@ -51,7 +51,6 @@ export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
       dispatch(verifySession())
         .unwrap()
         .catch(() => replaceLocation(buildLoginUrl(path, queryString)));
-      return;
     }
   }, [authStatus, dispatch, isAuthenticated, path, queryString, sessionChecked]);
 
