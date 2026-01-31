@@ -1,8 +1,10 @@
+import rootConfig from '@root/next-i18next.config';
+
 export const PUBLIC_ROUTES = ['/login', '/register', '/share', '/403', '/404'];
 
 export const PROTECTED_ROUTES = ['/', '/change-password', '/shared-links'];
 
-export const LOCALE_ROUTES = ['en', 'tr'] as const;
+export const LOCALE_ROUTES = rootConfig.i18n.locales;
 
 export function stripLocalePrefix(path: string): string {
   if (!path) return '/';
