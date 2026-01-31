@@ -29,7 +29,7 @@ export interface AppNavbarProps {
   collapseId?: string;
 }
 
-function BrandBlock({ badgeLabel }: { badgeLabel: string }) {
+function BrandBlock({ badgeLabel }: Readonly<{ badgeLabel: string }>) {
   return (
     <div className="d-flex align-items-center gap-2">
       <Navbar.Brand as="div">
@@ -52,13 +52,13 @@ function SearchInput({
   onSearchClear,
   placeholder,
   clearAriaLabel,
-}: {
+}: Readonly<{
   search: string;
   onSearchChange?: (next: string) => void;
   onSearchClear?: () => void;
   placeholder: string;
   clearAriaLabel: string;
-}) {
+}>) {
   return (
     <InputGroup size="sm" className="w-100" style={{ maxWidth: 360 }}>
       <Form.Control type="text" placeholder={placeholder} value={search} onChange={(event) => onSearchChange?.(event.target.value)} />
@@ -69,7 +69,7 @@ function SearchInput({
   );
 }
 
-function HomeLink({ show, label }: { show: boolean; label: string }) {
+function HomeLink({ show, label }: Readonly<{ show: boolean; label: string }>) {
   if (!show) return null;
   return (
     <Link href="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
@@ -79,7 +79,7 @@ function HomeLink({ show, label }: { show: boolean; label: string }) {
   );
 }
 
-function SharedLinksButton({ show, label }: { show: boolean; label: string }) {
+function SharedLinksButton({ show, label }: Readonly<{ show: boolean; label: string }>) {
   if (!show) return null;
   return (
     <Link href="/shared-links" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
@@ -89,7 +89,7 @@ function SharedLinksButton({ show, label }: { show: boolean; label: string }) {
   );
 }
 
-function SignInLink({ show, label }: { show: boolean; label: string }) {
+function SignInLink({ show, label }: Readonly<{ show: boolean; label: string }>) {
   if (!show) return null;
   return (
     <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
@@ -99,7 +99,7 @@ function SignInLink({ show, label }: { show: boolean; label: string }) {
   );
 }
 
-function AuthDropdownBlock({ show }: { show: boolean }) {
+function AuthDropdownBlock({ show }: Readonly<{ show: boolean }>) {
   if (!show) return null;
   return <AuthDropdown />;
 }
@@ -112,7 +112,7 @@ function NavbarActions({
   homeLabel,
   sharedLabel,
   signInLabel,
-}: {
+}: Readonly<{
   showHome: boolean;
   showShared: boolean;
   showSignIn: boolean;
@@ -120,7 +120,7 @@ function NavbarActions({
   homeLabel: string;
   sharedLabel: string;
   signInLabel: string;
-}) {
+}>) {
   return (
     <>
       <HomeLink show={showHome} label={homeLabel} />
@@ -140,14 +140,14 @@ function CollapseContentWithSearch({
   searchPlaceholder,
   searchClearAriaLabel,
   actions,
-}: {
+}: Readonly<{
   search: string;
   onSearchChange?: (next: string) => void;
   onSearchClear?: () => void;
   searchPlaceholder: string;
   searchClearAriaLabel: string;
   actions: ReactNode;
-}) {
+}>) {
   return (
     <div className="d-flex flex-column flex-lg-row align-items-center gap-2 w-100 justify-content-center justify-content-lg-end">
       <SearchInput
@@ -164,7 +164,7 @@ function CollapseContentWithSearch({
   );
 }
 
-function CollapseContentWithoutSearch({ actions }: { actions: ReactNode }) {
+function CollapseContentWithoutSearch({ actions }: Readonly<{ actions: ReactNode }>) {
   return (
     <div className="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
       {actions}
