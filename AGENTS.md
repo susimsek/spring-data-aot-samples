@@ -72,24 +72,32 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
 - Frontend (Next.js Pages Router, TypeScript): `src/main/webapp`
-  - Routing (Pages Router): `src/main/webapp/pages`
-    - Locale-prefixed pages: `src/main/webapp/pages/[locale]/*` (static export outputs `/en/login/index.html`, etc.)
-    - Root entry/redirect pages: `src/main/webapp/pages/index.tsx`, plus top-level route shims (e.g. `/login`) that redirect to `/{locale}/...`
-    - App wrapper: `src/main/webapp/pages/_app.tsx`
-  - Shared UI components: `src/main/webapp/components`
-  - Shared frontend code: `src/main/webapp/lib`
-    - API client: `api.ts`
-    - Auth helpers: `auth.ts`
-    - i18n SSG helpers: `getStatic.ts`
-    - Locale redirect + detection: `redirect.tsx`, `languageDetector.ts`
-    - Redux store: `store.ts`
-  - Redux slices: `src/main/webapp/slices`
-  - Static assets + translations: `src/main/webapp/public`
-    - next-i18next locales: `src/main/webapp/public/locales/<lng>/<ns>.json`
-  - Styling: `src/main/webapp/styles`
-  - Frontend tests: `src/main/webapp/**/*.test.ts(x)` + shared helpers in `src/main/webapp/__tests__`
-  - Next config: `src/main/webapp/next.config.ts` (static export: `output: 'export'`, `trailingSlash: true`, output dir: `build/`)
-  - Build output (static export): `src/main/webapp/build` (Maven copies to `target/classes/static`; see `pom.xml` `copy-frontend-build`)
+  - `pages`: routing (Pages Router)
+    - `[locale]`: locale-prefixed pages (static export outputs `/en/login/index.html`, etc.)
+    - `index.tsx`: root entry redirect (`/` → `/{locale}/...`)
+    - Top-level route shims: `login.tsx`, `register.tsx`, `share.tsx`, etc. (redirect to `/{locale}/...`)
+    - `_app.tsx`: app wrapper/providers
+  - `components`: shared UI components (navbar, auth guard, theme, etc.)
+  - `lib`: shared frontend code
+    - `api.ts`: Axios client (auth refresh + headers)
+    - `auth.ts`: auth/token helpers + storage
+    - `getStatic.ts`: next-i18next SSG helpers (`getStaticPaths`, `makeStaticProps`)
+    - `languageDetector.ts`: locale detection + cache
+    - `redirect.tsx`: locale redirect helpers (used by root/shim pages)
+    - `routes.ts`: route constants/builders
+    - `store.ts`: Redux store + typed hooks
+    - `types.ts`: shared DTO/types (frontend)
+    - `useAuth.ts`: auth hooks
+    - `window.ts`: browser globals wrappers (SSR-safe)
+  - `slices`: Redux slices (`authSlice`, `themeSlice`)
+  - `styles`: global CSS (`styles.css`)
+  - `public`: static assets
+    - `locales/<lng>/<ns>.json`: next-i18next translation files
+  - `__tests__`: shared frontend test helpers
+  - `next.config.ts`: Next config (static export: `output: 'export'`, `trailingSlash: true`, output dir: `build/`)
+  - `next-env.d.ts`: Next-generated TS types (do not edit manually)
+  - `build`: Next static export output (Maven copies to `target/classes/static`; see `pom.xml` `copy-frontend-build`)
+  - `.next`: Next build cache/types output (generated)
 - Frontend i18n config (next-i18next): `next-i18next.config.js` (repo root; `localePath` points at `src/main/webapp/public/locales`)
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
