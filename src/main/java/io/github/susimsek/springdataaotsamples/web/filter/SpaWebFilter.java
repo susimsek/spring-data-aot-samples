@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SpaWebFilter extends OncePerRequestFilter {
     private static final Pattern LOCALE_ROUTE_PATTERN =
             Pattern.compile("^/([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)(?:/([^/\\\\.]+))?(?:/.*)?/?$");
+    private static final String INDEX_HTML = "/index.html";
 
     @Override
     protected void doFilterInternal(
@@ -38,16 +39,16 @@ public class SpaWebFilter extends OncePerRequestFilter {
                 String locale = matcher.group(1);
                 String page = matcher.group(2);
                 if (!StringUtils.hasText(page)) {
-                    request.getRequestDispatcher("/" + locale + "/index.html")
+                    request.getRequestDispatcher("/" + locale + INDEX_HTML)
                             .forward(request, response);
                     return;
                 }
-                request.getRequestDispatcher("/" + locale + "/" + page + "/index.html")
+                request.getRequestDispatcher("/" + locale + "/" + page + INDEX_HTML)
                         .forward(request, response);
                 return;
             }
 
-            request.getRequestDispatcher("/index.html").forward(request, response);
+            request.getRequestDispatcher(INDEX_HTML).forward(request, response);
             return;
         }
 
