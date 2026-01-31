@@ -64,11 +64,13 @@ type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 function tagLabel(tag: unknown): string {
   if (tag == null) return '';
   if (typeof tag === 'string') return tag;
+  if (typeof tag === 'number' || typeof tag === 'boolean' || typeof tag === 'bigint') return String(tag);
+  if (typeof tag === 'symbol') return tag.description ?? '';
   if (typeof tag === 'object') {
     const obj = tag as TagDTO;
     return (typeof obj.name === 'string' && obj.name) || (typeof obj.label === 'string' && obj.label) || '';
   }
-  return String(tag);
+  return '';
 }
 
 function normalizeTags(tags: Array<string | TagDTO> | null | undefined): string[] {
