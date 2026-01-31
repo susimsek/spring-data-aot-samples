@@ -173,8 +173,6 @@ class UserCommandServiceTest {
     @Test
     void changePasswordShouldThrowWhenNewPasswordIsSameAsCurrentPassword() {
         Long userId = 1L;
-        ChangePasswordRequest request =
-                new ChangePasswordRequest("samePassword123", "samePassword123");
         User user = new User();
         user.setId(userId);
         user.setUsername("testuser");
@@ -184,6 +182,8 @@ class UserCommandServiceTest {
         when(userRepository.findOneWithAuthoritiesById(userId)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("samePassword123", "{bcrypt}hashedPassword")).thenReturn(true);
 
+        ChangePasswordRequest request =
+                new ChangePasswordRequest("samePassword123", "samePassword123");
         assertThatThrownBy(() -> userCommandService.changePassword(userId, request))
                 .isInstanceOf(InvalidPasswordException.class)
                 .hasFieldOrPropertyWithValue(
