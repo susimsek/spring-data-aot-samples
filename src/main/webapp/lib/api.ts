@@ -93,22 +93,20 @@ async function refresh(): Promise<JsonObject> {
   if (refreshDisabled) {
     throw new ApiError('Unauthorized', 401);
   }
-  if (!refreshInFlight) {
-    refreshInFlight = publicApi
-      .post('/api/auth/refresh')
-      .then((res: AxiosResponse<JsonObject>) => res.data ?? {})
-      .catch((err) => {
-        const apiErr = normalizeError(err);
-        if (apiErr.status === 401 || apiErr.status === 400) {
-          refreshDisabled = true;
-        }
-        redirectToLogin();
-        throw apiErr;
-      })
-      .finally(() => {
-        refreshInFlight = null;
-      });
-  }
+  refreshInFlight ??= publicApi
+    .post('/api/auth/refresh')
+    .then((res: AxiosResponse<JsonObject>) => res.data ?? {})
+    .catch((err) => {
+      const apiErr = normalizeError(err);
+      if (apiErr.status === 401 || apiErr.status === 400) {
+        refreshDisabled = true;
+      }
+      redirectToLogin();
+      throw apiErr;
+    })
+    .finally(() => {
+      refreshInFlight = null;
+    });
   return refreshInFlight;
 }
 
