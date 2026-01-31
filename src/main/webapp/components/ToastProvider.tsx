@@ -23,6 +23,25 @@ export interface ToastItem {
   action?: ToastAction;
 }
 
+let toastIdCounter = 0;
+
+function createToastId(): string {
+  const cryptoObj = globalThis.crypto;
+  if (typeof cryptoObj?.randomUUID === 'function') {
+    return cryptoObj.randomUUID();
+  }
+
+  const getRandomValues = cryptoObj?.getRandomValues?.bind(cryptoObj);
+  if (getRandomValues) {
+    const bytes = new Uint8Array(16);
+    getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  toastIdCounter += 1;
+  return `${Date.now()}-${toastIdCounter}`;
+}
+
 const ToastContext = createContext<{ pushToast: (message: string, variant?: ToastVariant, title?: string, action?: ToastAction) => void }>({
   pushToast: () => {},
 });
@@ -42,7 +61,7 @@ export default function ToastProvider({ children }: Readonly<{ children: ReactNo
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const pushToast = useCallback((message: string, variant: ToastVariant = 'success', title?: string, action?: ToastAction) => {
-    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const id = createToastId();
     setToasts((prev) => [...prev, { id, message, variant, title, action }]);
   }, []);
 
