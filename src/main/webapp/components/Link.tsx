@@ -1,6 +1,7 @@
 'use client';
 
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
+import { forwardRef } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -11,7 +12,10 @@ type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
   skipLocaleHandling?: boolean;
 };
 
-export default function Link({ children, skipLocaleHandling, href, locale, ...anchorProps }: Readonly<Props>) {
+const Link = forwardRef<HTMLAnchorElement, Props>(function Link(
+  { children, skipLocaleHandling, href, locale, ...anchorProps }: Readonly<Props>,
+  ref,
+) {
   const router = useRouter();
   const resolvedLocale = locale || String(router.query.locale || '');
 
@@ -27,7 +31,11 @@ export default function Link({ children, skipLocaleHandling, href, locale, ...an
 
   return (
     <NextLink href={resolvedHref} legacyBehavior>
-      <a {...anchorProps}>{children}</a>
+      <a ref={ref} {...anchorProps}>
+        {children}
+      </a>
     </NextLink>
   );
-}
+});
+
+export default Link;

@@ -13,6 +13,7 @@ import ThemeToggleButton from './ThemeToggleButton';
 import AuthDropdown from './AuthDropdown';
 import Brand from './Brand';
 import LanguageSelect from './LanguageSelect';
+import Link from './Link';
 import useAuth from '../lib/useAuth';
 
 export interface AppNavbarProps {
@@ -54,7 +55,7 @@ export default function AppNavbar({
 
   const brandBlock = (
     <div className="d-flex align-items-center gap-2">
-      <Navbar.Brand href="/">
+      <Navbar.Brand as={Link} href="/">
         <Brand />
       </Navbar.Brand>
       {showBadge ? (
@@ -104,13 +105,20 @@ export default function AppNavbar({
               </InputGroup>
               <div className="d-flex align-items-center gap-2 flex-column flex-lg-row justify-content-center justify-content-lg-end order-2 order-lg-2 w-100">
                 {showHome ? (
-                  <Button variant="outline-secondary" size="sm" className="d-inline-flex align-items-center gap-2 flex-shrink-0" href="/">
+                  <Button
+                    as={Link}
+                    variant="outline-secondary"
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-2 flex-shrink-0"
+                    href="/"
+                  >
                     <FontAwesomeIcon icon={faHouse} />
                     <span>{t('nav.home')}</span>
                   </Button>
                 ) : null}
                 {showShared ? (
                   <Button
+                    as={Link}
                     variant="outline-secondary"
                     size="sm"
                     className="d-inline-flex align-items-center gap-2 flex-shrink-0"
@@ -128,13 +136,19 @@ export default function AppNavbar({
           ) : (
             <div className="d-flex align-items-center gap-2 flex-lg-row flex-column flex-wrap ms-lg-auto w-100 justify-content-lg-end">
               {showHome ? (
-                <Button variant="outline-secondary" size="sm" href="/" className="d-inline-flex align-items-center gap-2">
+                <Button as={Link} variant="outline-secondary" size="sm" href="/" className="d-inline-flex align-items-center gap-2">
                   <FontAwesomeIcon icon={faHouse} />
                   <span>{t('nav.home')}</span>
                 </Button>
               ) : null}
               {showShared ? (
-                <Button variant="outline-secondary" size="sm" href="/shared-links" className="d-inline-flex align-items-center gap-2">
+                <Button
+                  as={Link}
+                  variant="outline-secondary"
+                  size="sm"
+                  href="/shared-links"
+                  className="d-inline-flex align-items-center gap-2"
+                >
                   <FontAwesomeIcon icon={faShareNodes} />
                   <span>{t('nav.shared')}</span>
                 </Button>
