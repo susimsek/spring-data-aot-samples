@@ -212,15 +212,15 @@ const Api = {
   },
   createNote: async (payload: JsonObject): Promise<NoteDTO> => {
     const res = await api.post<NoteDTO>(noteBase(), payload);
-    return res.data as NoteDTO;
+    return res.data;
   },
   updateNote: async (id: string | number, payload: JsonObject): Promise<NoteDTO> => {
     const res = await api.put<NoteDTO>(`${noteBase()}/${id}`, payload);
-    return res.data as NoteDTO;
+    return res.data;
   },
   patchNote: async (id: string | number, payload: JsonObject): Promise<NoteDTO> => {
     const res = await api.patch<NoteDTO>(`${noteBase()}/${id}`, payload);
-    return res.data as NoteDTO;
+    return res.data;
   },
   softDelete: async (id: string | number): Promise<JsonObject> => {
     const res = await api.delete<JsonObject>(`${noteBase()}/${id}`);
@@ -240,7 +240,7 @@ const Api = {
   },
   fetchNote: async (id: string | number): Promise<NoteDTO> => {
     const res = await api.get<NoteDTO>(`${noteBase()}/${id}`);
-    return res.data as NoteDTO;
+    return res.data;
   },
   bulkAction: async (payload: JsonObject): Promise<JsonObject> => {
     const res = await api.post<JsonObject>(`${noteBase()}/bulk`, payload);
@@ -253,7 +253,7 @@ const Api = {
   },
   fetchRevision: async (id: string | number, revisionId: string | number): Promise<NoteRevisionDTO> => {
     const res = await api.get<NoteRevisionDTO>(`${noteBase()}/${id}/revisions/${revisionId}`);
-    return res.data as NoteRevisionDTO;
+    return res.data;
   },
   restoreRevision: async (id: string | number, revisionId: string | number): Promise<JsonObject> => {
     const res = await api.post<JsonObject>(`${noteBase()}/${id}/revisions/${revisionId}/restore`);
@@ -334,7 +334,7 @@ const Api = {
   },
   fetchNoteWithShareToken: async (token: string): Promise<NoteDTO> => {
     const res = await publicApi.get<NoteDTO>(`/api/share/${encodeURIComponent(token)}`);
-    return res.data as NoteDTO;
+    return res.data;
   },
 };
 
