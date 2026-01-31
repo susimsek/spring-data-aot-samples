@@ -9,9 +9,7 @@ function getStoredLanguage(): string | undefined {
   const storage = (globalThis as { localStorage?: Storage }).localStorage;
   if (!storage) return undefined;
   const language = storage.getItem('i18nextLng');
-  if (!language) return undefined;
-  const trimmed = language.trim();
-  return trimmed ? trimmed : undefined;
+  return language || undefined;
 }
 
 function applyAcceptLanguageHeader(config: AxiosRequestConfig): AxiosRequestConfig {
