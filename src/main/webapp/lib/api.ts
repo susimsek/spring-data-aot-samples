@@ -1,10 +1,4 @@
-import axios, {
-  type AxiosError,
-  type AxiosInstance,
-  type AxiosRequestConfig,
-  type AxiosResponse,
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { buildRedirectQuery, clearStoredUser, isAdmin, loadStoredUser } from './auth';
 import { getDocument, getLocation, replaceLocation } from './window';
 import type { NoteDTO, NoteRevisionDTO, PageResponse, ShareLinkDTO, StoredUser } from './types';
@@ -72,7 +66,7 @@ function redirectToLogin() {
 
 function normalizeError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;
-  const axiosError = axios.isAxiosError(error) ? (error as AxiosError) : undefined;
+  const axiosError = axios.isAxiosError(error) ? error : undefined;
   if (!axiosError) {
     const message = error instanceof Error && error.message ? error.message : 'Request failed';
     return new ApiError(message);
@@ -178,7 +172,7 @@ const Api = {
   },
   currentUser: async (): Promise<StoredUser> => {
     const res = await api.get<StoredUser>('/api/auth/me');
-    return (res.data ?? {}) as StoredUser;
+    return res.data;
   },
   logout: async (): Promise<JsonObject> => {
     refreshDisabled = true;
@@ -208,7 +202,7 @@ const Api = {
       tags.forEach((tag) => searchParams.append('tags', tag));
     }
     const res = await api.get<PageResponse<NoteDTO>>(`${base}?${searchParams.toString()}`);
-    return (res.data ?? { content: [] }) as PageResponse<NoteDTO>;
+    return res.data;
   },
   createNote: async (payload: JsonObject): Promise<NoteDTO> => {
     const res = await api.post<NoteDTO>(noteBase(), payload);
@@ -249,7 +243,7 @@ const Api = {
   fetchRevisions: async (id: string | number, sort: string | undefined, page = 0, size = 5): Promise<PageResponse<NoteRevisionDTO>> => {
     const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
     const res = await api.get<PageResponse<NoteRevisionDTO>>(`${noteBase()}/${id}/revisions?page=${page}&size=${size}${sortParam}`);
-    return (res.data ?? { content: [] }) as PageResponse<NoteRevisionDTO>;
+    return res.data;
   },
   fetchRevision: async (id: string | number, revisionId: string | number): Promise<NoteRevisionDTO> => {
     const res = await api.get<NoteRevisionDTO>(`${noteBase()}/${id}/revisions/${revisionId}`);
@@ -294,7 +288,7 @@ const Api = {
       params.set('q', query);
     }
     const res = await api.get<PageResponse<StoredUser>>(`/api/admin/users/search?${params.toString()}`);
-    return (res.data ?? { content: [] }) as PageResponse<StoredUser>;
+    return res.data;
   },
   changeOwner: async (id: string | number, payload: JsonObject): Promise<JsonObject> => {
     const res = await api.post<JsonObject>(`/api/admin/notes/${id}/owner`, payload);
@@ -302,11 +296,11 @@ const Api = {
   },
   fetchShareLinks: async (noteId: string | number, page: number, size: number): Promise<PageResponse<ShareLinkDTO>> => {
     const res = await api.get<PageResponse<ShareLinkDTO>>(`${noteBase()}/${noteId}/share?page=${page}&size=${size}`);
-    return (res.data ?? { content: [] }) as PageResponse<ShareLinkDTO>;
+    return res.data;
   },
   createShareLink: async (noteId: string | number, payload: JsonObject): Promise<ShareLinkDTO> => {
     const res = await api.post<ShareLinkDTO>(`${noteBase()}/${noteId}/share`, payload);
-    return (res.data ?? {}) as ShareLinkDTO;
+    return res.data;
   },
   revokeShareLink: async (tokenId: string | number): Promise<JsonObject> => {
     const res = await api.delete<JsonObject>(`${noteBase()}/share/${tokenId}`);
@@ -330,7 +324,7 @@ const Api = {
     params.set('page', String(page));
     params.set('size', String(size));
     const res = await api.get<PageResponse<ShareLinkDTO>>(`${noteBase()}/share?${params.toString()}`);
-    return (res.data ?? { content: [] }) as PageResponse<ShareLinkDTO>;
+    return res.data;
   },
   fetchNoteWithShareToken: async (token: string): Promise<NoteDTO> => {
     const res = await publicApi.get<NoteDTO>(`/api/share/${encodeURIComponent(token)}`);
