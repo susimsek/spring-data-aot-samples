@@ -21,39 +21,65 @@ const initialState: AuthState = {
   error: null,
 };
 
-function normalizeError(err: unknown): ApiErrorPayload {
-  if (typeof err === 'string') return { message: err };
-  if (typeof err === 'number' || typeof err === 'boolean' || typeof err === 'bigint') return { message: String(err) };
-  if (err instanceof Error) return { message: err.message };
-  if (!err || typeof err !== 'object') return { message: 'Request failed' };
-  const anyErr = err as { message?: unknown; status?: unknown; title?: unknown; body?: unknown };
-  if (typeof anyErr.message === 'string') {
-    return {
-      message: anyErr.message,
-      status: typeof anyErr.status === 'number' ? anyErr.status : undefined,
-      title: typeof anyErr.title === 'string' ? anyErr.title : undefined,
-      body: anyErr.body,
-    };
+type AnyErrorPayload = { message?: unknown; status?: unknown; title?: unknown; body?: unknown };
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
+}
+
+function normalizePrimitiveError(err: unknown): ApiErrorPayload | null {
+  switch (typeof err) {
+    case 'string':
+      return { message: err };
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+      return { message: String(err) };
+    default:
+      return null;
   }
+}
 
-  const status = typeof anyErr.status === 'number' ? anyErr.status : undefined;
-  const title = typeof anyErr.title === 'string' ? anyErr.title : undefined;
-  const body = anyErr.body;
-
-  if (typeof body === 'string' && body) {
-    return { message: body, status, title, body };
-  }
-
+function safeJsonStringify(value: unknown): string | null {
   try {
-    const serialized = JSON.stringify(err);
+    const serialized = JSON.stringify(value);
     if (serialized && serialized !== '{}' && serialized !== '[]') {
-      return { message: serialized, status, title, body };
+      return serialized;
     }
   } catch {
     // ignore
   }
+  return null;
+}
+
+function normalizeObjectError(err: object): ApiErrorPayload {
+  const anyErr = err as AnyErrorPayload;
+  const status = typeof anyErr.status === 'number' ? anyErr.status : undefined;
+  const title = isNonEmptyString(anyErr.title) ? anyErr.title : undefined;
+  const body = anyErr.body;
+
+  if (isNonEmptyString(anyErr.message)) {
+    return { message: anyErr.message, status, title, body };
+  }
+
+  if (isNonEmptyString(body)) {
+    return { message: body, status, title, body };
+  }
+
+  const serialized = safeJsonStringify(err);
+  if (serialized) {
+    return { message: serialized, status, title, body };
+  }
 
   return { message: 'Request failed', status, title, body };
+}
+
+function normalizeError(err: unknown): ApiErrorPayload {
+  const primitive = normalizePrimitiveError(err);
+  if (primitive) return primitive;
+  if (err instanceof Error) return { message: err.message };
+  if (!err || typeof err !== 'object') return { message: 'Request failed' };
+  return normalizeObjectError(err);
 }
 
 export interface LoginPayload {
