@@ -7,6 +7,7 @@ import { faBan, faHouse, faRightToBracket } from '@fortawesome/free-solid-svg-ic
 import { useTranslation } from 'next-i18next';
 import AppNavbar from '../../components/AppNavbar';
 import Footer from '../../components/Footer';
+import Link from '../../components/Link';
 import { getStaticPaths, makeStaticProps } from '../../lib/getStatic';
 
 export default function AccessDeniedPage() {
@@ -22,11 +23,11 @@ export default function AccessDeniedPage() {
           <h1 className="h3 mb-2">{t('errors.accessDenied.title')}</h1>
           <p className="text-muted mb-4">{t('errors.accessDenied.message')}</p>
           <div className="d-flex gap-2 justify-content-center flex-wrap">
-            <Button variant="primary" href="/" className="d-inline-flex align-items-center gap-2">
+            <Button as={Link} variant="primary" href="/" className="d-inline-flex align-items-center gap-2">
               <FontAwesomeIcon icon={faHouse} />
               <span>{t('common.backToHome')}</span>
             </Button>
-            <Button variant="outline-secondary" href="/login" className="d-inline-flex align-items-center gap-2">
+            <Button as={Link} variant="outline-secondary" href="/login" className="d-inline-flex align-items-center gap-2">
               <FontAwesomeIcon icon={faRightToBracket} />
               <span>{t('common.signIn')}</span>
             </Button>
