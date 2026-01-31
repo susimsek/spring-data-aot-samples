@@ -70,6 +70,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
     - `validation`: custom constraints + validators
   - `web`: presentation layer (REST endpoints, MVC views, exception handling)
     - `error`: API error model + `@ControllerAdvice` exception mapping
+    - `filter`: servlet filters (e.g. SPA forwarding via `SpaWebFilter`)
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
