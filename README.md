@@ -80,8 +80,8 @@ Frontend sources live in `src/main/webapp` and are written in TypeScript (`.ts`/
 For local frontend dev (Next dev server) against the Spring Boot backend:
 
 ```bash
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 Next dev runs at `http://localhost:3000`. API calls use relative `/api/...` URLs and are proxied to the backend via dev rewrites in `next.config.js`.
@@ -208,12 +208,12 @@ Spotless runs `spotless:check` in the `compile` phase. To apply formatting:
 
 ### ESLint
 
-Frontend lives under `src/main/webapp` (deps at repo root via npm workspaces).
+Frontend lives under `src/main/webapp` (deps at repo root via pnpm workspaces).
 
 Lint:
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ### Jest
@@ -221,7 +221,7 @@ npm run lint
 Run frontend unit tests (with coverage):
 
 ```bash
-npm test -- --coverage
+pnpm test -- --coverage
 ```
 
 ### Prettier
@@ -229,13 +229,13 @@ npm test -- --coverage
 Check formatting (no changes):
 
 ```bash
-npm run format:check
+pnpm format:check
 ```
 
 Apply formatting (writes changes):
 
 ```bash
-npm run format
+pnpm format
 ```
 
 ### TypeScript

@@ -35,13 +35,13 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 | Checkstyle                          | `./mvnw checkstyle:check`                         |
 | Package                             | `./mvnw -DskipTests package`                      |
 | Native executable                   | `./mvnw -Pprod,native -DskipTests native:compile` |
-| Backend start (dev)                 | `npm run backend:start`                           |
-| Frontend dev (Next.js)              | `npm run dev`                                     |
-| Frontend build (static export)      | `npm run build`                                   |
-| Frontend lint (ESLint)              | `npm run lint`                                    |
-| Frontend unit tests (Jest)          | `npm test`                                        |
-| Frontend format apply (Prettier)    | `npm run format`                                  |
-| Frontend typecheck (tsc)            | `npm run typecheck`                               |
+| Backend start (dev)                 | `pnpm backend:start`                              |
+| Frontend dev (Next.js)              | `pnpm dev`                                        |
+| Frontend build (static export)      | `pnpm build`                                      |
+| Frontend lint (ESLint)              | `pnpm lint`                                       |
+| Frontend unit tests (Jest)          | `pnpm test`                                       |
+| Frontend format apply (Prettier)    | `pnpm format`                                     |
+| Frontend typecheck (tsc)            | `pnpm typecheck`                                  |
 
 ### Prerequisites
 
@@ -127,13 +127,13 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 ### Frontend
 
 - Frontend lint/format (Next.js under `src/main/webapp`):
-  - Lint (ESLint): `npm run lint`
-  - Unit tests (Jest): `npm test`
-  - Format apply (Prettier): `npm run format`
+  - Lint (ESLint): `pnpm lint`
+  - Unit tests (Jest): `pnpm test`
+  - Format apply (Prettier): `pnpm format`
   - ESLint config: `eslint.config.mjs`
   - Prettier config: `.prettierrc.json` (ignores in `.prettierignore`)
   - TypeScript config: `tsconfig.json`
-- When you change frontend code: apply formatting and ensure lint/tests pass (`npm run format`, `npm run lint`, `npm test`).
+- When you change frontend code: apply formatting and ensure lint/tests pass (`pnpm format`, `pnpm lint`, `pnpm test`).
 - When you add or change frontend behavior: add/adjust unit tests for the new logic under `src/main/webapp`.
 
 ## Testing Guidelines
@@ -150,11 +150,11 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 - Frontend unit tests (Jest) live under `src/main/webapp` (e.g., `src/main/webapp/**/*.test.ts`, `src/main/webapp/**/*.test.tsx`).
 - Run frontend unit tests:
-  - `npm test`
+  - `pnpm test`
 - Run a single frontend test file:
-  - `npm test -- src/main/webapp/app/components/AppNavbar.test.tsx`
+  - `pnpm test -- src/main/webapp/components/AppNavbar.test.tsx`
 - Run a single frontend test by name:
-  - `npm test -- -t "ThemeToggleButton"`
+  - `pnpm test -- -t "ThemeToggleButton"`
 
 ### Integration Tests
 
@@ -281,10 +281,10 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ### Frontend
 
-- Source lives under `src/main/webapp` (App Router under `src/main/webapp/app`), but dependencies are managed at repo root via npm workspaces.
+- Source lives under `src/main/webapp`, but dependencies are managed at repo root via pnpm workspaces (`pnpm-workspace.yaml`).
 - Frontend is written in TypeScript (`.ts`/`.tsx`); TypeScript config lives at repo root (`tsconfig.json`) and is referenced from `src/main/webapp/next.config.js`.
-- Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.js`).
-  - Maven runs `npm ci` + `npm run build` via `frontend-maven-plugin` (Node installed under repo root `node/`) and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
+- Production build uses a static export (`output: 'export'`) with `distDir: 'build'` (see `src/main/webapp/next.config.ts`).
+  - Maven runs `pnpm install --frozen-lockfile` + `pnpm run build` via `frontend-maven-plugin` and copies `src/main/webapp/build` to `target/classes/static` via `maven-resources-plugin` (see `pom.xml`).
 - Routing is owned by Next.js; backend forwards unknown non-API routes to the corresponding `.html` file via `SpaWebFilter` registered in the Spring Security filter chain (see `SecurityConfig`).
 - Authentication redirects are handled client-side by Next.js via `AuthGuard` component and `routes.ts` configuration (see `src/main/webapp/app/components/AuthGuard.tsx` and `src/main/webapp/app/lib/routes.ts`).
 - API calls in the Next UI should go through `src/main/webapp/app/lib/api.ts` (relative `/api/...` URLs).
@@ -326,7 +326,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Before opening a PR:
   - Always apply formatting and run at least unit tests:
     - Backend: `./mvnw spotless:apply` and `./mvnw test`
-    - Frontend changes under `src/main/webapp`: `npm run format`, `npm run lint`, `npm test`
+    - Frontend changes under `src/main/webapp`: `pnpm format`, `pnpm lint`, `pnpm test`
   - Do not open a PR unless formatting and the relevant tests pass.
 
 - PR title: use a Conventional Commit-style title (same as commit summary).
@@ -372,7 +372,7 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ### Frontend Review Checklist
 
-- ✅ Frontend build, lint, and tests pass when UI code is touched (`npm run build`, `npm run lint`, `npm test`).
+- ✅ Frontend build, lint, and tests pass when UI code is touched (`pnpm build`, `pnpm lint`, `pnpm test`).
 - ✅ Unit tests are added or updated for new UI logic or components.
 - ✅ UI/UX changes include brief notes or screenshots when behavior or visuals change.
 - ✅ API usage goes through the shared API layer (`src/main/webapp/app/lib/api.ts`).

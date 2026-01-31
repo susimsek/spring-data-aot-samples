@@ -29,6 +29,7 @@
     <properties>
         <java.version>25</java.version>
         <skipTests>false</skipTests>
+        <skip.frontend>false</skip.frontend>
         <maven.version>3.2.5</maven.version>
         <gatling.version>3.14.9</gatling.version>
         <gatling-maven-plugin.version>4.20.16</gatling-maven-plugin.version>
@@ -52,7 +53,7 @@
         <google-java-format.version>1.33.0</google-java-format.version>
         <checkstyle.version>12.2.0</checkstyle.version>
         <node.version>v22.22.0</node.version>
-        <npm.version>10.9.4</npm.version>
+        <pnpm.version>10.28.2</pnpm.version>
         <spring.profiles.active>dev</spring.profiles.active>
         <start-class>io.github.susimsek.springdataaotsamples.SpringDataAotSamplesApplication</start-class>
     </properties>
@@ -471,7 +472,8 @@
                     <installDirectory>${project.basedir}</installDirectory>
                     <workingDirectory>${project.basedir}</workingDirectory>
                     <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
+                    <pnpmVersion>${pnpm.version}</pnpmVersion>
+                    <skip>${skip.frontend}</skip>
                 </configuration>
             </plugin>
         </plugins>
@@ -548,32 +550,32 @@
                         <artifactId>frontend-maven-plugin</artifactId>
                         <executions>
 
-                            <!-- 1️⃣ Node & npm -->
+                            <!-- 1️⃣ Node & pnpm -->
                             <execution>
-                                <id>install-node-and-npm</id>
+                                <id>install-node-and-pnpm</id>
                                 <goals>
-                                    <goal>install-node-and-npm</goal>
+                                    <goal>install-node-and-pnpm</goal>
                                 </goals>
                                 <phase>initialize</phase>
                             </execution>
 
-                            <!-- 2️⃣ npm ci -->
+                            <!-- 2️⃣ pnpm install -->
                             <execution>
-                                <id>npm-ci</id>
+                                <id>pnpm-install</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>pnpm</goal>
                                 </goals>
                                 <phase>generate-resources</phase>
                                 <configuration>
-                                    <arguments>ci</arguments>
+                                    <arguments>install --frozen-lockfile</arguments>
                                 </configuration>
                             </execution>
 
                             <!-- 3️⃣ frontend tests -->
                             <execution>
-                                <id>npm-test</id>
+                                <id>pnpm-test</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>pnpm</goal>
                                 </goals>
                                 <phase>test</phase>
                                 <configuration>
@@ -583,9 +585,9 @@
 
                             <!-- 4️⃣ frontend build -->
                             <execution>
-                                <id>npm-build</id>
+                                <id>pnpm-build</id>
                                 <goals>
-                                    <goal>npm</goal>
+                                    <goal>pnpm</goal>
                                 </goals>
                                 <phase>generate-resources</phase>
                                 <configuration>
