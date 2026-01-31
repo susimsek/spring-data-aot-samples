@@ -22,6 +22,9 @@ const initialState: AuthState = {
 };
 
 function normalizeError(err: unknown): ApiErrorPayload {
+  if (typeof err === 'string') return { message: err };
+  if (typeof err === 'number' || typeof err === 'boolean' || typeof err === 'bigint') return { message: String(err) };
+  if (err instanceof Error) return { message: err.message };
   if (!err || typeof err !== 'object') return { message: 'Request failed' };
   const anyErr = err as { message?: unknown; status?: unknown; title?: unknown; body?: unknown };
   if (typeof anyErr.message === 'string') {
@@ -32,7 +35,25 @@ function normalizeError(err: unknown): ApiErrorPayload {
       body: anyErr.body,
     };
   }
-  return { message: String(err) };
+
+  const status = typeof anyErr.status === 'number' ? anyErr.status : undefined;
+  const title = typeof anyErr.title === 'string' ? anyErr.title : undefined;
+  const body = anyErr.body;
+
+  if (typeof body === 'string' && body) {
+    return { message: body, status, title, body };
+  }
+
+  try {
+    const serialized = JSON.stringify(err);
+    if (serialized && serialized !== '{}' && serialized !== '[]') {
+      return { message: serialized, status, title, body };
+    }
+  } catch {
+    // ignore
+  }
+
+  return { message: 'Request failed', status, title, body };
 }
 
 export interface LoginPayload {
