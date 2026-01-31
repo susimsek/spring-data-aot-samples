@@ -2182,7 +2182,12 @@ export default function NotesPage() {
 
   const viewLabel = view === 'trash' ? t('notes.view.trash') : t('notes.view.all');
   const emptyIcon = view === 'trash' ? faTrashCan : faNoteSticky;
-  const emptyMessage = debouncedSearch ? t('notes.empty.search') : view === 'trash' ? t('notes.empty.trash') : t('notes.empty.none');
+  let emptyMessage = t('notes.empty.none');
+  if (debouncedSearch) {
+    emptyMessage = t('notes.empty.search');
+  } else if (view === 'trash') {
+    emptyMessage = t('notes.empty.trash');
+  }
 
   const toggleRevisionDiff = (revisionId: number) => {
     setDiffOpen((prev) => {
