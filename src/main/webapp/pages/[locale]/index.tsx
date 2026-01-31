@@ -48,7 +48,7 @@ import Api from '@lib/api';
 import { diffLinesDetailed, diffTypes } from '@lib/diff';
 import type { DiffOp } from '@lib/diff';
 import { formatDate, toIsoString } from '@lib/format';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 import { getLocation } from '@lib/window';
 import useAuth from '@lib/useAuth';
 import type { NoteDTO, NoteRevisionDTO, ShareLinkDTO, StoredUser, TagDTO } from '@lib/types';
@@ -2377,6 +2377,6 @@ export default function NotesPage() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);

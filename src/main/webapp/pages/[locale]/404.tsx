@@ -7,7 +7,7 @@ import { useTranslation } from 'next-i18next';
 import AppNavbar from '@components/AppNavbar';
 import Footer from '@components/Footer';
 import Link from '@components/Link';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 
 export default function NotFoundRoutePage() {
   const { t } = useTranslation();
@@ -32,6 +32,6 @@ export default function NotFoundRoutePage() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);

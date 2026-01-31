@@ -31,7 +31,7 @@ import Footer from '@components/Footer';
 import { useToasts } from '@components/ToastProvider';
 import Api, { ApiError } from '@lib/api';
 import { addDays, addHours, formatDate, toIsoString } from '@lib/format';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 import type { ShareLinkDTO } from '@lib/types';
 import useAuth from '@lib/useAuth';
 import { getLocation } from '@lib/window';
@@ -442,6 +442,6 @@ export default function SharedLinksPage() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);

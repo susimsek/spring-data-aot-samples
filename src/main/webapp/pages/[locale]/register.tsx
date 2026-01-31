@@ -15,7 +15,7 @@ import { useTranslation } from 'next-i18next';
 import AppNavbar from '@components/AppNavbar';
 import Footer from '@components/Footer';
 import Api, { ApiError } from '@lib/api';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 import { getLocalePrefix } from '@lib/routes';
 import { getLocation, replaceLocation } from '@lib/window';
 
@@ -229,6 +229,6 @@ export default function RegisterPage() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);

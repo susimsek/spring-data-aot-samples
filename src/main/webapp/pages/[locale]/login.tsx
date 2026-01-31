@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import AppNavbar from '@components/AppNavbar';
 import Footer from '@components/Footer';
 import { useToasts } from '@components/ToastProvider';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 import { getLocalePrefix } from '@lib/routes';
 import { useAppDispatch } from '@lib/store';
 import { getLocation, replaceLocation } from '@lib/window';
@@ -155,6 +155,6 @@ export default function LoginPageClient() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);

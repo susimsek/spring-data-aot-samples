@@ -14,7 +14,7 @@ import { useTranslation } from 'next-i18next';
 import AppNavbar from '@components/AppNavbar';
 import Footer from '@components/Footer';
 import Api, { ApiError } from '@lib/api';
-import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
+import { makeStaticProps } from '@lib/getStatic';
 import { useAppDispatch } from '@lib/store';
 import { replaceLocation } from '@lib/window';
 import { clearUser } from '@slices/authSlice';
@@ -171,6 +171,6 @@ export default function ChangePasswordPage() {
   );
 }
 
-const getStaticProps = makeStaticProps(['common']);
+export { getStaticPaths } from '@lib/getStatic';
 
-export { getStaticPaths, getStaticProps };
+export const getStaticProps = makeStaticProps(['common']);
