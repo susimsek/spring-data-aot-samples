@@ -127,7 +127,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
     if (!axios.isAxiosError(error)) {
-      return Promise.reject(normalizeError(error));
+      throw normalizeError(error);
     }
     const status = error.response?.status;
     const config = (error.config ?? {}) as RetriableRequestConfig;
@@ -137,16 +137,16 @@ api.interceptors.response.use(
       try {
         if (refreshDisabled) {
           redirectToLogin();
-          return Promise.reject(normalizeError(error));
+          throw normalizeError(error);
         }
         await refresh();
         return api.request(config);
       } catch (err) {
         redirectToLogin();
-        return Promise.reject(normalizeError(err));
+        throw normalizeError(err);
       }
     }
-    return Promise.reject(normalizeError(error));
+    throw normalizeError(error);
   },
 );
 
