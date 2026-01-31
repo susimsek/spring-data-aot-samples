@@ -49,6 +49,8 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 
 ## Project Structure
 
+### Backend
+
 - Application: `src/main/java/io/github/susimsek/springdataaotsamples`
   - `config`: Spring configurations (including AOT)
     - `apidoc`: OpenAPI / Swagger UI configuration (Springdoc)
@@ -71,7 +73,11 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
 - Configuration: `src/main/resources/config` (`application*.yml`)
 - Liquibase: `src/main/resources/config/liquibase` (`master.xml`, `changelog/`, `data/`)
 - i18n messages: `src/main/resources/i18n`
-- Frontend (Next.js Pages Router, TypeScript): `src/main/webapp`
+- Backend tests: `src/test/java` and `src/test/resources`
+
+### Frontend
+
+- Application: `src/main/webapp`
   - `pages`: routing (Pages Router)
     - `[locale]`: locale-prefixed pages (static export outputs `/en/login/index.html`, etc.)
     - `index.tsx`: root entry redirect (`/` → `/{locale}/...`)
@@ -99,9 +105,11 @@ This repo is a “Note” sample application built with Spring Boot 4 + Spring D
   - `build`: Next static export output (Maven copies to `target/classes/static`; see `pom.xml` `copy-frontend-build`)
   - `.next`: Next build cache/types output (generated)
 - Frontend i18n config (next-i18next): `next-i18next.config.js` (repo root; `localePath` points at `src/main/webapp/public/locales`)
+
+### Platform
+
 - Docker compose: `src/main/docker/*.yml`
 - Helm chart: `helm/note-app`
-- Backend tests: `src/test/java` and `src/test/resources`
 
 ## Code Style and Quality Gates
 
