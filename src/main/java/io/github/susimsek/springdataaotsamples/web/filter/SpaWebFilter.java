@@ -5,9 +5,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class SpaWebFilter extends OncePerRequestFilter {
+    private static final Pattern LOCALE_ROUTE_PATTERN =
+            Pattern.compile("^/([a-zA-Z]{2}(?:-[a-zA-Z]{2})?)(?:/([^/\\\\.]+))?(?:/.*)?/?$");
 
     @Override
     protected void doFilterInternal(
@@ -25,12 +30,24 @@ public class SpaWebFilter extends OncePerRequestFilter {
 
         boolean isNextAsset = path.startsWith("/_next");
 
-        boolean isPageRoute = path.matches("^/(?!.*\\.).*$");
+        boolean isPageRoute = path.startsWith("/") && !path.contains(".");
 
         if (!isBackendRoute && !isNextAsset && isPageRoute) {
-            String page = path.substring(1);
-            String htmlPage = page.isEmpty() ? "/index.html" : "/" + page + ".html";
-            request.getRequestDispatcher(htmlPage).forward(request, response);
+            Matcher matcher = LOCALE_ROUTE_PATTERN.matcher(path);
+            if (matcher.matches()) {
+                String locale = matcher.group(1);
+                String page = matcher.group(2);
+                if (!StringUtils.hasText(page)) {
+                    request.getRequestDispatcher("/" + locale + "/index.html")
+                            .forward(request, response);
+                    return;
+                }
+                request.getRequestDispatcher("/" + locale + "/" + page + "/index.html")
+                        .forward(request, response);
+                return;
+            }
+
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 

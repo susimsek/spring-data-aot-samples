@@ -85,6 +85,7 @@ public class SecurityConfig {
                                         .requestMatchers("/api/admin/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers(
+                                                "/_next/**",
                                                 "/v3/api-docs/**",
                                                 "/swagger-ui.html",
                                                 "/swagger-ui/**")
@@ -98,10 +99,28 @@ public class SecurityConfig {
                                         .requestMatchers("/actuator/**")
                                         .hasAuthority(AuthoritiesConstants.ADMIN)
                                         .requestMatchers(
-                                                "/*.html", "/*.js", "/*.txt", "/*.json", "/*.map",
-                                                "/*.css")
+                                                "/*.html",
+                                                "/**/*.html",
+                                                "/*.js",
+                                                "/**/*.js",
+                                                "/*.txt",
+                                                "/**/*.txt",
+                                                "/*.json",
+                                                "/**/*.json",
+                                                "/*.map",
+                                                "/**/*.map",
+                                                "/*.css",
+                                                "/**/*.css")
                                         .permitAll()
-                                        .requestMatchers("/*.ico", "/*.png", "/*.svg", "/*.webapp")
+                                        .requestMatchers(
+                                                "/*.ico",
+                                                "/**/*.ico",
+                                                "/*.png",
+                                                "/**/*.png",
+                                                "/*.svg",
+                                                "/**/*.svg",
+                                                "/*.webapp",
+                                                "/**/*.webapp")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

@@ -1,0 +1,504 @@
+{
+  "common": {
+    "apply": "Apply",
+    "backToHome": "Back to home",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "confirm": "Confirm",
+    "copy": "Copy",
+    "create": "Create",
+    "delete": "Delete",
+    "loadMore": "Load more",
+    "loading": "Loading...",
+    "na": "N/A",
+    "reset": "Reset",
+    "revoke": "Revoke",
+    "save": "Save",
+    "signIn": "Sign in",
+    "togglePasswordVisibility": "Toggle password visibility",
+    "unknown": "unknown"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "password": {
+      "complexity": "Password must include upper, lower, and digit.",
+      "match": "Passwords do not match.",
+      "maxLength": "Password must be at most 64 characters.",
+      "minLength": "Password must be at least 8 characters."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "search": {
+      "clearAria": "Clear search",
+      "placeholder": "Search notes"
+    },
+    "shared": "Shared"
+  },
+  "brand": {
+    "logoAlt": "Notes logo",
+    "name": "Notes"
+  },
+  "footer": {
+    "copyright": "© 2025 Notes",
+    "tech": "Spring Boot"
+  },
+  "auth": {
+    "dropdown": {
+      "changePassword": "Change password",
+      "signedInAs": "Signed in as {{username}}",
+      "signOut": "Sign out"
+    }
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "switchToDarkAria": "Switch to dark mode",
+    "switchToLightAria": "Switch to light mode"
+  },
+  "errors": {
+    "accessDenied": {
+      "message": "You don’t have permission to view this page.",
+      "title": "Access denied"
+    },
+    "notFound": {
+      "message": "The page you’re looking for doesn’t exist.",
+      "title": "Page not found"
+    }
+  },
+  "login": {
+    "defaultUsers": "Default users: admin/admin, user/user",
+    "error": {
+      "failed": "Login failed"
+    },
+    "form": {
+      "password": {
+        "label": "Password",
+        "placeholder": "Password",
+        "toggleAria": "Toggle password visibility"
+      },
+      "rememberMe": "Remember me",
+      "submitting": "Signing in...",
+      "submit": "Sign in",
+      "username": {
+        "label": "Username or email",
+        "placeholder": "Username or email"
+      }
+    },
+    "link": {
+      "register": "Create an account"
+    },
+    "title": "Sign in to Notes",
+    "toast": {
+      "signedIn": "Signed in successfully."
+    }
+  },
+  "register": {
+    "accountCreatedSignIn": "Account created. Please sign in.",
+    "error": {
+      "failed": "Registration failed"
+    },
+    "form": {
+      "confirm": {
+        "label": "Confirm password",
+        "placeholder": "Confirm password"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Email",
+        "validation": {
+          "maxLength": "Please enter a valid email address (max 255 chars)."
+        }
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Password"
+      },
+      "submitting": "Creating...",
+      "submit": "Create account",
+      "username": {
+        "label": "Username",
+        "placeholder": "Username",
+        "validation": {
+          "maxLength": "Username must be at most 50 characters.",
+          "minLength": "Username must be at least 3 characters.",
+          "pattern": "Username can include letters, numbers, underscores, and hyphens only."
+        }
+      }
+    },
+    "link": {
+      "login": "Already have an account? Sign in"
+    },
+    "title": "Create your account"
+  },
+  "changePassword": {
+    "error": {
+      "failed": "Password update failed."
+    },
+    "form": {
+      "confirm": {
+        "label": "Confirm password"
+      },
+      "current": {
+        "label": "Current password"
+      },
+      "new": {
+        "label": "New password"
+      },
+      "submitting": "Updating...",
+      "submit": "Update password"
+    },
+    "title": "Change password"
+  },
+  "share": {
+    "badge": "Shared",
+    "error": {
+      "invalidLink": "Invalid share link.",
+      "loadFailed": "Could not load note.",
+      "unavailable": "This share link is no longer available. Please request a new link."
+    },
+    "fields": {
+      "created": "Created:",
+      "createdBy": "Created by:",
+      "owner": "Owner:",
+      "updated": "Updated:",
+      "updatedBy": "Updated by:"
+    },
+    "note": {
+      "pinnedTitle": "Pinned",
+      "untitled": "Untitled"
+    }
+  },
+  "sharedLinks": {
+    "actions": {
+      "copy": "Copy",
+      "revoke": "Revoke"
+    },
+    "customRange": {
+      "error": {
+        "order": "Start date cannot be after end date.",
+        "required": "Start and end dates are both required."
+      },
+      "from": "From",
+      "helper": "Both dates are required. Start date must not be after end date.",
+      "title": "Custom date range",
+      "to": "To"
+    },
+    "empty": "No shared links found. Create one to get started.",
+    "error": {
+      "loadFailed": "Could not load shared links."
+    },
+    "fields": {
+      "created": "Created:",
+      "expires": "Expires:",
+      "lastUsed": "Last used:",
+      "note": "Note:",
+      "owner": "Owner:",
+      "used": "Used:"
+    },
+    "filters": {
+      "createdDate": {
+        "label": "Created date",
+        "options": {
+          "anyTime": "Any time",
+          "custom": "Custom range",
+          "last24h": "Last 24h",
+          "last7d": "Last 7 days",
+          "lastMonth": "Last month"
+        }
+      },
+      "search": {
+        "clearAria": "Clear search",
+        "label": "Search",
+        "placeholder": "Search links or titles"
+      },
+      "status": {
+        "label": "Status",
+        "options": {
+          "active": "Active",
+          "all": "All",
+          "expired": "Expired",
+          "revoked": "Revoked"
+        }
+      }
+    },
+    "link": {
+      "label": "Link"
+    },
+    "noExpiry": "No expiry",
+    "oneTime": "One-time",
+    "sort": {
+      "label": "Sort",
+      "options": {
+        "createdNewest": "Created (newest)",
+        "createdOldest": "Created (oldest)",
+        "usedMost": "Used (most)"
+      }
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "subtitle": "See every link you’ve issued, check status, and revoke when needed.",
+    "summary": {
+      "pageOf": "Page {{current}} of {{total}}",
+      "total": "Total: {{count}}"
+    },
+    "title": "Shared Links",
+    "toast": {
+      "copied": "Share link copied",
+      "copyFailed": "Could not copy link. Copy manually.",
+      "revokeFailed": "Could not revoke link.",
+      "revoked": "Share link revoked"
+    },
+    "pageSize": {
+      "label": "Page size"
+    }
+  },
+  "notes": {
+    "actions": {
+      "changeOwner": "Change owner",
+      "copyContent": "Copy content",
+      "createShareLink": "Create share link",
+      "delete": "Delete",
+      "deletePermanently": "Delete permanently",
+      "editInModal": "Edit in modal",
+      "emptyTrash": "Empty Trash",
+      "existingLinks": "Existing links",
+      "inlineEdit": "Inline edit",
+      "new": "New Note",
+      "pin": "Pin",
+      "restore": "Restore",
+      "revisions": "Revision history",
+      "unpin": "Unpin"
+    },
+    "badges": {
+      "jpaAuditing": "JPA Auditing",
+      "liquibase": "Liquibase",
+      "springdoc": "Springdoc"
+    },
+    "bulk": {
+      "message": "Apply action to selected items?",
+      "title": "Confirm bulk action"
+    },
+    "delete": {
+      "message": "Are you sure you want to delete this note?",
+      "title": "Delete Note"
+    },
+    "deleteForever": {
+      "message": "This action cannot be undone. Delete this note permanently?",
+      "title": "Delete Permanently"
+    },
+    "diff": {
+      "content": "Content",
+      "title": "Title"
+    },
+    "empty": {
+      "none": "No notes found. Create a new one to get started.",
+      "search": "No notes match your search.",
+      "trash": "Trash is empty."
+    },
+    "emptyTrash": {
+      "message": "This will permanently delete all items in Trash. Continue?",
+      "title": "Empty Trash"
+    },
+    "error": {
+      "loadFailed": "Could not load notes."
+    },
+    "fields": {
+      "createdAt": "Created:",
+      "createdBy": "Created by:",
+      "deletedAt": "Deleted:",
+      "deletedBy": "Deleted by:",
+      "owner": "Owner:",
+      "updatedAt": "Updated:",
+      "updatedBy": "Updated by:"
+    },
+    "form": {
+      "color": {
+        "label": "Color"
+      },
+      "content": {
+        "label": "Content",
+        "placeholder": "Describe your note"
+      },
+      "pinned": {
+        "label": "Pin this note"
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "title": {
+        "label": "Title",
+        "placeholder": "Enter a concise title"
+      }
+    },
+    "inline": {
+      "color": {
+        "label": "Color"
+      },
+      "content": {
+        "placeholder": "Content"
+      },
+      "pinned": {
+        "label": "Pin this note"
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "title": {
+        "placeholder": "Title"
+      }
+    },
+    "modal": {
+      "editTitle": "Edit Note",
+      "newTitle": "New Note"
+    },
+    "noTitle": "(no title)",
+    "owner": {
+      "form": {
+        "helper": "Type to search and pick a user to set as owner.",
+        "newOwner": "New owner",
+        "searchPlaceholder": "Search username"
+      },
+      "required": "Owner is required.",
+      "searchFailed": "Failed to search users.",
+      "submit": "Change owner",
+      "title": "Change owner",
+      "updateFailed": "Failed to change owner.",
+      "updated": "Owner updated"
+    },
+    "pinned": "Pinned",
+    "revisions": {
+      "diff": "Diff",
+      "empty": "No revisions yet.",
+      "error": {
+        "loadFailed": "Failed to load revisions."
+      },
+      "hideDiff": "Hide diff",
+      "title": "Revisions",
+      "toast": {
+        "restoreFailed": "Failed to restore revision.",
+        "restored": "Revision restored"
+      }
+    },
+    "selection": {
+      "selectAllOnPage": "Select all on page",
+      "selected": "Selected: {{count}}"
+    },
+    "share": {
+      "createLink": "Create link",
+      "error": {
+        "createFailed": "Failed to create share link.",
+        "customExpiryRequired": "Custom expiry is required.",
+        "loadLinksFailed": "Failed to load share links.",
+        "tokenMissing": "Share token is missing."
+      },
+      "expires": {
+        "label": "Expires",
+        "helper": "Default is 24 hours unless custom or no-expiry selected.",
+        "options": {
+          "1h": "1 hour",
+          "24h": "24 hours",
+          "30d": "30 days",
+          "3d": "3 days",
+          "7d": "7 days",
+          "custom": "Custom…",
+          "never": "No expiry"
+        }
+      },
+      "link": {
+        "expiresAt": "Expires {{date}}",
+        "label": "Share link",
+        "noExpiry": "No expiry"
+      },
+      "links": {
+        "empty": "No share links yet."
+      },
+      "oneTime": "One-time use",
+      "status": {
+        "active": "Active",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "title": "Share Note",
+      "toast": {
+        "copyFailed": "Could not copy link. Copy manually.",
+        "copied": "Share link copied",
+        "created": "Share link created",
+        "revokeFailed": "Failed to revoke share link.",
+        "revoked": "Share link revoked"
+      }
+    },
+    "sort": {
+      "label": "Sort",
+      "options": {
+        "createdNewest": "Created (newest)",
+        "createdOldest": "Created (oldest)",
+        "titleAsc": "Title A-Z",
+        "titleDesc": "Title Z-A",
+        "updatedNewest": "Updated (newest)",
+        "updatedOldest": "Updated (oldest)"
+      }
+    },
+    "subtitle": "Create, edit, delete — audit-ready. Sign in to get a JWT; audit metadata uses your user.",
+    "summary": {
+      "pageOf": "Page {{current}} of {{total}}",
+      "total": "Total: {{count}}",
+      "totalTrash": "Total (trash): {{count}}"
+    },
+    "tabs": {
+      "active": "Active",
+      "trash": "Trash"
+    },
+    "title": "Notes",
+    "toast": {
+      "bulkCompleted": "Bulk action completed",
+      "bulkFailed": "Bulk action failed.",
+      "copied": "Note content copied",
+      "copyFailed": "Could not copy note. Copy manually.",
+      "created": "Note created",
+      "deleteFailed": "Failed to delete note.",
+      "deleted": "Note deleted",
+      "deletedPermanent": "Note deleted permanently",
+      "emptyTrashFailed": "Failed to empty trash.",
+      "pinFailed": "Failed to update pin.",
+      "restoreFailed": "Failed to restore note.",
+      "restored": "Note restored",
+      "saveFailed": "Failed to save note.",
+      "trashEmptied": "Trash emptied",
+      "updated": "Note updated"
+    },
+    "unpinned": "Unpinned",
+    "validation": {
+      "content": {
+        "size": "Size must be between 10 and 1024 characters."
+      },
+      "tags": {
+        "format": "Tags may include letters, digits, hyphen, or underscore.",
+        "max": "Up to 5 tags allowed.",
+        "size": "Tags must be 1-30 characters."
+      },
+      "title": {
+        "size": "Size must be between 3 and 255 characters."
+      }
+    },
+    "view": {
+      "all": "All Notes",
+      "trash": "Trash"
+    },
+    "filters": {
+      "color": "Color",
+      "pinned": {
+        "label": "Pinned",
+        "options": {
+          "all": "All",
+          "pinned": "Pinned",
+          "unpinned": "Unpinned"
+        }
+      },
+      "tags": "Filter by tags"
+    }
+  }
+}

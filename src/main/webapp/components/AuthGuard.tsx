@@ -1,0 +1,61 @@
+'use client';
+
+import { type ReactNode, useMemo } from 'react';
+import Spinner from 'react-bootstrap/Spinner';
+import { useTranslation } from 'next-i18next';
+import { useAppSelector } from '../lib/store';
+import { getLocalePrefix, isPublicRoute } from '../lib/routes';
+import { getLocation, replaceLocation } from '../lib/window';
+
+interface AuthGuardProps {
+  children: ReactNode;
+}
+
+function buildLoginUrl(currentPath: string, queryString: string): string {
+  const localePrefix = getLocalePrefix(currentPath);
+  const redirectTarget = queryString ? `${currentPath}?${queryString}` : currentPath;
+  const encodedRedirect = encodeURIComponent(redirectTarget);
+  return `${localePrefix}/login?redirect=${encodedRedirect}`;
+}
+
+function getLocationInfo(): { path: string; queryString: string } {
+  const location = getLocation();
+  return {
+    path: location?.pathname || '',
+    queryString: location?.search?.replace(/^\?/, '') || '',
+  };
+}
+
+export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
+  const user = useAppSelector((state) => state.auth.user);
+  const isAuthenticated = !!user?.username;
+  const { t } = useTranslation('common');
+
+  const shouldRender = useMemo(() => {
+    const { path, queryString } = getLocationInfo();
+
+    if (isPublicRoute(path)) {
+      return true;
+    }
+
+    if (!isAuthenticated) {
+      const loginUrl = buildLoginUrl(path, queryString);
+      replaceLocation(loginUrl);
+      return false;
+    }
+
+    return true;
+  }, [isAuthenticated]);
+
+  if (!shouldRender) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary">
+        <Spinner animation="border" variant="primary" role="status">
+          <span className="visually-hidden">{t('common.loading')}</span>
+        </Spinner>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
