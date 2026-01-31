@@ -6,7 +6,7 @@ import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Badge from 'react-bootstrap/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faHouse, faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHouse, faRightToBracket, faShareNodes, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'next-i18next';
 import ThemeToggleButton from './ThemeToggleButton';
 import AuthDropdown from './AuthDropdown';
@@ -26,6 +26,7 @@ export interface AppNavbarProps {
   showChangePassword?: boolean;
   badgeLabel?: string;
   requireAuthForActions?: boolean;
+  showSignInButton?: boolean;
   collapseId?: string;
 }
 
@@ -40,6 +41,7 @@ export default function AppNavbar({
   showChangePassword = true,
   badgeLabel = '',
   requireAuthForActions = false,
+  showSignInButton = false,
   collapseId = 'appNavbar',
 }: Readonly<AppNavbarProps>) {
   const { isAuthenticated } = useAuth();
@@ -48,9 +50,10 @@ export default function AppNavbar({
   const showShared = showSharedButton && canShowActions;
   const showHome = showHomeButton && canShowActions;
   const showAuth = showAuthDropdown && canShowActions;
+  const showSignIn = showSignInButton && !isAuthenticated;
   const showBadge = Boolean(badgeLabel);
   const hasSearch = showSearch;
-  const hasActions = hasSearch || showShared || showHome || showAuth;
+  const hasActions = hasSearch || showShared || showHome || showAuth || showSignIn;
 
   const brandBlock = (
     <div className="d-flex align-items-center gap-2">
@@ -127,6 +130,12 @@ export default function AppNavbar({
                 ) : null}
                 {languageBlock}
                 <ThemeToggleButton size="sm" />
+                {showSignIn ? (
+                  <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 flex-shrink-0">
+                    <FontAwesomeIcon icon={faRightToBracket} />
+                    <span>{t('common.signIn')}</span>
+                  </Link>
+                ) : null}
                 {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
               </div>
             </div>
@@ -146,6 +155,12 @@ export default function AppNavbar({
               ) : null}
               {languageBlock}
               <ThemeToggleButton size="sm" />
+              {showSignIn ? (
+                <Link href="/login" className="btn btn-primary btn-sm d-inline-flex align-items-center gap-2">
+                  <FontAwesomeIcon icon={faRightToBracket} />
+                  <span>{t('common.signIn')}</span>
+                </Link>
+              ) : null}
               {showAuth ? <AuthDropdown showChangePassword={showChangePassword} /> : null}
             </div>
           )}

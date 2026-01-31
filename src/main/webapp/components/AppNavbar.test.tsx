@@ -77,4 +77,13 @@ describe('AppNavbar', () => {
     expect(screen.queryByRole('link', { name: /home/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /alice/i })).not.toBeInTheDocument();
   });
+
+  test('shows sign-in link when enabled and unauthenticated', () => {
+    renderWithProviders(<AppNavbar requireAuthForActions showSignInButton />, {
+      preloadedState: { auth: { user: null, status: 'idle', sessionChecked: true, error: null }, theme: { theme: 'light' } },
+    });
+
+    const signIn = screen.getByRole('link', { name: /sign in/i });
+    expect(signIn).toHaveAttribute('href', '/login');
+  });
 });
