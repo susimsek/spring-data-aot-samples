@@ -122,7 +122,7 @@ class UserCommandServiceTest {
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        final ChangePasswordRequest request =
+        ChangePasswordRequest request =
                 new ChangePasswordRequest("oldPassword123", "newPassword456");
         userCommandService.changePassword(userId, request);
 
