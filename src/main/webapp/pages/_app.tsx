@@ -5,7 +5,7 @@ import type { AppProps } from 'next/app';
 import { appWithTranslation } from 'next-i18next';
 import type { UserConfig } from 'next-i18next';
 import AppProviders from '../components/AppProviders';
-import rootConfig from '../../../../next-i18next.config.js';
+import rootConfig from '../../../../next-i18next.config';
 
 const nextI18nextConfig = rootConfig as UserConfig;
 
