@@ -107,8 +107,6 @@ class UserCommandServiceTest {
     @Test
     void changePasswordShouldUpdatePasswordWhenCurrentPasswordIsCorrect() {
         Long userId = 1L;
-        ChangePasswordRequest request =
-                new ChangePasswordRequest("oldPassword123", "newPassword456");
         User user = new User();
         user.setId(userId);
         user.setUsername("testuser");
@@ -124,6 +122,8 @@ class UserCommandServiceTest {
         when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
+        final ChangePasswordRequest request =
+                new ChangePasswordRequest("oldPassword123", "newPassword456");
         userCommandService.changePassword(userId, request);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
