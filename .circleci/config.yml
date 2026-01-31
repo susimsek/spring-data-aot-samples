@@ -16,6 +16,7 @@ jobs:
           command: |
             set -e
             NODE_VERSION=22.22.0
+            PNPM_VERSION=10.28.2
             NODE_ARCHIVE=node-v${NODE_VERSION}-linux-x64.tar.xz
 
             microdnf -y install curl tar xz && \
@@ -28,7 +29,7 @@ jobs:
             rm -rf ${NODE_ARCHIVE}
 
             corepack enable
-            corepack prepare pnpm@10.28.2 --activate
+            corepack prepare pnpm@${PNPM_VERSION} --activate
 
             pnpm config set store-dir ~/.pnpm-store
       - restore_cache:
