@@ -190,7 +190,8 @@ type NoteCardProps = Readonly<{
   view: NoteView;
   showOwner: boolean;
   selected: boolean;
-  onSelectToggle: (noteId: number, checked: boolean) => void;
+  onSelect: (noteId: number) => void;
+  onDeselect: (noteId: number) => void;
   onAction: (action: NoteAction, note: NoteDTO) => void | Promise<void>;
   loadTagSuggestions: (query: string) => Promise<string[]>;
   onInlineSave: (
@@ -546,7 +547,7 @@ function NoteMetaInfo({
   );
 }
 
-function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, loadTagSuggestions, onInlineSave }: NoteCardProps) {
+function NoteCard({ note, view, showOwner, selected, onSelect, onDeselect, onAction, loadTagSuggestions, onInlineSave }: NoteCardProps) {
   const { t } = useTranslation();
   const tags = useMemo(() => normalizeTags(note.tags), [note.tags]);
   const [inlineMode, setInlineMode] = useState(false);
@@ -613,7 +614,7 @@ function NoteCard({ note, view, showOwner, selected, onSelectToggle, onAction, l
               type="checkbox"
               className="me-2 mt-1"
               checked={selected}
-              onChange={(event) => onSelectToggle(note.id, event.target.checked)}
+              onChange={(event) => (event.target.checked ? onSelect(note.id) : onDeselect(note.id))}
             />
             <div className="flex-grow-1">
               <NoteSummary note={note} tags={tags} />
@@ -842,14 +843,16 @@ function NotesListControls({
 
 function NotesSelectionBar({
   allSelected,
-  onSelectAllToggle,
+  onSelectAll,
+  onClearSelection,
   selectedCount,
   view,
   openBulkModal,
   t,
 }: Readonly<{
   allSelected: boolean;
-  onSelectAllToggle: (checked: boolean) => void;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
   selectedCount: number;
   view: NoteView;
   openBulkModal: (action: string) => void;
@@ -863,7 +866,7 @@ function NotesSelectionBar({
         type="checkbox"
         checked={allSelected}
         label={t('notes.selection.selectAllOnPage')}
-        onChange={(event) => onSelectAllToggle(event.target.checked)}
+        onChange={(event) => (event.target.checked ? onSelectAll() : onClearSelection())}
       />
       <div className="d-flex flex-wrap gap-2 align-items-center">
         {hasSelected && <span className="text-muted small">{t('notes.selection.selected', { count: selectedCount })}</span>}
@@ -924,7 +927,8 @@ function NotesGrid({
   view,
   showOwner,
   selected,
-  onSelectToggle,
+  onSelect,
+  onDeselect,
   onAction,
   loadTagSuggestions,
   onInlineSave,
@@ -933,7 +937,8 @@ function NotesGrid({
   view: NoteView;
   showOwner: boolean;
   selected: Set<number>;
-  onSelectToggle: (noteId: number, checked: boolean) => void;
+  onSelect: (noteId: number) => void;
+  onDeselect: (noteId: number) => void;
   onAction: (action: NoteAction, note: NoteDTO) => void | Promise<void>;
   loadTagSuggestions: (query: string) => Promise<string[]>;
   onInlineSave: (
@@ -950,7 +955,8 @@ function NotesGrid({
           view={view}
           showOwner={showOwner}
           selected={selected.has(note.id)}
-          onSelectToggle={onSelectToggle}
+          onSelect={onSelect}
+          onDeselect={onDeselect}
           onAction={onAction}
           loadTagSuggestions={loadTagSuggestions}
           onInlineSave={onInlineSave}
@@ -1751,24 +1757,28 @@ export default function NotesPage() {
     setAppliedFilters({ tags: [], color: '', pinned: '' });
   };
 
-  const toggleSelect = (id: number, checked: boolean) => {
+  const selectNote = (id: number) => {
     setSelected((prev) => {
       const next = new Set<number>(prev);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
+      next.add(id);
       return next;
     });
   };
 
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelected(new Set<number>(notes.map((note) => note.id)));
-    } else {
-      setSelected(new Set<number>());
-    }
+  const deselectNote = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set<number>(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const selectAllOnPage = () => {
+    setSelected(new Set<number>(notes.map((note) => note.id)));
+  };
+
+  const clearSelection = () => {
+    setSelected(new Set<number>());
   };
 
   const openNewNote = () => {
@@ -2250,7 +2260,8 @@ export default function NotesPage() {
               {notes.length > 0 && (
                 <NotesSelectionBar
                   allSelected={allSelected}
-                  onSelectAllToggle={toggleSelectAll}
+                  onSelectAll={selectAllOnPage}
+                  onClearSelection={clearSelection}
                   selectedCount={selectedCount}
                   view={view}
                   openBulkModal={openBulkModal}
@@ -2269,7 +2280,8 @@ export default function NotesPage() {
                 view={view}
                 showOwner={isAdmin}
                 selected={selected}
-                onSelectToggle={toggleSelect}
+                onSelect={selectNote}
+                onDeselect={deselectNote}
                 onAction={handleNoteAction}
                 loadTagSuggestions={loadTagSuggestions}
                 onInlineSave={handleInlineSave}
