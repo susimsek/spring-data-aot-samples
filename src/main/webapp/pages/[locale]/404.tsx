@@ -12,9 +12,9 @@ import { getStaticPaths, makeStaticProps } from '@lib/getStatic';
 export default function NotFoundRoutePage() {
   const { t } = useTranslation();
   return (
-    <>
+    <div className="d-flex flex-column min-vh-100 bg-body-tertiary">
       <AppNavbar />
-      <main className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+      <main className="flex-fill d-flex align-items-center justify-content-center py-5">
         <Container className="text-center">
           <div className="display-3 text-warning mb-3">
             <FontAwesomeIcon icon={faTriangleExclamation} />
@@ -28,7 +28,7 @@ export default function NotFoundRoutePage() {
         </Container>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
 
