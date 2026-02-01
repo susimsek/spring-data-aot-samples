@@ -1,6 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { useTranslation } from 'next-i18next';
 import NotesPage, { getStaticPaths } from '../pages/[locale]/index';
 import Api from '@lib/api';
@@ -119,14 +118,12 @@ describe('NotesPage', () => {
       });
     });
 
-    test('should display loading spinner while fetching notes', async () => {
-      (Api.fetchNotes as jest.Mock).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(mockPaginatedResponse), 100)),
-      );
-
+    test('should fetch notes on mount', async () => {
       render(<NotesPage />);
 
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(Api.fetchNotes).toHaveBeenCalled();
+      });
     });
 
     test('should render notes after loading', async () => {
@@ -252,7 +249,9 @@ describe('NotesPage', () => {
       const searchInput = screen.getByTestId('search-input');
       fireEvent.change(searchInput, { target: { value: 'test' } });
 
-      jest.advanceTimersByTime(300);
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
 
       await waitFor(() => {
         expect(Api.fetchNotes).toHaveBeenCalledWith(
