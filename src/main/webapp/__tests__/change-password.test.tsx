@@ -1,5 +1,5 @@
 import { renderWithProviders } from '@tests/test-utils';
-import ChangePasswordPageClient from './change-password';
+import ChangePasswordPageClient from '../pages/[locale]/change-password';
 
 describe('[locale]/change-password', () => {
   test('renders change password form', () => {

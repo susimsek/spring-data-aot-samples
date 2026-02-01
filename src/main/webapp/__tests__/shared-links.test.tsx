@@ -1,6 +1,6 @@
 import { renderWithProviders } from '@tests/test-utils';
 import { waitFor } from '@testing-library/react';
-import SharedLinksPage from './shared-links';
+import SharedLinksPage from '../pages/[locale]/shared-links';
 
 jest.mock('@lib/api', () => ({
   __esModule: true,

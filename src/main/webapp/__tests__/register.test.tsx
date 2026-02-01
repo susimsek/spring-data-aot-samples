@@ -1,5 +1,5 @@
 import { renderWithProviders } from '@tests/test-utils';
-import RegisterPageClient from './register';
+import RegisterPageClient from '../pages/[locale]/register';
 
 describe('[locale]/register', () => {
   test('renders registration form', () => {

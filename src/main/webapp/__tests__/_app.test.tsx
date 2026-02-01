@@ -15,7 +15,7 @@ jest.mock('next-i18next', () => ({
   appWithTranslation: (Component: unknown) => Component,
 }));
 
-import App from './_app';
+import App from '../pages/_app';
 
 describe('_app', () => {
   test('wraps pages with providers', () => {

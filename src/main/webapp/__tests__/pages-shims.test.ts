@@ -1,11 +1,11 @@
-import Index from './index';
-import Login from './login';
-import Register from './register';
-import Share from './share';
-import SharedLinks from './shared-links';
-import ChangePassword from './change-password';
-import Forbidden from './403';
-import NotFound from './404';
+import Index from '../pages/index';
+import Login from '../pages/[locale]/login';
+import Register from '../pages/[locale]/register';
+import Share from '../pages/[locale]/share';
+import SharedLinks from '../pages/[locale]/shared-links';
+import ChangePassword from '../pages/[locale]/change-password';
+import Forbidden from '../pages/[locale]/403';
+import NotFound from '../pages/[locale]/404';
 
 describe('pages shims', () => {
   test('re-export Redirect as default', () => {

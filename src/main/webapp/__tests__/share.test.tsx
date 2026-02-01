@@ -1,6 +1,6 @@
 import { renderWithProviders } from '@tests/test-utils';
 import { waitFor } from '@testing-library/react';
-import SharePageClient from './share';
+import SharePageClient from '../pages/[locale]/share';
 
 jest.mock('@lib/api', () => ({
   __esModule: true,

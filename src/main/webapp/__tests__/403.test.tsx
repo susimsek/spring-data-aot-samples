@@ -1,5 +1,5 @@
 import { renderWithProviders } from '@tests/test-utils';
-import AccessDeniedPage from './403';
+import AccessDeniedPage from '../pages/[locale]/403';
 
 describe('[locale]/403', () => {
   test('renders access denied message', () => {
