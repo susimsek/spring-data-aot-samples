@@ -6,10 +6,8 @@ import io.github.susimsek.springdataaotsamples.config.AuditingTestConfig;
 import io.github.susimsek.springdataaotsamples.domain.Note;
 import io.github.susimsek.springdataaotsamples.domain.NoteShareToken;
 import io.github.susimsek.springdataaotsamples.domain.enumeration.SharePermission;
-
 import java.time.Instant;
 import java.util.LinkedHashSet;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -21,18 +19,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 @DataJpaTest(
-    properties = {
-        "spring.liquibase.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-    })
+        properties = {
+            "spring.liquibase.enabled=false",
+            "spring.jpa.hibernate.ddl-auto=create-drop"
+        })
 @Import(AuditingTestConfig.class)
 class NoteShareTokenRepositoryTest {
 
-    @Autowired
-    private NoteShareTokenRepository noteShareTokenRepository;
+    @Autowired private NoteShareTokenRepository noteShareTokenRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
+    @Autowired private TestEntityManager entityManager;
 
     @Test
     void findAllWithNoteShouldLoadNotesAndKeepSortOrder() {
@@ -42,14 +38,16 @@ class NoteShareTokenRepositoryTest {
         entityManager.persist(secondNote);
         entityManager.flush();
         NoteShareToken firstToken = createShareToken(firstNote, "token1hash", SharePermission.READ);
-        NoteShareToken secondToken = createShareToken(secondNote, "token2hash", SharePermission.READ);
+        NoteShareToken secondToken =
+                createShareToken(secondNote, "token2hash", SharePermission.READ);
         entityManager.persist(firstToken);
         entityManager.persist(secondToken);
         entityManager.flush();
         entityManager.getEntityManager().clear();
         Specification<NoteShareToken> spec = (root, query, cb) -> null;
-        Page<NoteShareToken> page = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id"))));
+        Page<NoteShareToken> page =
+                noteShareTokenRepository.findAllWithNote(
+                        spec, PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id"))));
         assertThat(page.getContent()).hasSize(2);
         assertThat(page.getContent().get(0).getNote()).isNotNull();
         assertThat(page.getContent().get(0).getNote().getTitle()).isEqualTo("Second Note");
@@ -61,8 +59,8 @@ class NoteShareTokenRepositoryTest {
     @Test
     void findAllWithNoteShouldHandleEmptyResults() {
         Specification<NoteShareToken> spec = (root, query, cb) -> cb.equal(root.get("id"), -999L);
-        Page<NoteShareToken> page = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(0, 10));
+        Page<NoteShareToken> page =
+                noteShareTokenRepository.findAllWithNote(spec, PageRequest.of(0, 10));
         assertThat(page.getContent()).isEmpty();
         assertThat(page.getTotalElements()).isZero();
     }
@@ -78,19 +76,22 @@ class NoteShareTokenRepositoryTest {
         entityManager.flush();
         entityManager.getEntityManager().clear();
         Specification<NoteShareToken> spec = (root, query, cb) -> null;
-        Page<NoteShareToken> firstPage = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(0, 2, Sort.by(Sort.Order.asc("id"))));
+        Page<NoteShareToken> firstPage =
+                noteShareTokenRepository.findAllWithNote(
+                        spec, PageRequest.of(0, 2, Sort.by(Sort.Order.asc("id"))));
         assertThat(firstPage.getContent()).hasSize(2);
         assertThat(firstPage.getTotalElements()).isEqualTo(5);
         assertThat(firstPage.getTotalPages()).isEqualTo(3);
         assertThat(firstPage.hasNext()).isTrue();
-        Page<NoteShareToken> secondPage = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(1, 2, Sort.by(Sort.Order.asc("id"))));
+        Page<NoteShareToken> secondPage =
+                noteShareTokenRepository.findAllWithNote(
+                        spec, PageRequest.of(1, 2, Sort.by(Sort.Order.asc("id"))));
         assertThat(secondPage.getContent()).hasSize(2);
         assertThat(secondPage.getTotalElements()).isEqualTo(5);
         assertThat(secondPage.hasNext()).isTrue();
-        Page<NoteShareToken> lastPage = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(2, 2, Sort.by(Sort.Order.asc("id"))));
+        Page<NoteShareToken> lastPage =
+                noteShareTokenRepository.findAllWithNote(
+                        spec, PageRequest.of(2, 2, Sort.by(Sort.Order.asc("id"))));
         assertThat(lastPage.getContent()).hasSize(1);
         assertThat(lastPage.hasNext()).isFalse();
     }
@@ -110,9 +111,10 @@ class NoteShareTokenRepositoryTest {
         entityManager.persist(token2);
         entityManager.flush();
         entityManager.getEntityManager().clear();
-        Specification<NoteShareToken> spec = (root, query, cb) -> cb.equal(root.get("revoked"), false);
-        Page<NoteShareToken> page = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(0, 10));
+        Specification<NoteShareToken> spec =
+                (root, query, cb) -> cb.equal(root.get("revoked"), false);
+        Page<NoteShareToken> page =
+                noteShareTokenRepository.findAllWithNote(spec, PageRequest.of(0, 10));
         assertThat(page.getContent()).hasSize(1);
         assertThat(page.getContent().getFirst().isRevoked()).isFalse();
         assertThat(page.getContent().getFirst().getNote().getTitle()).isEqualTo("Note 1");
@@ -128,8 +130,8 @@ class NoteShareTokenRepositoryTest {
         entityManager.flush();
         entityManager.getEntityManager().clear();
         Specification<NoteShareToken> spec = (root, query, cb) -> null;
-        Page<NoteShareToken> page = noteShareTokenRepository.findAllWithNote(
-            spec, PageRequest.of(0, 10));
+        Page<NoteShareToken> page =
+                noteShareTokenRepository.findAllWithNote(spec, PageRequest.of(0, 10));
         assertThat(page.getContent()).hasSize(1);
         NoteShareToken loadedToken = page.getContent().getFirst();
         assertThat(loadedToken.getNote()).isNotNull();
@@ -149,7 +151,8 @@ class NoteShareTokenRepositoryTest {
         return note;
     }
 
-    private NoteShareToken createShareToken(Note note, String tokenHash, SharePermission permission) {
+    private NoteShareToken createShareToken(
+            Note note, String tokenHash, SharePermission permission) {
         NoteShareToken token = new NoteShareToken();
         token.setNote(note);
         token.setTokenHash(tokenHash);

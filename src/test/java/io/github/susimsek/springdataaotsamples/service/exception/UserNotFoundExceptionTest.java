@@ -73,7 +73,8 @@ class UserNotFoundExceptionTest {
         UserNotFoundException exception = new UserNotFoundException(username);
 
         assertThat(exception.getBody().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(exception.getBody().getDetail()).isEqualTo("User not found with username: " + username);
+        assertThat(exception.getBody().getDetail())
+                .isEqualTo("User not found with username: " + username);
         assertThat(exception.getHeaders()).isNotNull();
     }
 
