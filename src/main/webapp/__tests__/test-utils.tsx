@@ -2,10 +2,9 @@
 
 import type { ReactElement } from 'react';
 import React from 'react';
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { render, type RenderOptions } from '@testing-library/react';
-import { combineReducers } from 'redux';
 import { I18nextProvider } from 'react-i18next';
 import ThemeProvider from '@components/ThemeProvider';
 import authReducer from '@slices/authSlice';
