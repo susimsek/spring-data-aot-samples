@@ -56,8 +56,9 @@ class CacheConfigTest {
 
     @Test
     void hibernateSecondLevelCacheConfigurationShouldCreateJCacheManager() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
         assertThat(customizer).isNotNull();
 
@@ -67,8 +68,9 @@ class CacheConfigTest {
 
     @Test
     void hibernatePropertiesCustomizerShouldSetCacheManager() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
         CacheManager jcacheManager = hibernateConfig.jcacheManager(customizer);
 
@@ -76,16 +78,16 @@ class CacheConfigTest {
                 hibernateConfig.hibernatePropertiesCustomizer(jcacheManager);
         assertThat(propsCustomizer).isNotNull();
 
-        var hibernateProps = new java.util.HashMap<String, Object>();
-        propsCustomizer.customize(hibernateProps);
-        assertThat(hibernateProps).containsKey(ConfigSettings.CACHE_MANAGER);
-        assertThat(hibernateProps.get(ConfigSettings.CACHE_MANAGER)).isEqualTo(jcacheManager);
+        var hibernateProperties = new java.util.HashMap<String, Object>();
+        propsCustomizer.customize(hibernateProperties);
+        assertThat(hibernateProperties).containsEntry(ConfigSettings.CACHE_MANAGER, jcacheManager);
     }
 
     @Test
     void cacheManagerCustomizerShouldRegisterAllCacheRegions() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
         CacheManager cm = hibernateConfig.jcacheManager(customizer);
 
@@ -113,8 +115,9 @@ class CacheConfigTest {
 
     @Test
     void cacheManagerCustomizerShouldClearExistingCache() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
 
         CacheManager cm = mock(CacheManager.class);
@@ -128,8 +131,9 @@ class CacheConfigTest {
 
     @Test
     void cacheManagerCustomizerShouldCreateNewCacheWhenNotExisting() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
 
         CacheManager cm = mock(CacheManager.class);
@@ -142,8 +146,9 @@ class CacheConfigTest {
 
     @Test
     void caffeineConfigurationShouldUseCorrectValues() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        var hibernateConfig = new CacheConfig.HibernateSecondLevelCacheConfiguration(props);
+        ApplicationProperties hibernateProps = buildPropsWithSecondLevelCache();
+        var hibernateConfig =
+                new CacheConfig.HibernateSecondLevelCacheConfiguration(hibernateProps);
         JCacheManagerCustomizer customizer = hibernateConfig.cacheManagerCustomizer();
         CacheManager cm = hibernateConfig.jcacheManager(customizer);
 
@@ -153,22 +158,22 @@ class CacheConfigTest {
 
     @Test
     void cachePropertiesShouldReturnCaffeineConfig() {
-        ApplicationProperties props = buildPropsWithSecondLevelCache();
-        assertThat(props.getCache().getCaffeine()).isNotNull();
-        assertThat(props.getCache().getCaffeine().getTtl())
+        ApplicationProperties testProps = buildPropsWithSecondLevelCache();
+        assertThat(testProps.getCache().getCaffeine()).isNotNull();
+        assertThat(testProps.getCache().getCaffeine().getTtl())
                 .isEqualTo(ApplicationDefaults.Cache.Caffeine.ttl);
-        assertThat(props.getCache().getCaffeine().getMaximumSize())
+        assertThat(testProps.getCache().getCaffeine().getMaximumSize())
                 .isEqualTo(ApplicationDefaults.Cache.Caffeine.maximumSize);
     }
 
     @Test
     void buildCaffeineConfigShouldApplyAllProperties() {
-        ApplicationProperties props = new ApplicationProperties();
-        props.getCache().getCaffeine().setTtl(Duration.ofMinutes(10));
-        props.getCache().getCaffeine().setInitialCapacity(200);
-        props.getCache().getCaffeine().setMaximumSize(2000);
+        ApplicationProperties customProps = new ApplicationProperties();
+        customProps.getCache().getCaffeine().setTtl(Duration.ofMinutes(10));
+        customProps.getCache().getCaffeine().setInitialCapacity(200);
+        customProps.getCache().getCaffeine().setMaximumSize(2000);
 
-        CacheConfig cacheConfig = new CacheConfig(props);
+        CacheConfig cacheConfig = new CacheConfig(customProps);
         org.springframework.cache.CacheManager cm = cacheConfig.cacheManager();
 
         assertThat(cm).isNotNull();
