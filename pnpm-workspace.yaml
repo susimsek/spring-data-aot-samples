@@ -1,5 +1,5 @@
 packages:
   - 'src/main/webapp'
 onlyBuiltDependencies:
-  - esbuild
   - sharp
+  - unrs-resolver
