@@ -173,11 +173,10 @@ class CacheConfigTest {
         customProps.getCache().getCaffeine().setInitialCapacity(200);
         customProps.getCache().getCaffeine().setMaximumSize(2000);
 
-        CacheConfig cacheConfig = new CacheConfig(customProps);
-        org.springframework.cache.CacheManager cm = cacheConfig.cacheManager();
+        CacheConfig testCacheConfig = new CacheConfig(customProps);
+        org.springframework.cache.CacheManager cm = testCacheConfig.cacheManager();
 
-        assertThat(cm).isNotNull();
-        assertThat(cm).isInstanceOf(CaffeineCacheManager.class);
+        assertThat(cm).isNotNull().isInstanceOf(CaffeineCacheManager.class);
     }
 
     private ApplicationProperties buildProps() {
@@ -195,16 +194,6 @@ class CacheConfigTest {
     }
 
     private ApplicationProperties buildPropsWithSecondLevelCache() {
-        ApplicationProperties properties = new ApplicationProperties();
-        properties.getCache().getCaffeine().setTtl(ApplicationDefaults.Cache.Caffeine.ttl);
-        properties
-                .getCache()
-                .getCaffeine()
-                .setInitialCapacity(ApplicationDefaults.Cache.Caffeine.initialCapacity);
-        properties
-                .getCache()
-                .getCaffeine()
-                .setMaximumSize(ApplicationDefaults.Cache.Caffeine.maximumSize);
-        return properties;
+        return buildProps();
     }
 }
