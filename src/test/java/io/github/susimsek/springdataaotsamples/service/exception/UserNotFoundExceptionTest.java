@@ -63,9 +63,7 @@ class UserNotFoundExceptionTest {
     @Test
     void shouldVerifyExceptionIsRuntimeException() {
         UserNotFoundException exception = new UserNotFoundException("testuser");
-        assertThat(exception)
-                .isInstanceOf(RuntimeException.class)
-                .isInstanceOf(ApiException.class);
+        assertThat(exception).isInstanceOf(RuntimeException.class).isInstanceOf(ApiException.class);
     }
 
     @Test

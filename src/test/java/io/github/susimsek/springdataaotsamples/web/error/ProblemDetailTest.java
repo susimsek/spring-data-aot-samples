@@ -12,14 +12,15 @@ class ProblemDetailTest {
         Violation violation = new Violation("Size", "User", "username", "a", "too short");
         List<Violation> violations = List.of(violation);
 
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
         assertThat(problemDetail.type()).isEqualTo("https://example.com/problem/validation_failed");
         assertThat(problemDetail.title()).isEqualTo("Validation Failed");
@@ -32,14 +33,7 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailWithNullValues() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
+        ProblemDetail problemDetail = new ProblemDetail(null, null, null, null, null, null, null);
 
         assertThat(problemDetail.type()).isNull();
         assertThat(problemDetail.title()).isNull();
@@ -52,14 +46,15 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailWithEmptyViolations() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/not_found",
-                "Not Found",
-                404,
-                "Resource not found.",
-                "/api/v1/users/123",
-                null,
-                List.of());
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/not_found",
+                        "Not Found",
+                        404,
+                        "Resource not found.",
+                        "/api/v1/users/123",
+                        null,
+                        List.of());
 
         assertThat(problemDetail.violations()).isEmpty();
     }
@@ -69,32 +64,35 @@ class ProblemDetailTest {
         Violation violation = new Violation("Size", "User", "username", "a", "too short");
         List<Violation> violations = List.of(violation);
 
-        ProblemDetail problemDetail1 = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail1 =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
-        ProblemDetail problemDetail2 = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail2 =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
-        ProblemDetail problemDetail3 = new ProblemDetail(
-                "https://example.com/problem/not_found",
-                "Not Found",
-                404,
-                "Resource not found.",
-                "/api/v1/users/123",
-                null,
-                null);
+        ProblemDetail problemDetail3 =
+                new ProblemDetail(
+                        "https://example.com/problem/not_found",
+                        "Not Found",
+                        404,
+                        "Resource not found.",
+                        "/api/v1/users/123",
+                        null,
+                        null);
 
         assertThat(problemDetail1)
                 .isEqualTo(problemDetail2)
@@ -107,23 +105,25 @@ class ProblemDetailTest {
         Violation violation = new Violation("Size", "User", "username", "a", "too short");
         List<Violation> violations = List.of(violation);
 
-        ProblemDetail problemDetail1 = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail1 =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
-        ProblemDetail problemDetail2 = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail2 =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
         assertThat(problemDetail1.hashCode()).isEqualTo(problemDetail2.hashCode());
     }
@@ -133,14 +133,15 @@ class ProblemDetailTest {
         Violation violation = new Violation("Size", "User", "username", "a", "too short");
         List<Violation> violations = List.of(violation);
 
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "One or more fields are invalid.",
-                "/api/v1/users",
-                "username",
-                violations);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "One or more fields are invalid.",
+                        "/api/v1/users",
+                        "username",
+                        violations);
 
         String toString = problemDetail.toString();
 
@@ -157,12 +158,12 @@ class ProblemDetailTest {
 
     @Test
     void shouldHandleDifferentStatusCodes() {
-        ProblemDetail problemDetail400 = new ProblemDetail(
-                "type", "title", 400, "detail", "instance", "field", null);
-        ProblemDetail problemDetail404 = new ProblemDetail(
-                "type", "title", 404, "detail", "instance", "field", null);
-        ProblemDetail problemDetail500 = new ProblemDetail(
-                "type", "title", 500, "detail", "instance", "field", null);
+        ProblemDetail problemDetail400 =
+                new ProblemDetail("type", "title", 400, "detail", "instance", "field", null);
+        ProblemDetail problemDetail404 =
+                new ProblemDetail("type", "title", 404, "detail", "instance", "field", null);
+        ProblemDetail problemDetail500 =
+                new ProblemDetail("type", "title", 500, "detail", "instance", "field", null);
 
         assertThat(problemDetail400.status()).isEqualTo(400);
         assertThat(problemDetail404.status()).isEqualTo(404);
@@ -176,14 +177,15 @@ class ProblemDetailTest {
         Violation violation3 = new Violation("Email", "User", "email", "invalid", "invalid email");
         List<Violation> violations = List.of(violation1, violation2, violation3);
 
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/validation_failed",
-                "Validation Failed",
-                400,
-                "Multiple fields are invalid.",
-                "/api/v1/users",
-                null,
-                violations);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/validation_failed",
+                        "Validation Failed",
+                        400,
+                        "Multiple fields are invalid.",
+                        "/api/v1/users",
+                        null,
+                        violations);
 
         assertThat(problemDetail.violations())
                 .hasSize(3)
@@ -192,14 +194,15 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailWithMinimalFields() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "about:blank",
-                "Internal Server Error",
-                500,
-                "An unexpected error occurred.",
-                null,
-                null,
-                null);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "about:blank",
+                        "Internal Server Error",
+                        500,
+                        "An unexpected error occurred.",
+                        null,
+                        null,
+                        null);
 
         assertThat(problemDetail.type()).isEqualTo("about:blank");
         assertThat(problemDetail.title()).isEqualTo("Internal Server Error");
@@ -212,10 +215,10 @@ class ProblemDetailTest {
 
     @Test
     void shouldNotBeEqualWhenFieldsDiffer() {
-        ProblemDetail problemDetail1 = new ProblemDetail(
-                "type1", "title", 400, "detail", "instance", "field", null);
-        ProblemDetail problemDetail2 = new ProblemDetail(
-                "type2", "title", 400, "detail", "instance", "field", null);
+        ProblemDetail problemDetail1 =
+                new ProblemDetail("type1", "title", 400, "detail", "instance", "field", null);
+        ProblemDetail problemDetail2 =
+                new ProblemDetail("type2", "title", 400, "detail", "instance", "field", null);
 
         assertThat(problemDetail1).isNotEqualTo(problemDetail2);
     }
@@ -225,24 +228,19 @@ class ProblemDetailTest {
         Violation violation1 = new Violation("Size", "User", "username", "a", "too short");
         Violation violation2 = new Violation("NotBlank", "User", "email", "", "must not be blank");
 
-        ProblemDetail problemDetail1 = new ProblemDetail(
-                "type", "title", 400, "detail", "instance", "field", List.of(violation1));
-        ProblemDetail problemDetail2 = new ProblemDetail(
-                "type", "title", 400, "detail", "instance", "field", List.of(violation2));
+        ProblemDetail problemDetail1 =
+                new ProblemDetail(
+                        "type", "title", 400, "detail", "instance", "field", List.of(violation1));
+        ProblemDetail problemDetail2 =
+                new ProblemDetail(
+                        "type", "title", 400, "detail", "instance", "field", List.of(violation2));
 
         assertThat(problemDetail1).isNotEqualTo(problemDetail2);
     }
 
     @Test
     void shouldHandleEmptyStrings() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "",
-                "",
-                0,
-                "",
-                "",
-                "",
-                List.of());
+        ProblemDetail problemDetail = new ProblemDetail("", "", 0, "", "", "", List.of());
 
         assertThat(problemDetail.type()).isEmpty();
         assertThat(problemDetail.title()).isEmpty();
@@ -255,14 +253,15 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailForUnauthorized() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/unauthorized",
-                "Unauthorized",
-                401,
-                "Authentication is required to access this resource.",
-                "/api/v1/notes",
-                null,
-                null);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/unauthorized",
+                        "Unauthorized",
+                        401,
+                        "Authentication is required to access this resource.",
+                        "/api/v1/notes",
+                        null,
+                        null);
 
         assertThat(problemDetail.type()).isEqualTo("https://example.com/problem/unauthorized");
         assertThat(problemDetail.title()).isEqualTo("Unauthorized");
@@ -271,14 +270,15 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailForForbidden() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/forbidden",
-                "Forbidden",
-                403,
-                "You do not have permission to access this resource.",
-                "/api/v1/admin/users",
-                null,
-                null);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/forbidden",
+                        "Forbidden",
+                        403,
+                        "You do not have permission to access this resource.",
+                        "/api/v1/admin/users",
+                        null,
+                        null);
 
         assertThat(problemDetail.type()).isEqualTo("https://example.com/problem/forbidden");
         assertThat(problemDetail.title()).isEqualTo("Forbidden");
@@ -287,14 +287,15 @@ class ProblemDetailTest {
 
     @Test
     void shouldCreateProblemDetailForConflict() {
-        ProblemDetail problemDetail = new ProblemDetail(
-                "https://example.com/problem/conflict",
-                "Conflict",
-                409,
-                "Username already exists.",
-                "/api/v1/users",
-                "username",
-                null);
+        ProblemDetail problemDetail =
+                new ProblemDetail(
+                        "https://example.com/problem/conflict",
+                        "Conflict",
+                        409,
+                        "Username already exists.",
+                        "/api/v1/users",
+                        "username",
+                        null);
 
         assertThat(problemDetail.type()).isEqualTo("https://example.com/problem/conflict");
         assertThat(problemDetail.title()).isEqualTo("Conflict");
