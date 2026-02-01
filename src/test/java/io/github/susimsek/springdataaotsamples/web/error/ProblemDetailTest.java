@@ -125,7 +125,7 @@ class ProblemDetailTest {
                         "username",
                         violations);
 
-        assertThat(problemDetail1.hashCode()).isEqualTo(problemDetail2.hashCode());
+        assertThat(problemDetail1).hasSameHashCodeAs(problemDetail2);
     }
 
     @Test
