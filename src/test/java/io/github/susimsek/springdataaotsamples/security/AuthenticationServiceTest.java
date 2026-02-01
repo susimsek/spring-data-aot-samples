@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -11,7 +12,10 @@ import static org.mockito.Mockito.when;
 import io.github.susimsek.springdataaotsamples.domain.RefreshToken;
 import io.github.susimsek.springdataaotsamples.repository.RefreshTokenRepository;
 import io.github.susimsek.springdataaotsamples.service.command.UserCommandService;
+import io.github.susimsek.springdataaotsamples.service.dto.ChangePasswordRequest;
 import io.github.susimsek.springdataaotsamples.service.dto.LoginRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegisterRequest;
+import io.github.susimsek.springdataaotsamples.service.dto.RegistrationDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.TokenDTO;
 import io.github.susimsek.springdataaotsamples.service.dto.UserDTO;
 import io.github.susimsek.springdataaotsamples.service.query.UserQueryService;
@@ -65,6 +69,28 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    void loginShouldSupportRememberMeFalse() {
+        LoginRequest request = new LoginRequest("bob", "secret", false);
+        Authentication auth = mock(Authentication.class);
+        TokenDTO token =
+                new TokenDTO(
+                        "jwt2",
+                        "Bearer",
+                        Instant.now().plusSeconds(30),
+                        "refresh2",
+                        Instant.now().plusSeconds(60),
+                        "bob",
+                        Set.of(AuthoritiesConstants.USER));
+        when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(auth);
+        when(tokenService.generateToken(auth, false)).thenReturn(token);
+
+        TokenDTO result = authenticationService.login(request);
+
+        assertThat(result).isEqualTo(token);
+        verify(tokenService).generateToken(auth, false);
+    }
+
+    @Test
     void getCurrentUserShouldLoadUserAndMap() {
         UserDTO dto =
                 new UserDTO(1L, "alice", "alice@example.com", Set.of(AuthoritiesConstants.USER));
@@ -85,13 +111,26 @@ class AuthenticationServiceTest {
             utils.when(SecurityUtils::getCurrentUserLogin).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> authenticationService.getCurrentUser())
-                    .isInstanceOf(UsernameNotFoundException.class);
+                    .isInstanceOf(UsernameNotFoundException.class)
+                    .hasMessage("User not found");
         }
     }
 
     @Test
     void logoutShouldIgnoreBlankToken() {
         authenticationService.logout("  ");
+        verifyNoInteractions(refreshTokenRepository);
+    }
+
+    @Test
+    void logoutShouldIgnoreNullToken() {
+        authenticationService.logout(null);
+        verifyNoInteractions(refreshTokenRepository);
+    }
+
+    @Test
+    void logoutShouldIgnoreEmptyToken() {
+        authenticationService.logout("");
         verifyNoInteractions(refreshTokenRepository);
     }
 
@@ -107,6 +146,16 @@ class AuthenticationServiceTest {
 
         assertThat(token.isRevoked()).isTrue();
         verify(refreshTokenRepository).save(token);
+    }
+
+    @Test
+    void logoutShouldDoNothingWhenTokenNotFound() {
+        when(refreshTokenRepository.findByTokenAndRevokedFalse(HashingUtils.sha256Hex("unknown")))
+                .thenReturn(Optional.empty());
+
+        authenticationService.logout("unknown");
+
+        verify(refreshTokenRepository, never()).save(any());
     }
 
     @Test
@@ -126,5 +175,66 @@ class AuthenticationServiceTest {
 
         assertThat(result).isEqualTo(dto);
         verify(tokenService).refresh("refresh-token");
+    }
+
+    @Test
+    void refreshShouldHandleNullToken() {
+        TokenDTO dto =
+                new TokenDTO(
+                        "jwt",
+                        "Bearer",
+                        Instant.now(),
+                        "refresh",
+                        Instant.now(),
+                        "alice",
+                        Set.of(AuthoritiesConstants.USER));
+        when(tokenService.refresh(null)).thenReturn(dto);
+
+        TokenDTO result = authenticationService.refresh(null);
+
+        assertThat(result).isEqualTo(dto);
+        verify(tokenService).refresh(null);
+    }
+
+    @Test
+    void registerShouldDelegateToUserCommandService() {
+        RegisterRequest request = new RegisterRequest("newuser", "new@example.com", "password");
+        RegistrationDTO registration = new RegistrationDTO(1L, "newuser");
+        when(userCommandService.register(request)).thenReturn(registration);
+
+        RegistrationDTO result = authenticationService.register(request);
+
+        assertThat(result).isEqualTo(registration);
+        verify(userCommandService).register(request);
+    }
+
+    @Test
+    void changePasswordShouldDelegateAndRevokeTokens() {
+        ChangePasswordRequest request = new ChangePasswordRequest("old", "new");
+
+        try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
+            utils.when(SecurityUtils::getCurrentUserId).thenReturn(Optional.of(42L));
+
+            authenticationService.changePassword(request);
+
+            verify(userCommandService).changePassword(42L, request);
+            verify(refreshTokenRepository).revokeAllByUserId(42L);
+        }
+    }
+
+    @Test
+    void changePasswordShouldThrowWhenUserNotAuthenticated() {
+        ChangePasswordRequest request = new ChangePasswordRequest("old", "new");
+
+        try (MockedStatic<SecurityUtils> utils = Mockito.mockStatic(SecurityUtils.class)) {
+            utils.when(SecurityUtils::getCurrentUserId).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> authenticationService.changePassword(request))
+                    .isInstanceOf(UsernameNotFoundException.class)
+                    .hasMessage("User not found");
+
+            verify(userCommandService, never()).changePassword(any(), any());
+            verify(refreshTokenRepository, never()).revokeAllByUserId(any());
+        }
     }
 }
