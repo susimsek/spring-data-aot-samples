@@ -110,6 +110,9 @@ jobs:
           name: Install UPX
           command: |
             set -e
+
+            microdnf -y install curl tar xz
+
             UPX_VERSION=5.1.0
             UPX_ARCHIVE=upx-${UPX_VERSION}-amd64_linux.tar.xz
 
