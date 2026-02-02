@@ -63,6 +63,11 @@ Note: `spring.profiles.active` in `application.yml` is filled via Maven resource
 
 ## Run Locally
 
+### Prerequisites
+
+- Node.js `24.13.0`
+- pnpm `10.28.2` (recommended via Corepack)
+
 ### Dev (H2)
 
 ```bash
@@ -80,6 +85,7 @@ Frontend sources live in `src/main/webapp` and are written in TypeScript (`.ts`/
 For local frontend dev (Next dev server) against the Spring Boot backend:
 
 ```bash
+corepack enable
 pnpm install --frozen-lockfile
 pnpm dev
 ```
